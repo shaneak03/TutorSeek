@@ -1,8 +1,10 @@
-import { Link } from "expo-router";
+import { useRouter } from "expo-router";
 import { Text, useColorScheme, View } from "react-native";
+import { Button } from "tamagui";
 
 export default function Index() {
   const textColor = useColorScheme() === "dark" ? "white" : "black";
+  const router = useRouter();
 
   return (
     <View
@@ -13,7 +15,9 @@ export default function Index() {
       }}
     >
       <Text style={{ color: textColor }}>Welcome!</Text>
-      <Link href="/login" style={{ color: textColor }}>login</Link>
+      <Button onPress={() => router.push('/login')}>
+        <Text style={{ color: textColor }}>Login</Text>
+      </Button>
     </View>
   );
 }
