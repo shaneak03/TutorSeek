@@ -9,9 +9,19 @@ const _layout = () => {
             options={{
                 title: 'Home',
                 headerShown:false
-            }}>
-            
-        </Tabs.Screen>
+            }} />
+        <Tabs.Screen 
+          name="search"
+            options={{
+                title: 'Search',
+                headerShown:false
+            }} />
+        <Tabs.Screen 
+          name="profile"
+            options={{
+                title: 'Profile',
+                headerShown:false
+            }} />
     </Tabs>
   )
 }
