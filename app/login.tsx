@@ -9,7 +9,7 @@ import {
 } from "react-native";
 
 const Login = () => {
-  const textColor = useColorScheme() === "dark" ? "red" : "black";
+  const textColor = useColorScheme() === "dark" ? "green" : "black";
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
