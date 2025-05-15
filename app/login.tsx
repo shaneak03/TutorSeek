@@ -22,25 +22,28 @@ const Login = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={[styles.title, { color: textColor }]}>Login</Text>
+    <View className='flex-1 justify-center items-center'>
+      <Text className='text-5xl text-primary bottom-4'>Login</Text>
       <TextInput
-        style={[styles.input, { color: textColor }]}
+        className='w-64 h-12 px-4 border border-gray-300 rounded-lg text-base text-primary m-2'
         placeholder='Username'
         placeholderTextColor='gray'
         value={username}
         onChangeText={setUsername}
       />
       <TextInput
-        style={[styles.input, { color: textColor }]}
+        className='w-64 h-12 px-4 border border-gray-300 rounded-lg text-base text-primary m-2'
         placeholder='Password'
         placeholderTextColor='gray'
         secureTextEntry
         value={password}
         onChangeText={setPassword}
       />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={[styles.buttonText, { color: textColor }]}>Login</Text>
+      <TouchableOpacity
+        className='bg-blue-500 px-6 py-3 rounded-lg m-2'
+        onPress={handleLogin}
+      >
+        <Text className='text-red-200xl text-primary'>Login</Text>
       </TouchableOpacity>
     </View>
   );
