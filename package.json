@@ -15,9 +15,6 @@
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
-    "@tamagui/config": "^1.126.12",
-    "@tamagui/core": "^1.126.12",
-    "@tamagui/web": "^1.126.12",
     "expo": "~53.0.9",
     "expo-blur": "~14.1.4",
     "expo-constants": "~17.1.6",
@@ -39,15 +36,11 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
-    "react-native-svg": "^15.12.0",
     "react-native-web": "~0.20.0",
-    "react-native-webview": "13.13.5",
-    "tamagui": "^1.126.12"
+    "react-native-webview": "13.13.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
-    "@tamagui/babel-plugin": "^1.126.12",
-    "@tamagui/cli": "^1.126.12",
     "@types/react": "~19.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
