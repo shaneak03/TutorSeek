@@ -1,4 +1,3 @@
-import React from "react";
 import { Text } from "react-native";
 
 export default function CustomText({
@@ -6,7 +5,7 @@ export default function CustomText({
   className,
 }: {
   children: any;
-  className: string;
+  className?: string;
 }) {
   return (
     <Text className={"font-poppins text-neutral-900 " + className}>

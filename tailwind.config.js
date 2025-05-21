@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+const colors = require("./app/themeColors");
+
 module.exports = {
   // NOTE: Update this to include the paths to all of your component files.
   content: ["./app/**/*.{js,jsx,ts,tsx}"],
@@ -7,14 +9,10 @@ module.exports = {
     extend: {
       fontFamily: {
         poppins: ["Poppins_400Regular"],
+        "poppins-semibold": ["Poppins_600SemiBold"],
+        "poppins-bold": ["Poppins_700Bold"],
       },
-      colors: {
-        "primary-700": "#6366F1",
-        "neutral-900": "111827",
-        "neutral-300": "CCCCCC",
-        "neutral-200": "F2F2F2",
-        "neutral-100": "F9FAFB",
-      },
+      colors,
     },
   },
   plugins: [],
