@@ -30,7 +30,7 @@ const Index = () => {
 
   return (
     <View className='flex gap-4 justify-center items-center h-96'>
-      <Text className='text-blue-200'>Welcome!</Text>
+      <Text className='text-blue-200 font-poppins'>Welcome!</Text>
       <TouchableOpacity
         className='border-cyan-100 border-2 p-4 rounded-2xl bg-pink-50'
         onPress={() => router.push("/login")}

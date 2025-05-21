@@ -2,6 +2,7 @@ import { supabase } from "@/utils/supabase";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import CustomText from "./components/CustomText";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -22,7 +23,7 @@ const Login = () => {
 
   return (
     <View className='flex-1 justify-center items-center'>
-      <Text className='text-5xl text-primary bottom-4'>Login</Text>
+      <CustomText className='font-bold'>Login</CustomText>
       <TextInput
         className='w-64 h-12 px-4 border border-gray-300 rounded-lg text-base text-primary m-2'
         placeholder='Username'
