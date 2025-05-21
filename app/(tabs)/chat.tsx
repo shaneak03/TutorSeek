@@ -1,5 +1,5 @@
-import React from 'react';
-import { Text, useColorScheme, View } from 'react-native';
+import React from "react";
+import { Text, useColorScheme, View } from "react-native";
 
 const Chat = () => {
   const textColor = useColorScheme() === "dark" ? "white" : "black";
@@ -7,7 +7,7 @@ const Chat = () => {
     <View>
       <Text style={{ color: textColor }}>Chat</Text>
     </View>
-  )
-}
+  );
+};
 
 export default Chat;

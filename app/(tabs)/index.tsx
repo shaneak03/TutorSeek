@@ -1,47 +1,44 @@
-import { supabase } from "@/utils/supabase";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { Text, TouchableOpacity, useColorScheme, View } from "react-native";
+import { useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
-export default function Index() {
-  const textColor = useColorScheme() === "dark" ? "white" : "black";
+const Index = () => {
   const router = useRouter();
 
   const [datas, setData] = useState([]);
 
-  useEffect(() => {
-    const getData = async () => {
-      try {
-        const { data: data, error } = await supabase.from('data').select();
+  // useEffect(() => {
+  //   const getData = async () => {
+  //     try {
+  //       const { data: data, error } = await supabase.from("data").select();
 
-        if (error) {
-          console.error('Error fetching data:', error.message);
-          return;
-        }
+  //       if (error) {
+  //         console.error("Error fetching data:", error.message);
+  //         return;
+  //       }
 
-        if (data && data.length > 0) {
-          setData(datas);
-        }
-      } catch (error : any) {
-        console.error('Error fetching todos:', error.message);
-      }
-    };
+  //       if (data && data.length > 0) {
+  //         setData(datas);
+  //       }
+  //     } catch (error: any) {
+  //       console.error("Error fetching todos:", error.message);
+  //     }
+  //   };
 
-    getData();
-  }, []);
+  //   getData();
+  // }, []);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text style={{ color: textColor }}>Welcome!</Text>
-      <TouchableOpacity onPress={() => router.push("/login")}>
-        <Text style={{ color: textColor }}>Login</Text>
+    <View className='flex gap-4 justify-center items-center h-96'>
+      <Text className='text-blue-200'>Welcome!</Text>
+      <TouchableOpacity
+        className='border-cyan-100 border-2 p-4 rounded-2xl bg-pink-50'
+        onPress={() => router.push("/login")}
+      >
+        <Text className='text-blue-700'>Login</Text>
       </TouchableOpacity>
     </View>
   );
-}
+};
+
+export default Index;

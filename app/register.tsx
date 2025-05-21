@@ -1,12 +1,10 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React from "react";
+import { Text, View } from "react-native";
 
 export default function register() {
   return (
     <View>
-      <Text>register</Text>
+      <Text className='text-[#ffff]'>register</Text>
     </View>
-  )
+  );
 }
-
-const styles = StyleSheet.create({})
