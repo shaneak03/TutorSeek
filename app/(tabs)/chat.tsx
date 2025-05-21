@@ -1,13 +1,13 @@
 import React from 'react';
 import { Text, useColorScheme, View } from 'react-native';
 
-const search = () => {
+const Chat = () => {
   const textColor = useColorScheme() === "dark" ? "white" : "black";
   return (
     <View>
-      <Text style={{ color: textColor }}>Search</Text>
+      <Text style={{ color: textColor }}>Chat</Text>
     </View>
   )
 }
 
-export default search
+export default Chat;

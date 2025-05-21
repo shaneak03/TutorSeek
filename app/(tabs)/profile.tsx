@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, useColorScheme, View } from 'react-native';
 
-const profile = () => {
+const Profile = () => {
   const textColor = useColorScheme() === "dark" ? "white" : "black";
   
   return (
@@ -11,4 +11,4 @@ const profile = () => {
   )
 }
 
-export default profile
+export default Profile
