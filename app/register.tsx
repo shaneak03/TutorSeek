@@ -30,6 +30,8 @@ const Register = () => {
     });
     if (error) {
       setErrorMessage(error.message);
+      setConfirmPassword("");
+      setPassword("");
       console.log(error);
     } else {
       setConfirmPassword("");
