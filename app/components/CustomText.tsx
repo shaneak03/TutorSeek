@@ -1,4 +1,5 @@
 import { Text } from "react-native";
+import { twMerge } from "tailwind-merge";
 
 export default function CustomText({
   children,
@@ -8,7 +9,12 @@ export default function CustomText({
   className?: string;
 }) {
   return (
-    <Text className={"font-poppins text-neutral-900 " + className}>
+    <Text
+      className={twMerge(
+        "text-base font-poppins text-neutral-900 leading-normal ",
+        className
+      )}
+    >
       {children}
     </Text>
   );

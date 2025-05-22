@@ -1,16 +1,25 @@
 import { supabase } from "@/utils/supabase";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Dimensions, Text, TouchableOpacity, View } from "react-native";
+import {
+  Pressable,
+  Text,
+  TouchableHighlight,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import CustomText from "./components/CustomText";
-import RoundTextInput from "./components/RoundedInput";
-
-const imageWidth = Dimensions.get("window").width - 64;
+import LargeSolidButton from "./components/LargeSolidButton";
+import RoundTextInput from "./components/RoundedTextInput";
+import themeColors from "./themeColors";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isTutor, setIsTutor] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -25,20 +34,40 @@ const Login = () => {
     }
   };
 
+  const handleForgetPw = () => {
+    //TODO
+  };
+
+  const handleGoogleAuth = () => {
+    //TODO
+  };
+
+  const navToRegister = () => {
+    router.push("/register");
+  };
+
   return (
-    <View className='flex flex-col justify-center items-center gap-4 px-8 bg-neutral-100'>
+    <SafeAreaView className='flex-1 justify-center items-center gap-4 px-8 bg-neutral-100'>
       <Image
         source={require("../assets/images/auth-image.svg")}
-        style={{ width: imageWidth, height: 300 }}
+        style={{ width: 250, height: 200 }}
         contentFit='cover'
       />
-      <View>
-        <CustomText className='text-2xl font-poppins-bold'>
-          <Text> Register as </Text>
-          <Text className='text-primary-700'>tutor</Text>
+      <View className='w-full flex-row items-center gap-2'>
+        <CustomText className='font-poppins-bold text-2xl'>
+          <Text> Login as </Text>
+          <Text className='text-primary-700'>
+            {isTutor ? "tutor" : "student"}
+          </Text>
         </CustomText>
+        <TouchableOpacity activeOpacity={0.8}>
+          <MaterialIcons
+            name='keyboard-arrow-down'
+            size={24}
+            color={themeColors["neutral-300"]}
+          />
+        </TouchableOpacity>
       </View>
-
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
         <RoundTextInput
@@ -48,20 +77,49 @@ const Login = () => {
         />
       </View>
       <View className='w-full'>
-        <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
+        <CustomText className='font-poppins-semibold mb-2'>Password</CustomText>
         <RoundTextInput
           text={password}
           onChangeText={setPassword}
           placeholder='Enter your password'
         />
       </View>
-      <TouchableOpacity
-        className='bg-blue-500 px-6 py-3 rounded-lg m-2 w-full'
-        onPress={handleLogin}
+      <Text
+        onPress={handleForgetPw}
+        className='w-full text-right font-poppins-semibold text-sm color-neutral-900'
       >
-        <Text className=''>Login</Text>
-      </TouchableOpacity>
-    </View>
+        Forgot password?
+      </Text>
+      <LargeSolidButton
+        buttonText='Login'
+        onPress={handleLogin}
+        className='mt-2'
+      />
+      <View className='w-full relative flex justify-center items-center px-4'>
+        <View className='h-[1] w-full bg-neutral-900 absolute'></View>
+        <CustomText className='text-sm bg-neutral-100 px-4'>
+          Or login with
+        </CustomText>
+      </View>
+      <TouchableHighlight
+        onPress={handleGoogleAuth}
+        className='w-full flex-row justify-center rounded-[48] border-2 border-neutral-300 p-4'
+        underlayColor={themeColors["neutral-200"]}
+      >
+        <Image
+          source={require("../assets/images/google.svg")}
+          style={{ width: 24, height: 24 }}
+          contentFit='cover'
+        />
+      </TouchableHighlight>
+
+      <Pressable onPress={navToRegister}>
+        <CustomText className='text-sm'>
+          <Text>Don't have an account? </Text>
+          <Text className='text-primary-700'>Register</Text>
+        </CustomText>
+      </Pressable>
+    </SafeAreaView>
   );
 };
 

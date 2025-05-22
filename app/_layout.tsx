@@ -5,6 +5,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/poppins";
 import { Stack } from "expo-router";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./global.css";
 
 export default function RootLayout() {
@@ -15,9 +16,11 @@ export default function RootLayout() {
   });
 
   return (
-    <Stack>
-      <Stack.Screen name='login' options={{ headerShown: false }} />
-      <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-    </Stack>
+    <SafeAreaProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name='login' options={{ headerShown: false }} />
+        <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+      </Stack>
+    </SafeAreaProvider>
   );
 }
