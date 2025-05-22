@@ -62,7 +62,7 @@ const Register = () => {
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
         <RoundTextInput
-          text={email}
+          value={email}
           onChangeText={setEmail}
           placeholder='Enter your email'
         />
@@ -70,8 +70,9 @@ const Register = () => {
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Password</CustomText>
         <RoundTextInput
-          text={password}
+          value={password}
           onChangeText={setPassword}
+          secureTextEntry={true}
           placeholder='Enter your password'
         />
       </View>
@@ -82,6 +83,7 @@ const Register = () => {
         <RoundTextInput
           text={confirmPassword}
           onChangeText={setConfirmPassword}
+          secureTextEntry={true}
           placeholder='Enter your password'
         />
       </View>

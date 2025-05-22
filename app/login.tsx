@@ -71,7 +71,7 @@ const Login = () => {
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
         <RoundTextInput
-          text={email}
+          value={email}
           onChangeText={setEmail}
           placeholder='Enter your email'
         />
@@ -79,7 +79,8 @@ const Login = () => {
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Password</CustomText>
         <RoundTextInput
-          text={password}
+          secureTextEntry={true}
+          value={password}
           onChangeText={setPassword}
           placeholder='Enter your password'
         />
