@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CustomDropdown from "./components/CustomDropdown";
 import CustomText from "./components/CustomText";
 import LargeSolidButton from "./components/LargeSolidButton";
 import RoundTextInput from "./components/RoundedTextInput";
@@ -20,6 +21,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isTutor, setIsTutor] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -29,10 +31,21 @@ const Login = () => {
     });
     if (error) {
       console.log(error);
+      setErrorMessage(error.message);
+      setEmail("");
+      setPassword("");
     } else {
       router.push("/(tabs)");
     }
   };
+
+  const handleTutorSelect = async (value : string) => {
+    if (value === "tutor") {
+      setIsTutor(true);
+    } else if (value === "student") {
+      setIsTutor(false);
+    }
+  }
 
   const handleForgetPw = () => {
     //TODO
@@ -56,10 +69,13 @@ const Login = () => {
       <View className='w-full flex-row items-center gap-2'>
         <CustomText className='font-poppins-bold text-2xl'>
           <Text> Login as </Text>
-          <Text className='text-primary-700'>
-            {isTutor ? "tutor" : "student"}
-          </Text>
         </CustomText>
+        <CustomDropdown
+            options={["student", "tutor"]}
+            selected={isTutor ? "tutor" : "student"}
+            onSelect={handleTutorSelect}
+            className='text-primary-700 font-poppins-bold text-2xl'
+          />
         <TouchableOpacity activeOpacity={0.8}>
           <MaterialIcons
             name='keyboard-arrow-down'
@@ -91,6 +107,9 @@ const Login = () => {
       >
         Forgot password?
       </Text>
+      {errorMessage ? (
+        <CustomText className='text-red-500 text-sm'>{errorMessage}</CustomText>
+      ) : null}
       <LargeSolidButton
         buttonText='Login'
         onPress={handleLogin}

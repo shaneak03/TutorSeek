@@ -1,10 +1,10 @@
 import { supabase } from "@/utils/supabase";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
+import { Text, TouchableHighlight, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import CustomDropdown from "./components/CustomDropdown";
 import CustomText from "./components/CustomText";
 import LargeSolidButton from "./components/LargeSolidButton";
 import RoundTextInput from "./components/RoundedTextInput";
@@ -15,16 +15,25 @@ const Register = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isTutor, setIsTutor] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
 
   const handleRegister = async () => {
-    let { data, error } = await supabase.auth.signInWithPassword({
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match");
+      setConfirmPassword("");
+      setPassword("");
+    }
+    let { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
     if (error) {
+      setErrorMessage(error.message);
       console.log(error);
     } else {
+      setConfirmPassword("");
+      setPassword("");
       router.push("/(tabs)");
     }
   };
@@ -32,6 +41,14 @@ const Register = () => {
   const handleGoogleAuth = () => {
     //TODO
   };
+  
+  const handleTutorSelect = async (value : string) => {
+    if (value === "tutor") {
+      setIsTutor(true);
+    } else if (value === "student") {
+      setIsTutor(false);
+    }
+  }
 
   const navToLogin = () => {
     router.push("/login");
@@ -47,17 +64,13 @@ const Register = () => {
       <View className='w-full flex-row items-center gap-2'>
         <CustomText className='font-poppins-bold text-2xl'>
           <Text>Register as </Text>
-          <Text className='text-primary-700'>
-            {isTutor ? "tutor" : "student"}
-          </Text>
         </CustomText>
-        <TouchableOpacity activeOpacity={0.8}>
-          <MaterialIcons
-            name='keyboard-arrow-down'
-            size={24}
-            color={themeColors["neutral-300"]}
-          />
-        </TouchableOpacity>
+        <CustomDropdown
+          options={["student", "tutor"]}
+          selected={isTutor ? "tutor" : "student"}
+          onSelect={handleTutorSelect}
+          className='text-primary-700 font-poppins-bold text-2xl'
+        />
       </View>
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
@@ -87,6 +100,9 @@ const Register = () => {
           placeholder='Enter your password'
         />
       </View>
+      {errorMessage ? (
+        <CustomText className="text-red-500">{errorMessage}</CustomText>
+      ) : null}
       <LargeSolidButton
         buttonText={"Register"}
         onPress={handleRegister}
