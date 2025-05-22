@@ -11,6 +11,7 @@ const CustomDropdown = ({ options, selected, onSelect, ...props }: {
   options: string[];
   selected: string;
   onSelect: (value: string) => void;
+  className?: string;
 }) => {
   const [visible, setVisible] = useState(false);
 
