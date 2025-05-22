@@ -1,5 +1,4 @@
 import { supabase } from "@/utils/supabase";
-import { MaterialIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -7,8 +6,7 @@ import {
   Pressable,
   Text,
   TouchableHighlight,
-  TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CustomDropdown from "./components/CustomDropdown";
@@ -76,13 +74,6 @@ const Login = () => {
             onSelect={handleTutorSelect}
             className='text-primary-700 font-poppins-bold text-2xl'
           />
-        <TouchableOpacity activeOpacity={0.8}>
-          <MaterialIcons
-            name='keyboard-arrow-down'
-            size={24}
-            color={themeColors["neutral-300"]}
-          />
-        </TouchableOpacity>
       </View>
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
