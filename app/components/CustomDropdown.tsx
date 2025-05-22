@@ -1,9 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-    Pressable,
-    TouchableOpacity,
-    View
+  Pressable,
+  TouchableOpacity,
+  View
 } from "react-native";
 import CustomText from "./CustomText";
 
@@ -20,20 +20,10 @@ const CustomDropdown = ({ options, selected, onSelect, ...props }: {
   };
 
   return (
-    <View style={{ position: "relative" }}>
+    <View className="relative">
       <Pressable
         onPress={() => setVisible(!visible)}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-          backgroundColor: "white",
-          borderWidth: 1,
-          borderColor: "#d1d5db",
-          borderRadius: 8,
-        }}
+        className="flex-row items-center justify-between px-4 py-3 bg-neutral-100 border border-neutral-300 rounded-lg"
       >
         <CustomText {...props}>{selected}</CustomText>
         <MaterialIcons name={visible ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={24} color="gray" />
@@ -41,29 +31,13 @@ const CustomDropdown = ({ options, selected, onSelect, ...props }: {
 
       {visible && (
         <View
-          style={{
-            position: "absolute",
-            top: "100%",
-            left: 0,
-            right: 0,
-            backgroundColor: "white",
-            borderWidth: 1,
-            borderColor: "#d1d5db",
-            borderRadius: 8,
-            marginTop: 4,
-            zIndex: 10,
-          }}
+          className="absolute top-full left-0 right-0 bg-neutral-100 border border-neutral-300 rounded-lg mt-1 z-10"
         >
           {options.map((item: string, index: number) => (
             <TouchableOpacity
               key={index}
               onPress={() => handleSelect(item)}
-              style={{
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                borderBottomWidth: index !== options.length - 1 ? 1 : 0,
-                borderBottomColor: "#e5e7eb",
-              }}
+              className={`px-4 py-3 ${index !== options.length - 1 ? 'border-b border-neutral-300' : ''}`}
             >
               <CustomText>{item}</CustomText>
             </TouchableOpacity>
