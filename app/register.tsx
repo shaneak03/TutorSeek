@@ -71,7 +71,7 @@ const Register = () => {
           options={["student", "tutor"]}
           selected={isTutor ? "tutor" : "student"}
           onSelect={handleTutorSelect}
-          className='text-primary-700 font-poppins-bold text-2xl'
+          textClassName='text-primary-700 font-poppins-bold text-2xl'
         />
       </View>
       <View className='w-full'>

@@ -7,11 +7,11 @@ import {
 } from "react-native";
 import CustomText from "./CustomText";
 
-const CustomDropdown = ({ options, selected, onSelect, ...props }: {
+const CustomDropdown = ({ options, selected, onSelect, textClassName, ...props }: {
   options: string[];
   selected: string;
   onSelect: (value: string) => void;
-  className?: string;
+  textClassName?: string;
 }) => {
   const [visible, setVisible] = useState(false);
 
@@ -26,7 +26,7 @@ const CustomDropdown = ({ options, selected, onSelect, ...props }: {
         onPress={() => setVisible(!visible)}
         className="flex-row items-center justify-between px-4 py-3 bg-neutral-100 border border-neutral-300 rounded-lg"
       >
-        <CustomText {...props}>{selected}</CustomText>
+        <CustomText className={textClassName}>{selected}</CustomText>
         <MaterialIcons name={visible ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={24} color="gray" />
       </Pressable>
 
