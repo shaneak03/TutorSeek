@@ -1,4 +1,4 @@
-import { Text } from "react-native";
+import { Text, TextProps } from "react-native";
 import { twMerge } from "tailwind-merge";
 
 export default function CustomText({
@@ -8,7 +8,7 @@ export default function CustomText({
 }: {
   children: any;
   className?: string;
-}) {
+} & TextProps) {
   return (
     <Text
       className={twMerge(

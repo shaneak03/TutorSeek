@@ -2,12 +2,7 @@ import { supabase } from "@/utils/supabase";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import {
-  Pressable,
-  Text,
-  TouchableHighlight,
-  View
-} from "react-native";
+import { Pressable, Text, TouchableHighlight, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import CustomDropdown from "./components/CustomDropdown";
 import CustomText from "./components/CustomText";
@@ -23,7 +18,7 @@ const Login = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
-    let { data, error } = await supabase.auth.signInWithPassword({
+    let { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -37,16 +32,16 @@ const Login = () => {
     }
   };
 
-  const handleTutorSelect = async (value : string) => {
+  const handleTutorSelect = async (value: string) => {
     if (value === "tutor") {
       setIsTutor(true);
     } else if (value === "student") {
       setIsTutor(false);
     }
-  }
+  };
 
-  const handleForgetPw = () => {
-    //TODO
+  const handleForgetPw = async () => {
+    router.push("/forgotPassword");
   };
 
   const handleGoogleAuth = () => {
@@ -69,11 +64,11 @@ const Login = () => {
           <Text> Login as </Text>
         </CustomText>
         <CustomDropdown
-            options={["student", "tutor"]}
-            selected={isTutor ? "tutor" : "student"}
-            onSelect={handleTutorSelect}
-            textClassName='text-primary-700 font-poppins-bold text-2xl'
-          />
+          options={["student", "tutor"]}
+          selected={isTutor ? "tutor" : "student"}
+          onSelect={handleTutorSelect}
+          textClassName='text-primary-700 font-poppins-bold text-2xl'
+        />
       </View>
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
@@ -81,6 +76,7 @@ const Login = () => {
           value={email}
           onChangeText={setEmail}
           placeholder='Enter your email'
+          inputMode='email'
         />
       </View>
       <View className='w-full'>
