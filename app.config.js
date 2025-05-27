@@ -8,14 +8,22 @@ export default {
     userInterfaceStyle: "automatic",
     scheme: "tutorseek",
     owner: "shaneak03",
+    icon: "./assets/images/TutorSeek-logo.png", // General icon (used for iOS too)
+    ios: {
+      icon: "./assets/images/TutorSeek-logo.png",
+      supportsTablet: true
+    },
     android: {
       package: "com.shaneak03.TutorSeek",
       adaptiveIcon: {
-        foregroundImage: "./assets/images/adaptive-icon.png",
+        foregroundImage: "./assets/images/TutorSeek-logo.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
       versionCode: 1
+    },
+    web: {
+      favicon: "./assets/images/TutorSeek-logo.png"
     },
     extra: {
       // These values come from your .env file or from environment variables set in Expo dashboard or eas.json
