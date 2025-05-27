@@ -20,37 +20,57 @@ const Register = () => {
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
-      setErrorMessage("Passwords do not match");
-      setConfirmPassword("");
-      setPassword("");
+      return setErrorMessage("Passwords do not match");
     }
+
     let { data, error } = await supabase.auth.signUp({
       email,
       password,
     });
+
     if (error) {
       setErrorMessage(error.message);
-      setConfirmPassword("");
-      setPassword("");
-      console.log(error);
-    } else {
-      setConfirmPassword("");
-      setPassword("");
-      router.push("/(tabs)");
+      return console.log(error.message);
     }
+
+    //create user
+    const { error: userError } = await supabase
+      .from("users")
+      .insert([{ id: data.session?.user.id }]);
+    if (userError) return console.log(userError);
+
+    if (isTutor) {
+      const { error: tutorError } = await supabase
+        .from("tutors")
+        .insert([{ id: data.session?.user.id }]);
+      if (tutorError) console.log(tutorError);
+    } else {
+      const { error: studentError } = await supabase
+        .from("students")
+        .insert([{ id: data.session?.user.id }]);
+      if (studentError) console.log(studentError);
+    }
+
+    router.push("/(tabs)");
+    clearPwInputs();
   };
 
   const handleGoogleAuth = () => {
     //TODO
   };
-  
-  const handleTutorSelect = async (value : string) => {
+
+  const handleTutorSelect = async (value: string) => {
     if (value === "tutor") {
       setIsTutor(true);
     } else if (value === "student") {
       setIsTutor(false);
     }
-  }
+  };
+
+  const clearPwInputs = () => {
+    setConfirmPassword("");
+    setPassword("");
+  };
 
   const navToLogin = () => {
     router.push("/login");
@@ -96,15 +116,15 @@ const Register = () => {
           Confirm password
         </CustomText>
         <RoundTextInput
-          text={confirmPassword}
+          value={confirmPassword}
           onChangeText={setConfirmPassword}
           secureTextEntry={true}
           placeholder='Enter your password'
         />
       </View>
-      {errorMessage ? (
-        <CustomText className="text-red-500">{errorMessage}</CustomText>
-      ) : null}
+      {errorMessage && (
+        <CustomText className='text-red-500'>{errorMessage}</CustomText>
+      )}
       <LargeSolidButton
         buttonText={"Register"}
         onPress={handleRegister}
