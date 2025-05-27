@@ -1,15 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React from "react";
+import themeColors from "../themeColors";
 
 const _layout = () => {
   return (
     <Tabs
-      screenOptions={{ tabBarActiveTintColor: "#6c63ff" }}>
+      screenOptions={{
+        tabBarActiveTintColor: themeColors["primary-700"],
+        tabBarStyle: {
+          backgroundColor: themeColors["neutral-100"],
+        },
+      }}
+    >
       <Tabs.Screen
         name='index'
         options={{
-          title: "",
+          title: "Home",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name='home' size={size} color={color} />
@@ -19,7 +26,7 @@ const _layout = () => {
       <Tabs.Screen
         name='chat'
         options={{
-          title: "",
+          title: "Chats",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name='chatbubble' size={size} color={color} />
@@ -29,12 +36,11 @@ const _layout = () => {
       <Tabs.Screen
         name='profile'
         options={{
-          title: "",
+          title: "Profile",
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name='person' size={size} color={color} />
           ),
-
         }}
       />
     </Tabs>
