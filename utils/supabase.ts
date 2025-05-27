@@ -1,16 +1,25 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
+import Constants from "expo-constants";
 import "react-native-url-polyfill/auto";
 
-export const supabase = createClient(
-  process.env.EXPO_PUBLIC_SUPABASE_URL || "",
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || "",
-  {
-    auth: {
-      storage: AsyncStorage,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: false,
-    },
-  }
-);
+// First, check if extra exists
+const extra = Constants.expoConfig && Constants.expoConfig.extra ? Constants.expoConfig.extra : {};
+
+// Then get the variables or default to empty string
+const supabaseUrl = typeof extra.supabaseUrl === "string" ? extra.supabaseUrl : "";
+const supabaseAnonKey = typeof extra.supabaseAnonKey === "string" ? extra.supabaseAnonKey : "";
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn("Supabase environment variables are missing");
+}
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
+
