@@ -43,3 +43,12 @@ export interface Review {
         rating: number,
         description: string
 }
+
+export interface SubjectAndLevel {
+        subject_id: number
+        level_id: number
+}
+
+export interface TutorWithSubjectsAndLevels extends TutorProfile {
+        subjects_and_levels: SubjectAndLevel[]
+}

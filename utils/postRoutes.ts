@@ -1,4 +1,4 @@
-import { Level, Review, StudentProfile, Subject, TutorProfile, UserProfile } from "./models";
+import { Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
 import { supabase } from "./supabase";
 
 export const postUserProfile = async (profile : UserProfile) => {
@@ -13,7 +13,7 @@ export const postUserProfile = async (profile : UserProfile) => {
         
         return data;
     } catch (error) {
-        console.error("Error posting user profile", error)
+        console.error("Error posting user profile:", error)
         throw error;
     }
 }
@@ -30,7 +30,7 @@ export const postTutorProfile = async (profile : TutorProfile) => {
         
         return data;
     } catch (error) {
-        console.error("Error posting tutor profile", error)
+        console.error("Error posting tutor profile:", error)
         throw error;
     }
 }
@@ -47,7 +47,7 @@ export const postStudentProfile = async (profile : StudentProfile) => {
         
         return data;
     } catch (error) {
-        console.error("Error posting student profile", error)
+        console.error("Error posting student profile:", error)
         throw error;
     }
 }
@@ -65,7 +65,7 @@ export const updateUserProfile = async (profile : UserProfile) => {
         
         return data;
     } catch (error) {
-        console.error("Error updating user profile", error)
+        console.error("Error updating user profile:", error)
         throw error;
     }
 }
@@ -83,7 +83,7 @@ export const updateTutorProfile = async (profile : TutorProfile) => {
         
         return data;
     } catch (error) {
-        console.error("Error updating tutor profile", error)
+        console.error("Error updating tutor profile:", error)
         throw error;
     }
 }
@@ -101,7 +101,7 @@ export const updateStudentProfile = async (profile : StudentProfile) => {
         
         return data;
     } catch (error) {
-        console.error("Error updating student profile", error)
+        console.error("Error updating student profile:", error)
         throw error;
     }
 }
@@ -118,7 +118,7 @@ export const postSubject = async (subject : Subject) => {
         
         return data;
     } catch (error) {
-        console.error("Error posting subject", error)
+        console.error("Error posting subject:", error)
         throw error;
     }
 }
@@ -135,7 +135,7 @@ export const postLevel = async (level : Level) => {
         
         return data;
     } catch (error) {
-        console.error("Error posting level", error)
+        console.error("Error posting level:", error)
         throw error;
     }
 }
@@ -151,8 +151,27 @@ export const postReview = async (review : Review) => {
         }
         
         return data;
+        
     } catch (error) {
-        console.error("Error posting review", error)
+        console.error("Error posting review:", error)
         throw error;
     }
 }
+
+export const postTutorSubject = async (tutor_subject : TutorSubject) => {{
+    try {
+        const { data, error } = await supabase
+            .from("tutor_subjects")
+            .insert(tutor_subject)
+
+        if (error) {
+            throw error;
+        }
+
+        return data;
+
+    } catch (error) {
+        console.error("Error posting tutor subject:", error)
+        throw error;
+    }
+}}
