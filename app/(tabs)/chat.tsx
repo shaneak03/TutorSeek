@@ -1,13 +1,14 @@
-import React from "react";
-import { Text, useColorScheme, View } from "react-native";
+import React, { useContext } from "react";
+import { AuthContext } from "../_layout";
+import LoginModal from "../components/LoginModal";
 
 const Chat = () => {
-  const textColor = useColorScheme() === "dark" ? "white" : "black";
-  return (
-    <View>
-      <Text style={{ color: textColor }}>Chat</Text>
-    </View>
-  );
+  const { user } = useContext(AuthContext);
+
+  //get data and set it
+  // const [datas, setData] = useState([]);
+
+  if (!user) return <LoginModal />;
 };
 
 export default Chat;

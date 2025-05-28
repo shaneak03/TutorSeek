@@ -1,14 +1,14 @@
-import React from 'react';
-import { Text, useColorScheme, View } from 'react-native';
+import React, { useContext } from "react";
+import { AuthContext } from "../_layout";
+import LoginModal from "../components/LoginModal";
 
 const Profile = () => {
-  const textColor = useColorScheme() === "dark" ? "white" : "black";
-  
-  return (
-    <View>
-      <Text style={{ color: textColor }}>Profile</Text>
-    </View>
-  )
-}
+  const { user, setUser } = useContext(AuthContext);
 
-export default Profile
+  //get data and set it
+  // const [datas, setData] = useState([]);
+
+  if (!user) return <LoginModal />;
+};
+
+export default Profile;
