@@ -1,6 +1,7 @@
+import { Level, Review, Subject, TutorProfile, UserProfile } from "./models";
 import { supabase } from "./supabase";
 
-export const getAllTutors = async () => {
+export const getAllTutors = async (): Promise<TutorProfile[]> => {
   try {
     const { data, error } = await supabase
       .from("tutors")
@@ -10,13 +11,14 @@ export const getAllTutors = async () => {
       throw error;
     }
 
-    return data;
+    return data as TutorProfile[];
   } catch (error) {
     console.error("Error getting all tutors:", error);
     throw error;
   }
 };
 
+// KIV
 export const getTutorsBySubject = async (subject: string) => {
   try {
     const { data, error } = await supabase
@@ -35,7 +37,7 @@ export const getTutorsBySubject = async (subject: string) => {
   }
 }
 
-export const getTutorById = async (tutorId: string) => {
+export const getTutorById = async (tutorId: string): Promise<TutorProfile> => {
   try {
     const { data, error } = await supabase
       .from("tutors")
@@ -47,14 +49,14 @@ export const getTutorById = async (tutorId: string) => {
       throw error;
     }
 
-    return data;
+    return data as TutorProfile;
   } catch (error) {
     console.error("Error getting tutor by ID:", error);
     throw error;
   }
 }
 
-export const getPageOfTutors = async (page: number, pageSize: number) => {
+export const getPageOfTutors = async (page: number, pageSize: number): Promise<TutorProfile[]> => {
   try {
     const { data, error } = await supabase
       .from("tutors")
@@ -65,14 +67,15 @@ export const getPageOfTutors = async (page: number, pageSize: number) => {
       throw error;
     }
 
-    return data;
+    return data as TutorProfile[];
+
   } catch (error) {
     console.error("Error getting page of tutors:", error);
     throw error;
   }
 }
 
-export const getUserById = async (userId: string) => {
+export const getUserById = async (userId: string): Promise<UserProfile> => {
   try {
     const { data, error } = await supabase
       .from("users")
@@ -84,14 +87,14 @@ export const getUserById = async (userId: string) => {
       throw error;
     }
 
-    return data;
+    return data as UserProfile;
   } catch (error) {
     console.error("Error getting user by ID:", error);
     throw error;
   }
 }
 
-export const getLevels = async () => {
+export const getLevels = async (): Promise<Level[]> => {
   try {
     const { data, error } = await supabase
       .from("levels")
@@ -101,7 +104,7 @@ export const getLevels = async () => {
       throw error;
     }
 
-    return data;
+    return data as Level[];
 
   } catch (error) {
     console.error("Error getting levels:", error);
@@ -109,7 +112,7 @@ export const getLevels = async () => {
   }
 }
 
-export const getSubjects = async () => {
+export const getSubjects = async (): Promise<Subject[]> => {
   try {
     const { data, error } = await supabase
       .from("subjects")
@@ -119,7 +122,7 @@ export const getSubjects = async () => {
       throw error;
     }
 
-    return data;
+    return data as Subject[];
     
   } catch (error) {
     console.error("Error getting subjects:", error)
@@ -127,7 +130,7 @@ export const getSubjects = async () => {
   }
 }
 
-export const getReviewsByStudentId = async (studentId : string) => {
+export const getReviewsByStudentId = async (studentId : string): Promise<Review[]> => {
   try {
     const { data, error } = await supabase
       .from("reviews")
@@ -138,7 +141,7 @@ export const getReviewsByStudentId = async (studentId : string) => {
       throw error;
     }
 
-    return data; 
+    return data as Review[]; 
 
   } catch (error) {
     console.error("Error getting reviews by student id", error);
@@ -146,7 +149,7 @@ export const getReviewsByStudentId = async (studentId : string) => {
   }
 }
 
-export const getReviewsByTutorId = async (tutorId : string) => {
+export const getReviewsByTutorId = async (tutorId : string): Promise<Review[]> => {
   try {
     const { data, error } = await supabase
       .from("reviews")
@@ -157,7 +160,7 @@ export const getReviewsByTutorId = async (tutorId : string) => {
       throw error;
     }
 
-    return data; 
+    return data as Review[]; 
 
   } catch (error) {
     console.error("Error getting reviews by tutor id", error);
@@ -165,7 +168,7 @@ export const getReviewsByTutorId = async (tutorId : string) => {
   }
 }
 
-export const getSubjectById = async (subjectId : string) => {
+export const getSubjectById = async (subjectId : string): Promise<Subject> => {
   try {
     const { data, error } = await supabase
       .from("subjects")
@@ -177,7 +180,7 @@ export const getSubjectById = async (subjectId : string) => {
       throw error;
     }
 
-    return data; 
+    return data as Subject; 
 
   } catch (error) {
     console.error("Error getting subject by id", error);
@@ -185,7 +188,7 @@ export const getSubjectById = async (subjectId : string) => {
   }
 }
 
-export const getLevelById = async (levelId : string) => {
+export const getLevelById = async (levelId : string): Promise<Level> => {
   try {
     const { data, error } = await supabase
       .from("levels")
@@ -197,7 +200,7 @@ export const getLevelById = async (levelId : string) => {
       throw error;
     }
 
-    return data; 
+    return data as Level; 
 
   } catch (error) {
     console.error("Error getting level by id", error);
