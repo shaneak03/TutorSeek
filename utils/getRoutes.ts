@@ -19,7 +19,7 @@ export const getAllTutors = async (): Promise<TutorProfile[]> => {
 };
 
 // KIV
-export const getTutorsBySubject = async (subject: string) => {
+export const getTutorsBySubject = async (subject : string) => {
   try {
     const { data, error } = await supabase
       .from("tutors")
@@ -37,7 +37,7 @@ export const getTutorsBySubject = async (subject: string) => {
   }
 }
 
-export const getTutorById = async (tutorId: string): Promise<TutorProfile> => {
+export const getTutorById = async (tutorId : string): Promise<TutorProfile> => {
   try {
     const { data, error } = await supabase
       .from("tutors")
@@ -56,7 +56,7 @@ export const getTutorById = async (tutorId: string): Promise<TutorProfile> => {
   }
 }
 
-export const getPageOfTutors = async (page: number, pageSize: number): Promise<TutorProfile[]> => {
+export const getPageOfTutors = async (page : number, pageSize : number): Promise<TutorProfile[]> => {
   try {
     const { data, error } = await supabase
       .from("tutors")
@@ -75,7 +75,7 @@ export const getPageOfTutors = async (page: number, pageSize: number): Promise<T
   }
 }
 
-export const getUserById = async (userId: string): Promise<UserProfile> => {
+export const getUserById = async (userId : string): Promise<UserProfile> => {
   try {
     const { data, error } = await supabase
       .from("users")
