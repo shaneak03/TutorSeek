@@ -7,10 +7,6 @@ export interface TutorProfile {
 
 export interface StudentProfile {
         id: string,
-        name: string,
-        email: string,
-        enrolledCourses: string[],
-        completedCourses: string[]
 }
 
 export interface UserProfile {
