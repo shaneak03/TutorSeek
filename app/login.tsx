@@ -1,9 +1,10 @@
 import { supabase } from "@/utils/supabase";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Pressable, Text, TouchableHighlight, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AuthContext } from "./_layout";
 import CustomDropdown from "./components/CustomDropdown";
 import CustomText from "./components/CustomText";
 import LargeSolidButton from "./components/LargeSolidButton";
@@ -15,10 +16,11 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [isTutor, setIsTutor] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const { setUser } = useContext(AuthContext)
   const router = useRouter();
 
   const handleLogin = async () => {
-    let { error } = await supabase.auth.signInWithPassword({
+    let { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -29,6 +31,7 @@ const Login = () => {
       setPassword("");
     } else {
       router.push("/(tabs)");
+      setUser(data.session?.user);
     }
   };
 

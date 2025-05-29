@@ -1,9 +1,10 @@
 import { supabase } from "@/utils/supabase";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Text, TouchableHighlight, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AuthContext } from "./_layout";
 import CustomDropdown from "./components/CustomDropdown";
 import CustomText from "./components/CustomText";
 import LargeSolidButton from "./components/LargeSolidButton";
@@ -16,6 +17,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isTutor, setIsTutor] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const { setUser } = useContext(AuthContext)
   const router = useRouter();
 
   const handleRegister = async () => {
@@ -50,6 +52,10 @@ const Register = () => {
         .insert([{ id: data.session?.user.id }]);
       if (studentError) console.log(studentError);
     }
+
+    // Update Auth Context
+    setUser(data.session?.user);
+   
 
     router.push("/(tabs)");
     clearPwInputs();
