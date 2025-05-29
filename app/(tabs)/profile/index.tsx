@@ -92,7 +92,7 @@ const Profile = () => {
           </View>
         )}
         <CustomText
-          onPress={() => handleLogout}
+          onPress={handleLogout}
           className='underline text-center text-neutral-300'
         >
           Sign out
