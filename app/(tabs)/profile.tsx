@@ -21,28 +21,21 @@ const Profile = () => {
   const [data, setData] = useState<UserProfile | null>(null);
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
-
-  const getData = async () => {
-    const result = await getUserById(user.id)
-    setData(result)
-  }
-
-  const handleFirstName = async () => {
-
-  }
   
   useEffect(() => {
     if (!user) return;
-    else {
-      getData()
-      // // Logging for testing only
-      // console.log(data)
-      if (data) {
-        setFirstName(data.first_name);
-        setLastName(data.last_name);
+
+    const fetchData = async () => {
+      const result = await getUserById(user.id);
+      if (result) {
+        setData(result);
+        setFirstName(result.first_name); 
+        setLastName(result.last_name);
       }
-    }
-  })
+    };
+
+    fetchData();
+  }, [user]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
