@@ -17,7 +17,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isTutor, setIsTutor] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { setUser } = useContext(AuthContext)
+  const { setUser } = useContext(AuthContext);
   const router = useRouter();
 
   const handleRegister = async () => {
@@ -35,10 +35,12 @@ const Register = () => {
       return console.log(error.message);
     }
 
+    const role = isTutor ? "tutor" : "student";
+
     //create user
     const { error: userError } = await supabase
       .from("users")
-      .insert([{ id: data.session?.user.id }]);
+      .insert([{ id: data.session?.user.id, role }]);
     if (userError) return console.log(userError);
 
     if (isTutor) {
@@ -55,7 +57,6 @@ const Register = () => {
 
     // Update Auth Context
     setUser(data.session?.user);
-   
 
     router.push("/(tabs)");
     clearPwInputs();
