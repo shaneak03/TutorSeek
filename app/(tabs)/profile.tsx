@@ -1,5 +1,6 @@
 import { getUserById } from "@/utils/getRoutes";
 import { UserProfile } from "@/utils/models";
+import { updateUserProfile } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
@@ -43,6 +44,15 @@ const Profile = () => {
     router.push("/login");
   }
 
+  const handleSave = async () => {
+    if (data) {
+      data.first_name = firstName;
+      data.last_name = lastName;
+      updateUserProfile(data);
+    }
+    router.push("/")
+  }
+
   if (!user) return <LoginModal />;
   else return (
     <SafeAreaView className='flex-1 justify-center items-center gap-4 px-8 bg-neutral-100'>
@@ -72,12 +82,14 @@ const Profile = () => {
           placeholder='Enter your last name'
         />
       </View>
-      <View className='flex-1 gap-4 justify-center items-center p-8'>
-        <LargeSolidButton
-          buttonText='Logout'
-          onPress={handleLogout}
-        />
-      </View>
+      <LargeSolidButton
+        buttonText='Save'
+        onPress={handleSave}
+      />
+      <LargeSolidButton
+        buttonText='Logout'
+        onPress={handleLogout}
+      />
     </SafeAreaView>
   );
 };
