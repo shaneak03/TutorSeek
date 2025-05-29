@@ -5,7 +5,7 @@ import { supabase } from "@/utils/supabase";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
 import CustomText from "../components/CustomText";
@@ -56,40 +56,42 @@ const Profile = () => {
   if (!user) return <LoginModal />;
   else return (
     <SafeAreaView className='flex-1 justify-center items-center gap-4 px-8 bg-neutral-100'>
-      <View className='flex-1 gap-4 justify-center items-center p-8'>
-        <CustomText className='font-poppins-bold text-3xl'>
-          {data?.role === "tutor" ? "Tutor" : "Student"}
-        </CustomText>
-        <Image
-          source={require("../../assets/images/profile_icon.jpg")}
-          style={{ width: 200, height: 200, borderRadius: 100 }}
-          contentFit='cover'
+      <ScrollView>
+        <View className='flex-1 gap-4 justify-center items-center p-8'>
+          <CustomText className='font-poppins-bold text-3xl'>
+            {data?.role === "tutor" ? "Tutor" : "Student"}
+          </CustomText>
+          <Image
+            source={require("../../assets/images/profile_icon.jpg")}
+            style={{ width: 200, height: 200, borderRadius: 100 }}
+            contentFit='cover'
+          />
+        </View>
+        <View className='w-full'>
+          <CustomText className='font-poppins-semibold mb-2'>First Name</CustomText>
+          <RoundTextInput
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder='Enter your first name'
+          />
+        </View>
+        <View className='w-full'>
+          <CustomText className='font-poppins-semibold mb-2'>Last Name</CustomText>
+          <RoundTextInput
+            value={lastName}
+            onChangeText={setLastName}
+            placeholder='Enter your last name'
+          />
+        </View>
+        <LargeSolidButton
+          buttonText='Save'
+          onPress={handleSave}
         />
-      </View>
-      <View className='w-full'>
-        <CustomText className='font-poppins-semibold mb-2'>First Name</CustomText>
-        <RoundTextInput
-          value={firstName}
-          onChangeText={setFirstName}
-          placeholder='Enter your first name'
+        <LargeSolidButton
+          buttonText='Logout'
+          onPress={handleLogout}
         />
-      </View>
-      <View className='w-full'>
-        <CustomText className='font-poppins-semibold mb-2'>Last Name</CustomText>
-        <RoundTextInput
-          value={lastName}
-          onChangeText={setLastName}
-          placeholder='Enter your last name'
-        />
-      </View>
-      <LargeSolidButton
-        buttonText='Save'
-        onPress={handleSave}
-      />
-      <LargeSolidButton
-        buttonText='Logout'
-        onPress={handleLogout}
-      />
+      </ScrollView>
     </SafeAreaView>
   );
 };
