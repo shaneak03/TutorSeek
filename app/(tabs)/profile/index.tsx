@@ -1,7 +1,8 @@
 import LargeSolidButton from "@/app/components/LargeSolidButton";
 import ProfileNav from "@/app/components/ProfileNav";
-import { getStudentById, getTutorById, getUserById } from "@/utils/getRoutes";
-import { StudentProfile, TutorProfile, UserProfile } from "@/utils/models";
+import TutorProfileDetails from "@/app/components/TutorProfileDetails";
+import { getTutorById, getUserById } from "@/utils/getRoutes";
+import { TutorProfile, UserProfile } from "@/utils/models";
 import { updateTutorProfile, updateUserProfile } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
 import { useIsFocused } from "@react-navigation/native";
@@ -32,9 +33,9 @@ const Profile = () => {
     hourly_rate: 0,
     is_published: false,
   });
-  const [studentData, setStudentData] = useState<StudentProfile>({
-    id: "",
-  });
+  // const [studentData, setStudentData] = useState<StudentProfile>({
+  //   id: "",
+  // });
   const [isEditing, setIsEditing] = useState(false);
 
   // Reset editing mode only when screen gains focus
@@ -74,15 +75,15 @@ const Profile = () => {
 
       fetchTutorData();
     } else if (userData.role === "student") {
-      const fetchStudentData = async () => {
-        const result = await getStudentById(userData.id);
-        if (result) {
-          setStudentData(result);
-        }
-      };
-      if (isFocused) {
-        fetchStudentData();
-      }
+      // const fetchStudentData = async () => {
+      //   const result = await getStudentById(userData.id);
+      //   if (result) {
+      //     setStudentData(result);
+      //   }
+      // };
+      // if (isFocused) {
+      //   fetchStudentData();
+      // }
     }
   }, [userData.id, isFocused]);
 
@@ -106,7 +107,7 @@ const Profile = () => {
     }
   };
 
-  const bottomPadding = isEditing ? "pb-24" : "pb-6";
+  const bottomPadding = isEditing ? "pb-28" : "pb-8";
 
   if (!user) return <LoginModal />;
   else
@@ -114,7 +115,7 @@ const Profile = () => {
       <SafeAreaView className='flex-1 px-8 bg-neutral-100' edges={["top"]}>
         <ProfileNav />
         <ScrollView
-          className='flex-1'
+          className='flex-1 pt-4'
           contentContainerClassName={"items-center gap-4 " + bottomPadding}
           showsVerticalScrollIndicator={false}
         >
@@ -132,13 +133,16 @@ const Profile = () => {
 
           <CoreProfileDetails
             profileData={userData}
-            studentData={studentData}
-            tutorData={tutorData}
             setProfileData={setUserData}
-            setTutorData={setTutorData}
-            setStudentData={setStudentData}
             isEditing={isEditing}
           />
+          {userData.role === "tutor" && (
+            <TutorProfileDetails
+              tutorData={tutorData}
+              setTutorData={setTutorData}
+              isEditing={isEditing}
+            />
+          )}
 
           <CustomText
             onPress={handleLogout}

@@ -17,6 +17,7 @@ export default function Reviews() {
     role: "student",
   });
 
+  //TODO: GET REVIEWS NOT USER DATA
   useEffect(() => {
     if (!user) return;
 
@@ -31,7 +32,7 @@ export default function Reviews() {
   }, [user]);
 
   return (
-    <SafeAreaView className='flex-1 bg-neutral-100 px-8 py-4'>
+    <SafeAreaView className='flex-1 bg-neutral-100 px-8'>
       {userData.role === "tutor" && <TutorTopNav />}
       <ScrollView
         className='flex-1 '

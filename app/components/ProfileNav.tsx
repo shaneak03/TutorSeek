@@ -13,7 +13,7 @@ export default function ProfileNav() {
   };
 
   return (
-    <View className=' py-4 flex-row justify-center items-center gap-4'>
+    <View className=' py-4 flex-row justify-center items-center gap-4 border-neutral-300 border-b-hairline'>
       <HollowButton
         buttonText='Account'
         inactive={pathName !== "/profile"}
