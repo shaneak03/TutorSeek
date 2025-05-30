@@ -9,7 +9,6 @@ import { Stack } from "expo-router";
 import { createContext, useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./global.css";
-import themeColors from "./themeColors";
 
 export const AuthContext = createContext<any>(null);
 
@@ -38,18 +37,9 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <Stack
           screenOptions={{
-            headerStyle: {
-              backgroundColor: themeColors["neutral-100"],
-            },
-            headerTintColor: themeColors["neutral-900"], //text/icons
-            headerShadowVisible: false, // removes the bottom border
+            headerShown: false,
           }}
-        >
-          <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
-          <Stack.Screen name='login' options={{ headerShown: false }} />
-          <Stack.Screen name='register' options={{ headerShown: false }} />
-          <Stack.Screen name='forgotPassword' options={{ title: "" }} />
-        </Stack>
+        />
       </SafeAreaProvider>
     </AuthContext.Provider>
   );

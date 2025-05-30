@@ -4,12 +4,12 @@ import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import { Text, TouchableHighlight, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthContext } from "./_layout";
-import CustomDropdown from "./components/CustomDropdown";
-import CustomText from "./components/CustomText";
-import LargeSolidButton from "./components/LargeSolidButton";
-import RoundTextInput from "./components/RoundedTextInput";
-import themeColors from "./themeColors";
+import { AuthContext } from "../_layout";
+import CustomDropdown from "../components/CustomDropdown";
+import CustomText from "../components/CustomText";
+import LargeSolidButton from "../components/LargeSolidButton";
+import RoundTextInput from "../components/RoundedTextInput";
+import themeColors from "../themeColors";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -86,7 +86,7 @@ const Register = () => {
   return (
     <SafeAreaView className='flex-1 justify-center items-center gap-4 px-8 bg-neutral-100'>
       <Image
-        source={require("../assets/images/auth-image.svg")}
+        source={require("../../assets/images/auth-image.svg")}
         style={{ width: 240, height: 180 }}
         contentFit='cover'
       />
@@ -149,7 +149,7 @@ const Register = () => {
         underlayColor={themeColors["neutral-200"]}
       >
         <Image
-          source={require("../assets/images/google.svg")}
+          source={require("../../assets/images/google.svg")}
           style={{ width: 24, height: 24 }}
           contentFit='cover'
         />

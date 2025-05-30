@@ -1,9 +1,9 @@
 import { supabase } from "@/utils/supabase";
 import { useState } from "react";
 import { View } from "react-native";
-import CustomText from "./components/CustomText";
-import LargeSolidButton from "./components/LargeSolidButton";
-import RoundTextInput from "./components/RoundedTextInput";
+import CustomText from "../components/CustomText";
+import LargeSolidButton from "../components/LargeSolidButton";
+import RoundTextInput from "../components/RoundedTextInput";
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState("");

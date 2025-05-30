@@ -33,7 +33,7 @@ export default function Reviews() {
 
   return (
     <SafeAreaView className='flex-1 bg-neutral-100 px-8'>
-      {userData.role === "tutor" && <TutorTopNav />}
+      <TutorTopNav />
       <ScrollView
         className='flex-1 '
         contentContainerClassName='flex-1 justify-center items-center'
