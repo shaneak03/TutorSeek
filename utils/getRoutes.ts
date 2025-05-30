@@ -1,4 +1,4 @@
-import { Level, Review, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
+import { Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
 import { supabase } from "./supabase";
 
 export const getAllTutors = async (): Promise<TutorProfile[]> => {
@@ -149,6 +149,25 @@ export const getUserById = async (userId : string) : Promise<UserProfile> => {
     return data as UserProfile;
   } catch (error) {
     console.error("Error getting user by ID:", error);
+    throw error;
+  }
+}
+
+export const getStudentById = async (studentId : string) : Promise<StudentProfile> => {
+  try {
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .eq("id", studentId)
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data as StudentProfile;
+  } catch (error) {
+    console.error("Error getting student by ID:", error);
     throw error;
   }
 }
