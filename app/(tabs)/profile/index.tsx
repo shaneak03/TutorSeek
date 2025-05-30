@@ -7,10 +7,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useContext, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../../_layout";
 import CoreProfileDetails from "../../components/CoreProfileDetails";
 import CustomText from "../../components/CustomText";
@@ -21,7 +18,6 @@ import ProfileIcon from "../../components/ProfileIcon";
 const Profile = () => {
   const router = useRouter();
   const isFocused = useIsFocused();
-  const insets = useSafeAreaInsets();
   const { user, setUser } = useContext(AuthContext);
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
@@ -34,11 +30,11 @@ const Profile = () => {
     id: "",
     bio: "",
     hourly_rate: 0,
-    is_published: false
-  })
+    is_published: false,
+  });
   const [studentData, setStudentData] = useState<StudentProfile>({
-    id: ""
-  })
+    id: "",
+  });
   const [isEditing, setIsEditing] = useState(false);
 
   // Reset editing mode only when screen gains focus
@@ -59,33 +55,35 @@ const Profile = () => {
       }
     };
 
-    fetchUserData()
-  }, [user]);
+    if (isFocused) {
+      fetchUserData();
+    }
+  }, [user, isFocused]);
 
   // Fetch tutor or student data when userData changes:
   useEffect(() => {
-    if (!user || !userData || userData.id === "") return;
+    if (userData.id === "") return;
 
     if (userData.role === "tutor") {
       const fetchTutorData = async () => {
-        const result = await getTutorById(userData.id)
+        const result = await getTutorById(userData.id);
         if (result) {
-          setTutorData(result)
+          setTutorData(result);
         }
       };
 
       fetchTutorData();
     } else if (userData.role === "student") {
       const fetchStudentData = async () => {
-        const result = await getStudentById(userData.id)
+        const result = await getStudentById(userData.id);
         if (result) {
-          setStudentData(result)
+          setStudentData(result);
         }
       };
 
       fetchStudentData();
     }
-  }, [user, userData]);
+  }, [userData.id]);
 
   const handleLogout = async () => {
     router.push("/login");
@@ -96,10 +94,15 @@ const Profile = () => {
   const handleSave = async () => {
     setIsEditing(false);
     updateUserProfile(userData);
-    if ((userData.first_name !== "" || userData.last_name !== "") && tutorData.hourly_rate !== 0) { 
-      tutorData.is_published = true;
+    if (userData.role === "tutor") {
+      //required tutor fields to be published
+      if (userData.first_name !== "" && tutorData.hourly_rate !== 0) {
+        tutorData.is_published = true;
+      } else {
+        tutorData.is_published = false;
+      }
+      updateTutorProfile(tutorData);
     }
-    updateTutorProfile(tutorData);
   };
 
   if (!user) return <LoginModal />;
@@ -110,6 +113,7 @@ const Profile = () => {
         <ScrollView
           className='flex-1 '
           contentContainerClassName='items-center gap-4'
+          showsVerticalScrollIndicator={false}
         >
           <CustomText className='font-poppins-bold text-xl'>
             {userData?.role === "tutor" ? "Tutor" : "Student"}
@@ -132,6 +136,7 @@ const Profile = () => {
             setStudentData={setStudentData}
             isEditing={isEditing}
           />
+
           <CustomText
             onPress={handleLogout}
             className='underline text-center text-neutral-300'
