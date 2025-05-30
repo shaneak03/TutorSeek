@@ -1,17 +1,27 @@
-import { useRouter } from "expo-router";
+import { usePathname, useRouter } from "expo-router";
 import { View } from "react-native";
 import HollowButton from "./HollowButton";
 
 export default function TutorTopNav() {
   const router = useRouter();
+  const pathName = usePathname();
+
+  const routeTo = (targetPath: string) => {
+    if (pathName !== targetPath) {
+      router.push(targetPath);
+    }
+  };
 
   return (
     <View className=' py-4 flex-row justify-center items-center gap-4'>
-      <HollowButton buttonText='Account' onPress={() => router.push("/")} />
+      <HollowButton 
+        buttonText='Account' 
+        inactive={pathName !== "/profile"}
+        onPress={() => routeTo("/profile")} />
       <HollowButton
         buttonText='Reviews'
-        inactive={true}
-        onPress={() => router.push("app/(tabs)/profile/reviews")}
+        inactive={pathName !== "/profile/reviews"}
+        onPress={() => routeTo("/profile/reviews")}
       />
     </View>
   );
