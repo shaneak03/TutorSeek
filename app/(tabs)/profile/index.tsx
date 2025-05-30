@@ -1,4 +1,5 @@
-import TutorTopNav from "@/app/components/TutorTopNav";
+import LargeSolidButton from "@/app/components/LargeSolidButton";
+import ProfileNav from "@/app/components/ProfileNav";
 import { getStudentById, getTutorById, getUserById } from "@/utils/getRoutes";
 import { StudentProfile, TutorProfile, UserProfile } from "@/utils/models";
 import { updateTutorProfile, updateUserProfile } from "@/utils/postRoutes";
@@ -11,7 +12,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../../_layout";
 import CoreProfileDetails from "../../components/CoreProfileDetails";
 import CustomText from "../../components/CustomText";
-import LargeSolidButton from "../../components/LargeSolidButton";
 import LoginModal from "../../components/LoginModal";
 import ProfileIcon from "../../components/ProfileIcon";
 
@@ -80,10 +80,11 @@ const Profile = () => {
           setStudentData(result);
         }
       };
-
-      fetchStudentData();
+      if (isFocused) {
+        fetchStudentData();
+      }
     }
-  }, [userData.id]);
+  }, [userData.id, isFocused]);
 
   const handleLogout = async () => {
     router.push("/login");
@@ -105,14 +106,16 @@ const Profile = () => {
     }
   };
 
+  const bottomPadding = isEditing ? "pb-24" : "pb-6";
+
   if (!user) return <LoginModal />;
   else
     return (
-      <SafeAreaView className='flex-1 bg-neutral-100 px-8 py-4'>
-        {userData.role === "tutor" && <TutorTopNav />}
+      <SafeAreaView className='flex-1 px-8 bg-neutral-100' edges={["top"]}>
+        <ProfileNav />
         <ScrollView
-          className='flex-1 '
-          contentContainerClassName='items-center gap-4'
+          className='flex-1'
+          contentContainerClassName={"items-center gap-4 " + bottomPadding}
           showsVerticalScrollIndicator={false}
         >
           <CustomText className='font-poppins-bold text-xl'>
