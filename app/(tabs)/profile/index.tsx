@@ -96,6 +96,9 @@ const Profile = () => {
   const handleSave = async () => {
     setIsEditing(false);
     updateUserProfile(userData);
+    if ((userData.first_name !== "" || userData.last_name !== "") && tutorData.hourly_rate !== 0) { 
+      tutorData.is_published = true;
+    }
     updateTutorProfile(tutorData);
   };
 
