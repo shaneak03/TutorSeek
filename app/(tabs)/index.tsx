@@ -1,5 +1,7 @@
+import { getAllTutors } from "@/utils/getRoutes";
+import { TutorProfile } from "@/utils/models";
 import { useRouter } from "expo-router";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
@@ -10,9 +12,21 @@ import TutorCard from "../components/TutorCard";
 const Index = () => {
   const router = useRouter();
   const { user } = useContext(AuthContext);
+  const [tutors, setTutors] = useState<TutorProfile[]>([]);
+  
+  useEffect(() => {
+    if (!user) return
 
-  //get data and set it
-  // const [datas, setData] = useState([]);
+    const fetchTutorData = async () => {
+      const result = await getAllTutors();
+      console.log(result)
+      if (result) {
+        setTutors(result);
+      }
+    };
+
+    fetchTutorData()
+  }, [user])
 
   if (!user) return <LoginModal />;
   else
@@ -22,12 +36,10 @@ const Index = () => {
           <CustomText>TODO: HEADER</CustomText>
         </View>
         <ScrollView className='h-full'>
-          <TutorCard />
-          <TutorCard />
-          <TutorCard />
-          <TutorCard />
-          <TutorCard />
-          <TutorCard />
+          {tutors.map((tutor, index) => tutor.is_published
+            ? <TutorCard key={index} tutor={tutor} />
+            : null
+          )}
         </ScrollView>
       </SafeAreaView>
     );

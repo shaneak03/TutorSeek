@@ -1,10 +1,40 @@
+import { getUserById } from "@/utils/getRoutes";
+import { TutorProfile, UserProfile } from "@/utils/models";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { Image } from "expo-image";
+import { useEffect, useState } from "react";
 import { View } from "react-native";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 
-const TutorCard = () => {
+const TutorCard = ({
+  tutor, 
+  ...props
+} : {
+  tutor : TutorProfile
+}) => {
+  const [userData, setUserData] = useState<UserProfile>(
+    {
+      id: "",
+      first_name: "",
+      last_name: "",
+      location: "",
+      role: "tutor",
+    }
+  )
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const result =  await getUserById(tutor.id)
+      if (result) {
+        setUserData(result)
+      }
+    };
+
+    if (tutor) {
+      fetchUserData();
+    }
+  }, [tutor.id])
   return (
     <View className='p-4 flex-row items-center gap-4 border-b-hairline border-neutral-300'>
       <Image
@@ -15,13 +45,13 @@ const TutorCard = () => {
       <View className='flex-grow p-2'>
         <View>
           <CustomText className='font-poppins-bold text-xl'>
-            James J.
+            {userData.first_name + " " + userData.last_name}
           </CustomText>
           <CustomText>O-Level . A-level</CustomText>
         </View>
         <View className='flex-row justify-between items-center mt-2'>
           <View>
-            <CustomText className='font-poppins-bold'>SGD 45</CustomText>
+            <CustomText className='font-poppins-bold'>SGD {tutor.hourly_rate}</CustomText>
             <CustomText>60-min lesson</CustomText>
           </View>
           <View>
