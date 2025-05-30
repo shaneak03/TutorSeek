@@ -20,10 +20,18 @@ const Login = () => {
   const router = useRouter();
 
   const handleLogin = async () => {
+    if (!(await checkUserExists())) {
+      setErrorMessage("No such " + (isTutor ? "tutor" : "student"));
+      setEmail("");
+      setPassword("");
+      return;
+    }
+
     let { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
     if (error) {
       console.log(error);
       setErrorMessage(error.message);
@@ -33,6 +41,17 @@ const Login = () => {
       router.push("/(tabs)");
       setUser(data.session?.user);
     }
+  };
+
+  const checkUserExists = async () => {
+    const { data } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", email)
+      .eq("role", isTutor ? "tutor" : "student")
+      .maybeSingle(); // returns null if no match
+
+    return data !== null;
   };
 
   const handleTutorSelect = async (value: string) => {

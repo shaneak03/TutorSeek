@@ -26,6 +26,7 @@ const Profile = () => {
     last_name: "",
     location: "",
     role: "student",
+    email: "",
   });
   const [tutorData, setTutorData] = useState<TutorProfile>({
     id: "",
@@ -107,7 +108,7 @@ const Profile = () => {
     }
   };
 
-  const bottomPadding = isEditing ? "pb-28" : "pb-8";
+  const bottomPadding = isEditing ? "pb-26" : "pb-8";
 
   if (!user) return <LoginModal />;
   else

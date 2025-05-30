@@ -37,26 +37,28 @@ const Register = () => {
 
     const role = isTutor ? "tutor" : "student";
 
+    const userData = data.session?.user;
+
     //create user
     const { error: userError } = await supabase
       .from("users")
-      .insert([{ id: data.session?.user.id, role }]);
+      .insert([{ id: userData?.id, role, email: userData?.email }]);
     if (userError) return console.log(userError);
 
     if (isTutor) {
       const { error: tutorError } = await supabase
         .from("tutors")
-        .insert([{ id: data.session?.user.id }]);
+        .insert([{ id: userData?.id }]);
       if (tutorError) console.log(tutorError);
     } else {
       const { error: studentError } = await supabase
         .from("students")
-        .insert([{ id: data.session?.user.id }]);
+        .insert([{ id: userData?.id }]);
       if (studentError) console.log(studentError);
     }
 
     // Update Auth Context
-    setUser(data.session?.user);
+    setUser(userData);
 
     router.push("/(tabs)");
     clearPwInputs();
