@@ -34,7 +34,7 @@ const TutorCard = ({
     if (tutor) {
       fetchUserData();
     }
-  }, [tutor.id])
+  }, [tutor])
   return (
     <View className='p-4 flex-row items-center gap-4 border-b-hairline border-neutral-300'>
       <Image
