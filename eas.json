@@ -9,6 +9,9 @@
       "distribution": "internal"
     },
     "preview": {
+      "env": {
+        "EXPO_IGNORE_LIGHTNING_CSS": "true"
+      },
       "distribution": "internal",
       "android": {
         "buildType": "apk"
