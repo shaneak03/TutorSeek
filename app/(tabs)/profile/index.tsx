@@ -108,7 +108,7 @@ const Profile = () => {
     }
   };
 
-  const bottomPadding = isEditing ? "pb-26" : "pb-8";
+  const bottomPadding = isEditing ? "pb-24" : "pb-8";
 
   if (!user) return <LoginModal />;
   else

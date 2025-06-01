@@ -42,8 +42,8 @@ const Index = () => {
   else
     return (
       <SafeAreaView className=' bg-neutral-100'>
-        <View className='h-[100] flex justify-center items-center border-b-hairline border-neutral-300'>
-          <CustomText>TODO: HEADER</CustomText>
+        <View className='h-[70] flex justify-center items-center border-b-hairline border-neutral-300'>
+          <CustomText>Home</CustomText>
         </View>
         <ScrollView 
           className='h-full'
