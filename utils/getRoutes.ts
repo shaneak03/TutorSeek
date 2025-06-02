@@ -321,3 +321,22 @@ export const getChatMessagesByChatId = async (chatId : number) : Promise<ChatMes
     throw error;
   }
 }
+
+export const getChatMessagesByChatIdAndPages = async (chatId : number, page : number, pageSize : number) : Promise<ChatMessage[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("chat_id", chatId)
+      .range((page - 1) * pageSize, page * pageSize - 1);
+
+    if (error) {
+      throw error;
+    }
+
+    return data as ChatMessage[];
+  } catch (error) {
+    console.error("Error getting chat messages by chat ID and pages:", error);
+    throw error;
+  }
+}

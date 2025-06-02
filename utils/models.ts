@@ -66,6 +66,6 @@ export interface ChatMessage {
 export interface Chat {
   id: number;
   created_at: Date;
-  user1_id: string;
-  user2_id: string;
+  tutor_id: string;
+  student_id: string;
 }

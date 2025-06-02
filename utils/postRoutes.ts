@@ -1,4 +1,4 @@
-import { ChatMessage, Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
+import { Chat, ChatMessage, Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
 import { supabase } from "./supabase";
 
 export const postUserProfile = async (profile : UserProfile) => {
@@ -162,7 +162,7 @@ export const postTutorSubject = async (tutor_subject : TutorSubject) => {{
     try {
         const { data, error } = await supabase
             .from("tutor_subjects")
-            .insert(tutor_subject)
+            .insert(tutor_subject);
 
         if (error) {
             throw error;
@@ -176,12 +176,11 @@ export const postTutorSubject = async (tutor_subject : TutorSubject) => {{
     }
 }}
 
-export const createChat = async (id1: string, id2: string) => {
-    const ids = [id1, id2].sort();
+export const createChat = async (chat : Chat) => {
     try {
         const { data, error } = await supabase
             .from("chats")
-            .insert({ user1_id: ids[0], user2_id: ids[1] })
+            .insert(chat);
 
         if (error) {
             throw error;
