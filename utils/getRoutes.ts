@@ -291,7 +291,7 @@ export const getChatsByUserId = async (userId : string) : Promise<Chat[]> => {
     const { data, error } = await supabase
       .from("chats")
       .select("*")
-      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+      .or(`tutor_id.eq.${userId},student_id.eq.${userId}`);
 
     if (error) {
       throw error;
