@@ -197,7 +197,7 @@ export const createChat = async (id1: string, id2: string) => {
 export const postChatMessage = async (message: ChatMessage) => {
     try {
         const { data, error } = await supabase
-            .from("chat_messages")
+            .from("messages")
             .insert(message);
 
         if (error) {
