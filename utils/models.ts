@@ -53,3 +53,19 @@ export interface SubjectAndLevel {
 export interface TutorWithSubjectsAndLevels extends TutorProfile {
   subjects_and_levels: SubjectAndLevel[];
 }
+
+export interface ChatMessage {
+  id: number;
+  created_at: Date;
+  sender_id: string;
+  recipient_id: string;
+  content: string;
+  chat_id: number;
+}
+
+export interface Chat {
+  id: number;
+  created_at: Date;
+  user1_id: string;
+  user2_id: string;
+}

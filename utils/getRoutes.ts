@@ -1,4 +1,4 @@
-import { Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
+import { Chat, ChatMessage, Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
 import { supabase } from "./supabase";
 
 export const getAllTutors = async (): Promise<TutorProfile[]> => {
@@ -282,6 +282,42 @@ export const getLevelById = async (levelId : string) : Promise<Level> => {
 
   } catch (error) {
     console.error("Error getting level by id", error);
+    throw error;
+  }
+}
+
+export const getChatsByUserId = async (userId : string) : Promise<Chat[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("chats")
+      .select("*")
+      .or(`user1_id.eq.${userId},user2_id.eq.${userId}`);
+
+    if (error) {
+      throw error;
+    }
+
+    return data as Chat[];
+  } catch (error) {
+    console.error("Error getting chat by ID:", error);
+    throw error;
+  }
+}
+
+export const getChatMessagesByChatId = async (chatId : number) : Promise<ChatMessage[]> => {
+  try {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("chat_id", chatId);
+
+    if (error) {
+      throw error;
+    }
+
+    return data as ChatMessage[];
+  } catch (error) {
+    console.error("Error getting chat messages by chat ID:", error);
     throw error;
   }
 }
