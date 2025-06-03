@@ -8,10 +8,21 @@
     "scheme": "tutorseek",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    
     "ios": {
       "icon": "./assets/images/TutorSeek-logo.png",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.shaneak03.TutorSeek",
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": ["tutorseek"]
+          }
+        ],
+        "LSApplicationQueriesSchemes": ["googlechrome", "googlechromes"]
+      }
     },
+    
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/TutorSeek-logo.png",
@@ -19,13 +30,28 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.shaneak03.TutorSeek",
-      "versionCode": 1
+      "versionCode": 1,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "tutorseek",
+              "host": "auth",
+              "pathPrefix": "/callback"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
+    
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/TutorSeek-logo.png"
     },
+    
     "plugins": [
       "expo-router",
       [
@@ -36,13 +62,31 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.176743680156-re5uumu2bi6bhucnrk6r1ndcpro0l908"
+        }
       ]
     ],
+    
     "experiments": {
       "typedRoutes": true
     },
+    
     "extra": {
-      "router": {},
+      "router": {
+        "origin": false
+      },
       "eas": {
         "projectId": "a758d76d-ba56-49b4-b7d9-786b02ad94f4"
       }
