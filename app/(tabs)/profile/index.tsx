@@ -7,8 +7,8 @@ import { updateTutorProfile, updateUserProfile } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import React, { useContext, useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../../_layout";
 import CoreProfileDetails from "../../components/CoreProfileDetails";
@@ -20,6 +20,7 @@ const Profile = () => {
   const router = useRouter();
   const isFocused = useIsFocused();
   const { user, setUser } = useContext(AuthContext);
+  const [refreshing, setRefreshing] = useState(false);
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
     first_name: "",
@@ -39,54 +40,53 @@ const Profile = () => {
   // });
   const [isEditing, setIsEditing] = useState(false);
 
-  // Reset editing mode only when screen gains focus
+  const fetchProfileData = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      // Fetch user data
+      const userResult = await getUserById(user.id);
+      if (userResult) {
+        setUserData(userResult);
+
+        // If user is a tutor, fetch tutor data
+        if (userResult.role === "tutor") {
+          const tutorResult = await getTutorById(userResult.id);
+          if (tutorResult) {
+            setTutorData(tutorResult);
+          }
+        } else if (userResult.role === "student") {
+          // // Fetch student data if needed
+          // const studentResult = await getStudentById(userResult.id);
+          // if (studentResult) {
+          //   setStudentData(studentResult);
+          // }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  }, [user]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchProfileData();
+    setRefreshing(false);
+  }, [fetchProfileData]);
+
+  // Reset editing mode when screen gains focus
   useEffect(() => {
     if (isFocused) {
       setIsEditing(false);
     }
   }, [isFocused]);
 
-  // Fetch user data when user changes:
+  // Fetch data when user changes or screen is focused
   useEffect(() => {
-    if (!user) return;
-
-    const fetchUserData = async () => {
-      const result = await getUserById(user.id);
-      if (result) {
-        setUserData(result);
-      }
-    };
-
-    if (isFocused) {
-      fetchUserData();
+    if (user && isFocused) {
+      fetchProfileData();
     }
-  }, [user, isFocused]);
-
-  // Fetch tutor or student data when userData changes:
-  useEffect(() => {
-    if (userData.id === "") return;
-
-    if (userData.role === "tutor") {
-      const fetchTutorData = async () => {
-        const result = await getTutorById(userData.id);
-        if (result) {
-          setTutorData(result);
-        }
-      };
-
-      fetchTutorData();
-    } else if (userData.role === "student") {
-      // const fetchStudentData = async () => {
-      //   const result = await getStudentById(userData.id);
-      //   if (result) {
-      //     setStudentData(result);
-      //   }
-      // };
-      // if (isFocused) {
-      //   fetchStudentData();
-      // }
-    }
-  }, [userData.id, isFocused]);
+  }, [user, isFocused, fetchProfileData]);
 
   const handleLogout = async () => {
     router.push("/login");
@@ -119,6 +119,9 @@ const Profile = () => {
           className='flex-1 pt-4'
           contentContainerClassName={"items-center gap-4 " + bottomPadding}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
         >
           <CustomText className='font-poppins-bold text-xl'>
             {userData?.role === "tutor" ? "Tutor" : "Student"}
