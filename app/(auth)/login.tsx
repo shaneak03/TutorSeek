@@ -1,4 +1,5 @@
 import { supabase } from "@/utils/supabase";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
@@ -11,7 +12,8 @@ import LargeSolidButton from "../components/LargeSolidButton";
 import RoundTextInput from "../components/RoundedTextInput";
 import themeColors from "../themeColors";
 
-const Login = () => {
+
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isTutor, setIsTutor] = useState(false);
@@ -64,11 +66,37 @@ const Login = () => {
 
   const handleForgetPw = async () => {
     router.push("/forgotPassword");
-  };
+  };  
+  
 
-  const handleGoogleAuth = () => {
-    //TODO
-  };
+  // Google OAuth handler
+  GoogleSignin.configure({
+    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+    webClientId: '176743680156-f39d2bdbik845r85rdnoqpaurkri8r94.apps.googleusercontent.com'
+  })
+
+  const handleGoogleAuth = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      if (!userInfo.data) {
+        throw new Error('Google Sign-In failed');
+      }
+      if (userInfo.data.idToken) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: userInfo.data.idToken,
+        })
+        console.log(error, data)
+      } else {
+        throw new Error('no ID token present!')
+      }
+    } catch (error) {
+      console.error("Google Sign-In error:", error);
+      setErrorMessage("Google Sign-In failed. Please try again.");
+    }
+  }
+  
 
   const navToRegister = () => {
     router.push("/register");
@@ -143,13 +171,11 @@ const Login = () => {
       </TouchableHighlight>
 
       <Pressable onPress={navToRegister}>
-        <CustomText className='text-sm'>
-          <Text>Don't have an account? </Text>
-          <Text className='text-primary-700'>Register</Text>
+        <CustomText className="text-sm">
+          <Text>Don&apos;t have an account? </Text>
+          <Text className="text-primary-700">Register</Text>
         </CustomText>
       </Pressable>
     </SafeAreaView>
   );
 };
-
-export default Login;
