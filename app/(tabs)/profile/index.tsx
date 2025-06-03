@@ -123,7 +123,7 @@ const Profile = () => {
           <CustomText className='font-poppins-bold text-xl'>
             {userData?.role === "tutor" ? "Tutor" : "Student"}
           </CustomText>
-          <ProfileIcon />
+          <ProfileIcon profile_icon_url={userData.profile_icon_url}/>
 
           <CustomText
             onPress={() => setIsEditing(true)}

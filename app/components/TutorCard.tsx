@@ -20,6 +20,7 @@ const TutorCard = ({
       last_name: "",
       location: "",
       role: "tutor",
+      email: "",
     }
   )
 
@@ -38,7 +39,7 @@ const TutorCard = ({
   return (
     <View className='p-4 flex-row items-center gap-4 border-b-hairline border-neutral-300'>
       <Image
-        source={require("../../assets/images/profile_icon.jpg")}
+        source={userData.profile_icon_url ? userData.profile_icon_url :require("../../assets/images/profile_icon.jpg")}
         style={{ width: 96, height: 96, borderRadius: 100 }}
         contentFit='cover'
       />

@@ -1,4 +1,6 @@
+// import { getUserById } from "@/utils/getRoutes";
 import { supabase } from "@/utils/supabase";
+// import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
@@ -90,28 +92,32 @@ const Register = () => {
   //           setErrorMessage("Google Sign-In failed. Please try again.");
   //           return;
   //         }
-  //         // Update Supabase User and Tutor/Student Profile
-  //         const user = data.session?.user;
-  //         if (!user) {
-  //           throw new Error('No user data returned from Supabase');
-  //         }
-  //         const role = isTutor ? "tutor" : "student";
-  //         const { error: userError } = await supabase
-  //           .from("users")
-  //           .insert([{ id: user.id, role, email: user.email, first_name: user.user_metadata?.full_name || '',}])
-  //         if (userError) {
-  //           console.error("Error inserting user profile:", userError);
-  //         }
-  //         if (isTutor) {
-  //           const { error: tutorError } = await supabase
-  //             .from("tutors")
-  //             .insert([{ id: user?.id }]);
-  //           if (tutorError) console.log(tutorError);
-  //         } else {
-  //           const { error: studentError } = await supabase
-  //             .from("students")
-  //             .insert([{ id: user?.id }]);
-  //             if (studentError) console.log(studentError);
+  //         // Check if user already exists
+  //         const existingUser = await getUserById(data.session?.user.id);
+  //         if (!existingUser) {
+  //           // Update Supabase User and Tutor/Student Profile
+  //           const user = data.session?.user;
+  //           if (!user) {
+  //             throw new Error('No user data returned from Supabase');
+  //           }
+  //           const role = isTutor ? "tutor" : "student";
+  //           const { error: userError } = await supabase
+  //             .from("users")
+  //             .insert([{ id: user.id, role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
+  //           if (userError) {
+  //             console.error("Error inserting user profile:", userError);
+  //           }
+  //           if (isTutor) {
+  //             const { error: tutorError } = await supabase
+  //               .from("tutors")
+  //               .insert([{ id: user?.id }]);
+  //             if (tutorError) console.log(tutorError);
+  //           } else {
+  //             const { error: studentError } = await supabase
+  //               .from("students")
+  //               .insert([{ id: user?.id }]);
+  //               if (studentError) console.log(studentError);
+  //           }
   //         }
   
   //         // Update Auth Context

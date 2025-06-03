@@ -16,6 +16,7 @@ export interface UserProfile {
   location: string;
   role: "tutor" | "student";
   email: string;
+  profile_icon_url?: string;
   // profileDetails: TutorProfile | StudentProfile
 }
 
