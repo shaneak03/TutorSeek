@@ -13,7 +13,7 @@ import RoundTextInput from "../components/RoundedTextInput";
 import themeColors from "../themeColors";
 
 
-export default function Login() {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isTutor, setIsTutor] = useState(false);
@@ -68,6 +68,8 @@ export default function Login() {
     router.push("/forgotPassword");
   };  
   
+  // const handleGoogleAuth = async () => {
+  // }
 
   // Google OAuth handler
   GoogleSignin.configure({
@@ -88,9 +90,43 @@ export default function Login() {
           token: userInfo.data.idToken,
         })
         console.log(error, data)
+        if (error) {
+          console.error("Supabase sign-in error:", error);
+          setErrorMessage("Google Sign-In failed. Please try again.");
+          return;
+        }
+        // Update Supabase User and Tutor/Student Profile
+        const user = data.session?.user;
+        if (!user) {
+          throw new Error('No user data returned from Supabase');
+        }
+        const role = isTutor ? "tutor" : "student";
+        const { error: userError } = await supabase
+          .from("users")
+          .insert([{ id: user.id, role, email: user.email, first_name: user.user_metadata?.full_name || '',}])
+        if (userError) {
+          console.error("Error inserting user profile:", userError);
+        }
+        if (isTutor) {
+          const { error: tutorError } = await supabase
+            .from("tutors")
+            .insert([{ id: user?.id }]);
+          if (tutorError) console.log(tutorError);
+        } else {
+          const { error: studentError } = await supabase
+            .from("students")
+            .insert([{ id: user?.id }]);
+            if (studentError) console.log(studentError);
+        }
+
+        // Update Auth Context
+        setUser(data.session?.user);
+        // Navigate to the main app
+        router.push("/(tabs)");
       } else {
         throw new Error('no ID token present!')
       }
+
     } catch (error) {
       console.error("Google Sign-In error:", error);
       setErrorMessage("Google Sign-In failed. Please try again.");
@@ -179,3 +215,5 @@ export default function Login() {
     </SafeAreaView>
   );
 };
+
+export default Login;
