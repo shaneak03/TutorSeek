@@ -7,39 +7,39 @@ import { View } from "react-native";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 
-const TutorCard = ({
-  tutor, 
-  ...props
-} : {
-  tutor : TutorProfile
-}) => {
-  const [userData, setUserData] = useState<UserProfile>(
-    {
-      id: "",
-      first_name: "",
-      last_name: "",
-      location: "",
-      role: "tutor",
-      email: "",
-    }
-  )
+const TutorCard = ({ tutor, ...props }: { tutor: TutorProfile }) => {
+  const [userData, setUserData] = useState<UserProfile>({
+    id: "",
+    first_name: "",
+    last_name: "",
+    location: "",
+    role: "tutor",
+    email: "",
+  });
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const result =  await getUserById(tutor.id)
+      const result = await getUserById(tutor.id);
       if (result) {
-        setUserData(result)
+        setUserData(result);
       }
     };
 
     if (tutor) {
       fetchUserData();
     }
-  }, [tutor])
+  }, [tutor]);
+
+  console.log(userData);
+
   return (
     <View className='p-4 flex-row items-center gap-4 border-b-hairline border-neutral-300'>
       <Image
-        source={userData.profile_icon_url ? userData.profile_icon_url :require("../../assets/images/profile_icon.jpg")}
+        source={
+          userData.profile_icon_url
+            ? userData.profile_icon_url
+            : require("../../assets/images/profile_icon.jpg")
+        }
         style={{ width: 96, height: 96, borderRadius: 100 }}
         contentFit='cover'
       />
@@ -48,16 +48,17 @@ const TutorCard = ({
           <CustomText className='font-poppins-bold text-xl'>
             {userData.first_name + " " + userData.last_name}
           </CustomText>
-          <CustomText>O-Level . A-level</CustomText>
         </View>
         <View className='flex-row justify-between items-center mt-2'>
           <View>
-            <CustomText className='font-poppins-bold'>SGD {tutor.hourly_rate}</CustomText>
+            <CustomText className='font-poppins-semibold'>
+              SGD {tutor.hourly_rate}
+            </CustomText>
             <CustomText>60-min lesson</CustomText>
           </View>
           <View>
             <View className='flex-row items-center gap-2'>
-              <CustomText className='font-poppins-bold'>5.0</CustomText>
+              <CustomText className='font-poppins-semibold'>5.0</CustomText>
               <AntDesign
                 name='star'
                 size={12}
