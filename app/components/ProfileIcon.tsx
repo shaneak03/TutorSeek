@@ -20,12 +20,35 @@ if (!global.Buffer) {
 
 export const updateProfileIcon = async (user_id: string, uri: string) => {
   try {
+    const timestamp = new Date().toISOString();
     const fileExt = uri.split(".").pop();
-    const filePath = `avatars/${user_id}.${fileExt}`;
+    const filePath = `${user_id}_${timestamp}.${fileExt}`;
     const file = await FileSystem.readAsStringAsync(uri, {
       encoding: FileSystem.EncodingType.Base64,
     });
     const storage = supabase.storage.from("avatars");
+
+    // Get old profile URL first
+    const { data: userData } = await supabase
+      .from("users")
+      .select("profile_icon_url")
+      .eq("id", user_id)
+      .single();
+    
+    // Delete old avatar 
+    if (userData?.profile_icon_url) {
+      console.log("Old avatar URL found:", userData.profile_icon_url);
+      const oldFilePath = userData.profile_icon_url.split("/").pop();
+      if (oldFilePath) {
+        console.log("Deleting old avatar:", oldFilePath);
+        const { error: deleteError } = await supabase.storage
+          .from("avatars")
+          .remove([oldFilePath]);
+        if (deleteError) throw deleteError;
+      }
+    }
+
+    // Upload new avatar
     const { error: uploadError } = await storage.upload(
       filePath,
       Buffer.from(file, "base64"),
@@ -37,6 +60,7 @@ export const updateProfileIcon = async (user_id: string, uri: string) => {
         },
       }
     );
+
     if (uploadError) throw uploadError;
     //get public image url
     const {
