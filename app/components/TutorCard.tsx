@@ -1,43 +1,27 @@
-import { getUserById } from "@/utils/getRoutes";
-import { TutorProfile, UserProfile } from "@/utils/models";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { Image } from "expo-image";
-import { useEffect, useState } from "react";
 import { View } from "react-native";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 
-const TutorCard = ({ tutor, ...props }: { tutor: TutorProfile }) => {
-  const [userData, setUserData] = useState<UserProfile>({
-    id: "",
-    first_name: "",
-    last_name: "",
-    location: "",
-    role: "tutor",
-    email: "",
-  });
+export type tutorCardData = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  hourly_rate: number;
+  profile_icon_url: string;
+  rating_count: number;
+  review_count: number;
+  is_published: boolean;
+};
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const result = await getUserById(tutor.id);
-      if (result) {
-        setUserData(result);
-      }
-    };
-
-    if (tutor) {
-      fetchUserData();
-    }
-  }, [tutor]);
-
-  console.log(userData);
-
+const TutorCard = ({ tutor }: { tutor: tutorCardData }) => {
   return (
     <View className='p-4 flex-row items-center gap-4 border-b-hairline border-neutral-300'>
       <Image
         source={
-          userData.profile_icon_url
-            ? userData.profile_icon_url
+          tutor.profile_icon_url
+            ? tutor.profile_icon_url
             : require("../../assets/images/profile_icon.jpg")
         }
         style={{ width: 96, height: 96, borderRadius: 100 }}
@@ -46,7 +30,7 @@ const TutorCard = ({ tutor, ...props }: { tutor: TutorProfile }) => {
       <View className='flex-grow p-2'>
         <View>
           <CustomText className='font-poppins-bold text-xl'>
-            {userData.first_name + " " + userData.last_name}
+            {tutor.first_name + " " + tutor.last_name}
           </CustomText>
         </View>
         <View className='flex-row justify-between items-center mt-2'>

@@ -14,7 +14,7 @@ import { AuthContext } from "../../_layout";
 import CoreProfileDetails from "../../components/CoreProfileDetails";
 import CustomText from "../../components/CustomText";
 import LoginModal from "../../components/LoginModal";
-import ProfileIcon from "../../components/ProfileIcon";
+import ProfileIcon, { updateProfileIcon } from "../../components/ProfileIcon";
 
 const Profile = () => {
   const router = useRouter();
@@ -28,6 +28,7 @@ const Profile = () => {
     location: "",
     role: "student",
     email: "",
+    profile_icon_url: "",
   });
   const [tutorData, setTutorData] = useState<TutorProfile>({
     id: "",
@@ -39,15 +40,17 @@ const Profile = () => {
   //   id: "",
   // });
   const [isEditing, setIsEditing] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState("");
 
-  const fetchProfileData = useCallback(async () => {
-    if (!user) return;
+  const fetchProfileData = useCallback(async (currentUser: any) => {
+    if (!currentUser) return;
 
     try {
       // Fetch user data
-      const userResult = await getUserById(user.id);
+      const userResult = await getUserById(currentUser.id);
       if (userResult) {
         setUserData(userResult);
+        setAvatarUrl(userResult.profile_icon_url);
 
         // If user is a tutor, fetch tutor data
         if (userResult.role === "tutor") {
@@ -66,13 +69,14 @@ const Profile = () => {
     } catch (error) {
       console.error("Error fetching profile:", error);
     }
-  }, [user]);
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await fetchProfileData();
+    await fetchProfileData(user);
     setRefreshing(false);
-  }, [fetchProfileData]);
+    console.log("refreshing profile");
+  }, [user, fetchProfileData]);
 
   // Reset editing mode when screen gains focus
   useEffect(() => {
@@ -81,12 +85,10 @@ const Profile = () => {
     }
   }, [isFocused]);
 
-  // Fetch data when user changes or screen is focused
+  // Fetch data when user changes REMOVED: onFocus change
   useEffect(() => {
-    if (user && isFocused) {
-      fetchProfileData();
-    }
-  }, [user, isFocused, fetchProfileData]);
+    if (user) fetchProfileData(user);
+  }, [user, fetchProfileData]);
 
   const handleLogout = async () => {
     router.push("/login");
@@ -95,16 +97,23 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
-    setIsEditing(false);
-    updateUserProfile(userData);
-    if (userData.role === "tutor") {
-      //required tutor fields to be published
-      if (userData.first_name !== "" && tutorData.hourly_rate !== 0) {
-        tutorData.is_published = true;
-      } else {
-        tutorData.is_published = false;
+    try {
+      setIsEditing(false);
+      updateUserProfile(userData);
+      if (userData.profile_icon_url !== avatarUrl) {
+        updateProfileIcon(userData.id, avatarUrl);
       }
-      updateTutorProfile(tutorData);
+      if (userData.role === "tutor") {
+        //required tutor fields to be published
+        if (userData.first_name !== "" && tutorData.hourly_rate !== 0) {
+          tutorData.is_published = true;
+        } else {
+          tutorData.is_published = false;
+        }
+        updateTutorProfile(tutorData);
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -127,8 +136,8 @@ const Profile = () => {
             {userData?.role === "tutor" ? "Tutor" : "Student"}
           </CustomText>
           <ProfileIcon
-            user_id={userData.id}
-            profile_icon_url={userData.profile_icon_url}
+            avatarUrl={avatarUrl}
+            setAvatarUrl={setAvatarUrl}
             isEditing={isEditing}
           />
 

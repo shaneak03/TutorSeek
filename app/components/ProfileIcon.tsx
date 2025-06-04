@@ -4,13 +4,13 @@ import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import React from "react";
 import { Pressable, View } from "react-native";
 import themeColors from "../themeColors";
 
 type props = {
-  profile_icon_url?: string;
-  user_id?: string;
+  avatarUrl: string;
+  setAvatarUrl: React.Dispatch<React.SetStateAction<string>>;
   isEditing?: boolean;
 };
 
@@ -18,16 +18,49 @@ if (!global.Buffer) {
   global.Buffer = Buffer;
 }
 
-export default function ProfileIcon({
-  profile_icon_url,
-  user_id,
-  isEditing = false,
-  ...props
-}: props) {
-  const [avatarUrl, setAvatarUrl] = useState<string | undefined>(
-    profile_icon_url
-  );
+export const updateProfileIcon = async (user_id: string, uri: string) => {
+  try {
+    const fileExt = uri.split(".").pop();
+    const filePath = `avatars/${user_id}.${fileExt}`;
+    const file = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    const storage = supabase.storage.from("avatars");
+    const { error: uploadError } = await storage.upload(
+      filePath,
+      Buffer.from(file, "base64"),
+      {
+        contentType: "image/jpeg",
+        upsert: true, // Overwrite if file already exists
+        metadata: {
+          owner: user_id, // Store user ID in metadata
+        },
+      }
+    );
+    if (uploadError) throw uploadError;
+    //get public image url
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
+    // Update user's profile icon URL in the database
+    const { error: updateError } = await supabase
+      .from("users")
+      .update({ profile_icon_url: publicUrl })
+      .eq("id", user_id);
+
+    if (updateError) throw updateError;
+  } catch (error) {
+    console.error("Profile update failed:", error);
+    alert("Failed to update profile picture.");
+  }
+};
+
+export default function ProfileIcon({
+  isEditing = false,
+  avatarUrl,
+  setAvatarUrl,
+}: props) {
   const handleImagePicker = async () => {
     try {
       const permissionResult =
@@ -46,52 +79,10 @@ export default function ProfileIcon({
       if (result.canceled || !result.assets?.[0]?.uri) return;
 
       const uri = result.assets[0].uri;
-      const fileExt = uri.split(".").pop();
-      const filePath = `avatars/${user_id}.${fileExt}`;
-
-      const file = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-
-      const storage = supabase.storage.from("avatars");
-
-      const { error: uploadError } = await storage.upload(
-        filePath,
-        Buffer.from(file, "base64"),
-        {
-          contentType: "image/jpeg",
-          upsert: true, // Overwrite if file already exists
-          metadata: {
-            owner: user_id, // Store user ID in metadata
-          },
-        }
-      );
-
-      if (uploadError) {
-        throw uploadError;
-      }
-
-      const { data, error: urlError } = await supabase.storage
-        .from("avatars")
-        .createSignedUrl(filePath, 60 * 60);
-
-      if (urlError) {
-        throw urlError;
-      }
-
-      // Update user's profile icon URL in the database
-      const { error: updateError } = await supabase
-        .from("users")
-        .update({ profile_icon_url: data.signedUrl })
-        .eq("id", user_id);
-      if (updateError) {
-        throw updateError;
-      }
-
-      setAvatarUrl(data.signedUrl);
+      setAvatarUrl(uri);
     } catch (error) {
-      console.error("Profile update failed:", error);
-      alert("Failed to update profile picture.");
+      console.error("Failed to pick image", error);
+      alert("Failed to pick image");
     }
   };
 
