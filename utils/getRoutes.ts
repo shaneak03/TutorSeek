@@ -1,4 +1,4 @@
-import { filterOptions } from "./../app/components/FilterOptions";
+import { filterOptions } from "../app/components/HomeTopNav";
 import {
   Chat,
   ChatMessage,
@@ -206,7 +206,10 @@ export const getLevels = async (): Promise<Level[]> => {
 
 export const getSubjects = async (): Promise<Subject[]> => {
   try {
-    const { data, error } = await supabase.from("subjects").select("*");
+    const { data, error } = await supabase
+      .from("subjects")
+      .select("*")
+      .order("id");
 
     if (error) {
       throw error;

@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { RefreshControl, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
-import FilterOptions, { filterOptions } from "../components/FilterOptions";
+import FilterOptions, { filterOptions } from "../components/HomeTopNav";
 import LoginModal from "../components/LoginModal";
 import TutorCard, { tutorCardData } from "../components/TutorCard";
 
@@ -42,7 +42,11 @@ const Index = () => {
   else
     return (
       <SafeAreaView className=' bg-neutral-100'>
-        <FilterOptions />
+        <FilterOptions
+          filters={filters}
+          setFilters={setFilters}
+          tutors={tutors}
+        />
         <ScrollView
           className='h-full'
           refreshControl={
