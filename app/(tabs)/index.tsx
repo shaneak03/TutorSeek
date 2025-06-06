@@ -14,7 +14,9 @@ const Index = () => {
   const [filters, setFilters] = useState<filterOptions>({
     subject: 0,
     level: 0,
-    rating: 0,
+    rating: 1,
+    minPrice: 0,
+    maxPrice: 200,
     sortBy: "rating_desc",
   });
 

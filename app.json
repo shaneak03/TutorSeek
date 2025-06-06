@@ -8,7 +8,7 @@
     "scheme": "tutorseek",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    
+
     "ios": {
       "icon": "./assets/images/TutorSeek-logo.png",
       "supportsTablet": true,
@@ -22,7 +22,7 @@
         "LSApplicationQueriesSchemes": ["googlechrome", "googlechromes"]
       }
     },
-    
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/TutorSeek-logo.png",
@@ -45,13 +45,13 @@
         }
       ]
     },
-    
+
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/images/TutorSeek-logo.png"
     },
-    
+
     "plugins": [
       "expo-router",
       [
@@ -78,11 +78,11 @@
         }
       ]
     ],
-    
+
     "experiments": {
       "typedRoutes": true
     },
-    
+
     "extra": {
       "router": {
         "origin": false

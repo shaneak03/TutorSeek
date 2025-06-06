@@ -16,7 +16,9 @@ export const getTutors = async (filters: filterOptions) => {
   let query = supabase
     .from("tutors_distinct")
     .select("*")
-    .eq("is_published", true);
+    .eq("is_published", true)
+    .gte("hourly_rate", filters.minPrice)
+    .lte("hourly_rate", filters.maxPrice);
 
   if (filters.subject !== 0) {
     query = query.eq("subject_id", filters.subject);
@@ -24,7 +26,7 @@ export const getTutors = async (filters: filterOptions) => {
   if (filters.level !== 0) {
     query = query.eq("level_id", filters.level);
   }
-  if (filters.rating !== 0) {
+  if (filters.rating > 1) {
     query = query.gte("rating_count", filters.rating);
   }
 

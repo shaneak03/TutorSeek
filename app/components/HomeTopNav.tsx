@@ -7,12 +7,15 @@ import { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
+import FilterNSortModal from "./FilterNSortModal";
 import { tutorCardData } from "./TutorCard";
 
 export type filterOptions = {
   subject: number;
   level: number;
   rating: number;
+  minPrice: number;
+  maxPrice: number;
   sortBy: "rating_desc" | "rating_asc" | "price_desc" | "price_asc";
 };
 
@@ -59,6 +62,12 @@ export default function HomeTopNav({ filters, setFilters, tutors }: props) {
 
   return (
     <>
+      <FilterNSortModal
+        isShowFilterModal={isShowFilterModal}
+        setIsShowFilterModal={setIsShowFilterModal}
+        filters={filters}
+        setFilters={setFilters}
+      />
       <View className='p-4 border-neutral-300 border-b-hairline'>
         <View>
           <Pressable
