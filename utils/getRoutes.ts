@@ -39,13 +39,13 @@ export const getTutors = async (filters: filterOptions) => {
 
   //Sorting
   if (filters.sortBy === "price_asc") {
-    return data.sort((a, b) => b.hourly_rate - a.hourly_rate);
-  } else if (filters.sortBy === "price_desc") {
     return data.sort((a, b) => a.hourly_rate - b.hourly_rate);
+  } else if (filters.sortBy === "price_desc") {
+    return data.sort((a, b) => b.hourly_rate - a.hourly_rate);
   } else if (filters.sortBy === "rating_asc") {
-    return data.sort((a, b) => b.rating_count - a.rating_count);
-  } else {
     return data.sort((a, b) => a.rating_count - b.rating_count);
+  } else {
+    return data.sort((a, b) => b.rating_count - a.rating_count);
   }
 };
 

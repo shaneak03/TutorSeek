@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { ScrollView } from "react-native";
 import BottomSticyButton from "./BottomStickyButton";
 import FullPageModal from "./FullPageModal";
 import { filterOptions } from "./HomeTopNav";
 import PriceFilter from "./PriceFilter";
 import RatingFilter from "./RatingFIlter";
+import SortByFilter from "./SortbyFilter";
 import SubjectLevelPicker from "./SubjLevelFilter";
 
 type props = {
@@ -43,12 +45,15 @@ export default function FilterNSortModal({
     <FullPageModal
       isVisible={isShowFilterModal}
       setIsVisible={setIsShowFilterModal}
-      title='Filter'
+      title='Filter & Sort'
     >
-      <RatingFilter editData={editData} setEditData={setEditData} />
-      <SubjectLevelPicker editData={editData} setEditData={setEditData} />
-      <PriceFilter editData={editData} setEditData={setEditData} />
-      <BottomSticyButton text={"Filter"} onPress={saveChanges} />
+      <ScrollView>
+        <RatingFilter editData={editData} setEditData={setEditData} />
+        <SubjectLevelPicker editData={editData} setEditData={setEditData} />
+        <PriceFilter editData={editData} setEditData={setEditData} />
+        <SortByFilter editData={editData} setEditData={setEditData} />
+      </ScrollView>
+      <BottomSticyButton text={"Find tutors"} onPress={saveChanges} />
     </FullPageModal>
   );
 }

@@ -3,6 +3,7 @@ import { View } from "react-native";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 import { filterOptions } from "./HomeTopNav";
+import LineSeperator from "./LineSeperator";
 
 type props = {
   editData: filterOptions;
@@ -11,7 +12,7 @@ type props = {
 
 export default function RatingFilter({ editData, setEditData }: props) {
   return (
-    <View className='flex p-4 gap-2 items-center'>
+    <View className='flex p-4 gap-2 items-center '>
       <CustomText className='font-poppins-semibold text-xl '>Rating</CustomText>
       <CustomText>
         {">"} {editData.rating} stars

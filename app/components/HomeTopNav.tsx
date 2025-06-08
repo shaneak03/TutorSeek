@@ -8,6 +8,8 @@ import { Pressable, View } from "react-native";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 import FilterNSortModal from "./FilterNSortModal";
+import { sortNameMapping } from "./SortbyFilter";
+import SubjectFilterModal from "./SubjectFilterModal";
 import { tutorCardData } from "./TutorCard";
 
 export type filterOptions = {
@@ -19,13 +21,6 @@ export type filterOptions = {
   sortBy: "rating_desc" | "rating_asc" | "price_desc" | "price_asc";
 };
 
-const sortNameMapping = {
-  rating_desc: "Rating: highest first",
-  rating_asc: "Rating: lowest first",
-  price_desc: "Price: highest first",
-  price_asc: "Price: lowest first",
-};
-
 type props = {
   filters: filterOptions;
   setFilters: React.Dispatch<React.SetStateAction<filterOptions>>;
@@ -35,9 +30,7 @@ type props = {
 export default function HomeTopNav({ filters, setFilters, tutors }: props) {
   const [isShowFilterModal, setIsShowFilterModal] = useState(false);
   const [isShowSubjPicker, setIsShowSubjPicker] = useState(false);
-  const [subjects, setSubjects] = useState<Subject[]>([
-    { id: 1, name: "Biology" },
-  ]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
 
   const showFilterModal = () => {
     setIsShowFilterModal(true);
@@ -68,6 +61,13 @@ export default function HomeTopNav({ filters, setFilters, tutors }: props) {
         filters={filters}
         setFilters={setFilters}
       />
+      <SubjectFilterModal
+        subjects={subjects}
+        isVisible={isShowSubjPicker}
+        setIsVisible={setIsShowSubjPicker}
+        filters={filters}
+        setFilters={setFilters}
+      />
       <View className='p-4 border-neutral-300 border-b-hairline'>
         <View>
           <Pressable
@@ -75,7 +75,9 @@ export default function HomeTopNav({ filters, setFilters, tutors }: props) {
             className='flex-row gap-2 items-center'
           >
             <CustomText className='font-poppins-bold'>
-              {subjects[filters.subject].name}
+              {filters.subject === 0
+                ? "All subjects"
+                : subjects[filters.subject - 1].name}
             </CustomText>
             <Entypo
               name='chevron-down'
