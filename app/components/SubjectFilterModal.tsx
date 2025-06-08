@@ -36,10 +36,10 @@ const SubjectFilterModal = ({
         {subjects.map(s => (
           <TouchableOpacity
             className={
-              "flex-row justify-between py-4 px-8 border-2 rounded-2xl " +
+              "flex-row justify-between py-4 px-8 rounded-2xl " +
               (s.id === activeSubj
-                ? "border-primary-700"
-                : "border-neutral-300")
+                ? "border-primary-700 border-2"
+                : "border-neutral-300 border-hairline")
             }
             key={s.id}
             onPress={() => {
