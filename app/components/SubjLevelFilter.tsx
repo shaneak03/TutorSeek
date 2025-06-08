@@ -4,6 +4,7 @@ import RadioGroup from "react-native-radio-buttons-group";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 import { filterOptions } from "./HomeTopNav";
+import LineSeperator from "./LineSeperator";
 
 type props = {
   editData: filterOptions;
@@ -16,7 +17,7 @@ export default function SubjectLevelPicker({ editData, setEditData }: props) {
   };
 
   return (
-    <View className='flex p-4 gap-2 items-center'>
+    <View className='flex p-4 gap-1 items-center '>
       <CustomText className='font-poppins-semibold text-xl'>
         Subject level
       </CustomText>
@@ -28,7 +29,7 @@ export default function SubjectLevelPicker({ editData, setEditData }: props) {
           flexDirection: "row",
           justifyContent: "center",
           alignItems: "center",
-          gap: 8,
+          gap: 0,
           paddingBlock: 4,
         }}
       />
@@ -40,9 +41,10 @@ const sharedButtonValues = {
   color: themeColors["primary-700"],
   labelStyle: {
     fontFamily: "Poppins_400Regular",
-    fontSize: 16,
+    fontSize: 14,
     color: themeColors["neutral-900"],
   },
+  size: 20,
 };
 
 const radioButtons = [
@@ -64,4 +66,5 @@ const radioButtons = [
     value: "3",
     ...sharedButtonValues,
   },
+  { id: "0", label: "All", value: "0", ...sharedButtonValues },
 ];
