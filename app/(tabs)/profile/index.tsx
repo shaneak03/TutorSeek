@@ -85,10 +85,10 @@ const Profile = () => {
     }
   }, [isFocused]);
 
-  // Fetch data when user changes REMOVED: onFocus change
+  // Fetch data when user changes
   useEffect(() => {
-    if (user) fetchProfileData(user);
-  }, [user, fetchProfileData]);
+    if (user && isFocused) fetchProfileData(user);
+  }, [user, fetchProfileData, isFocused]);
 
   const handleLogout = async () => {
     router.push("/login");

@@ -1,5 +1,7 @@
 import { TutorProfile } from "@/utils/models";
 import { Octicons } from "@expo/vector-icons";
+import Feather from "@expo/vector-icons/Feather";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 import MultiSlider, {
   MarkerProps,
 } from "@ptomasroos/react-native-multi-slider";
@@ -35,9 +37,24 @@ export default function TutorProfileDetails({
         />
       </View>
       <View className='w-full'>
-        <CustomText className='font-poppins-semibold mb-2'>
-          Hourly Rate
-        </CustomText>
+        <View className='flex-row justify-between items-center'>
+          <CustomText className='font-poppins-semibold mb-2'>
+            Hourly Rate
+          </CustomText>
+          {tutorData.hourly_rate === 0 && (
+            <View className='flex-row justify-between items-center gap-1'>
+              <Feather
+                name='alert-circle'
+                size={16}
+                color={themeColors["primary-700"]}
+              />
+              <CustomText className='text-sm text-primary-700'>
+                Required
+              </CustomText>
+            </View>
+          )}
+        </View>
+
         {isEditing ? (
           <View className='flex pt-12 items-center'>
             <MultiSlider
@@ -58,6 +75,12 @@ export default function TutorProfileDetails({
                       size={24}
                       color={themeColors["primary-700"]}
                     />
+                    <FontAwesome
+                      className='relative bottom-4'
+                      name='circle'
+                      size={16}
+                      color={themeColors["primary-700"]}
+                    />
                   </View>
                 </View>
               )}
@@ -66,6 +89,7 @@ export default function TutorProfileDetails({
               selectedStyle={{
                 backgroundColor: themeColors["primary-700"],
               }}
+              trackStyle={{ height: 3 }}
             />
           </View>
         ) : (

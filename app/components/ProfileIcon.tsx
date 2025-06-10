@@ -6,6 +6,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
 import { Pressable, View } from "react-native";
+import Icon from "../../assets/images/default_user_icon.svg";
 import themeColors from "../themeColors";
 
 type props = {
@@ -34,8 +35,8 @@ export const updateProfileIcon = async (user_id: string, uri: string) => {
       .select("profile_icon_url")
       .eq("id", user_id)
       .single();
-    
-    // Delete old avatar 
+
+    // Delete old avatar
     if (userData?.profile_icon_url) {
       console.log("Old avatar URL found:", userData.profile_icon_url);
       const oldFilePath = userData.profile_icon_url.split("/").pop();
@@ -117,16 +118,16 @@ export default function ProfileIcon({
         className='relative'
         disabled={!isEditing}
       >
-        <View className='bg-primary-700 rounded-full border-4 border-primary-700'>
-          <Image
-            source={
-              avatarUrl
-                ? avatarUrl
-                : require("../../assets/images/profile_icon.jpg")
-            }
-            style={{ width: 168, height: 168, borderRadius: 100 }}
-            contentFit='cover'
-          />
+        <View className='bg-neutral-200 rounded-full border-4 border-primary-700 flex items-center justify-center w-[176] h-[176]'>
+          {avatarUrl ? (
+            <Image
+              source={avatarUrl}
+              style={{ width: 168, height: 168, borderRadius: 100 }}
+              contentFit='cover'
+            />
+          ) : (
+            <Icon width={100} height={100} fill={themeColors["neutral-300"]} />
+          )}
         </View>
         {isEditing && (
           <View className='bg-primary-700 rounded-full p-[12] absolute bottom-1 right-1'>
