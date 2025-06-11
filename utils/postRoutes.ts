@@ -193,8 +193,8 @@ export const postChatMessage = async (
       const newChatData: Omit<ChatData, 'id'> = {
         tutor_id: tutorId,
         student_id: studentId,
-        created_at: new Date(),
-        updated_at: new Date(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
         unread_count_tutor: 0,
         unread_count_student: 0
       };
@@ -234,7 +234,7 @@ export const postChatMessage = async (
       .insert({
         ...messageData,
         chat_id: chat.id,
-        created_at: new Date(),
+        created_at: new Date().toISOString(),
         read: false
       })
       .select()

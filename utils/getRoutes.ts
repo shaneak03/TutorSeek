@@ -308,7 +308,7 @@ export const getChatsByUserId = async (userId: string): Promise<ChatWithParticip
       .from("chats")
       .select(`
         *,
-        tutor:tutor_id (
+        tutor:users!chats_tutor_id_fkey (
           id,
           first_name,
           last_name,
@@ -316,7 +316,7 @@ export const getChatsByUserId = async (userId: string): Promise<ChatWithParticip
           email,
           location
         ),
-        student:student_id (
+        student:users!chats_student_id_fkey (
           id,
           first_name,
           last_name,
@@ -332,7 +332,9 @@ export const getChatsByUserId = async (userId: string): Promise<ChatWithParticip
       throw error;
     }
 
-    // Get last message for each chat and get unread count for current user
+    console.log("Chats data:", data);
+
+    // Get last message for each chat and get unread count
     const processedData = await Promise.all(
       (data || []).map(async (chat) => {
         // Get last message
@@ -343,7 +345,7 @@ export const getChatsByUserId = async (userId: string): Promise<ChatWithParticip
           .order('created_at', { ascending: false })
           .limit(1);
 
-        // Determine if user is tutor or student and get appropriate unread count
+        // Determine if user is tutor or student and get unread count
         const isUserTutor = chat.tutor_id === userId;
         const unreadCount = isUserTutor ? chat.unread_count_tutor : chat.unread_count_student;
 

@@ -39,7 +39,7 @@ export interface Level {
 
 export interface Review {
   id: number;
-  created_at: Date;
+  created_at: string;
   tutor_id: string;
   student_id: string;
   rating: number;
@@ -57,7 +57,7 @@ export interface TutorWithSubjectsAndLevels extends TutorProfile {
 
 export interface ChatMessage {
   id: number;
-  created_at: Date;
+  created_at: string;
   sender_id: string;
   recipient_id: string;
   content: string;
@@ -77,8 +77,8 @@ export interface ChatMessageWithSender extends ChatMessage {
 
 export interface ChatData {
   id: number;
-  created_at: Date;
-  updated_at: Date;
+  created_at: string;
+  updated_at: string;
   tutor_id: string;
   student_id: string;
   unread_count_tutor: number;
@@ -105,7 +105,7 @@ export interface ChatWithParticipants extends ChatData {
   last_message?: {
     id: number;
     content: string;
-    created_at: Date;
+    created_at: string;
     sender_id: string;
   };
   unread_count?: number;
