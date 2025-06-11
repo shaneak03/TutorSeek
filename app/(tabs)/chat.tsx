@@ -27,6 +27,8 @@ const Chat = () => {
     updated_at: new Date(),
     tutor_id: "",
     student_id: "",
+    unread_count_student: 0,
+    unread_count_tutor: 0,
   }]);
   
   const [refreshing, setRefreshing] = useState(false);

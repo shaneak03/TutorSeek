@@ -1,4 +1,5 @@
-import { ChatData, ChatMessage, Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
+import { findChatBetweenUsers } from "./getRoutes";
+import { ChatData, ChatMessage, ChatWithParticipants, Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
 import { supabase } from "./supabase";
 
 export const postUserProfile = async (profile : UserProfile) => {
@@ -176,36 +177,127 @@ export const postTutorSubject = async (tutor_subject : TutorSubject) => {{
     }
 }}
 
-export const createChat = async (chat : ChatData) => {
-    try {
-        const { data, error } = await supabase
-            .from("chats")
-            .insert(chat);
+export const postChatMessage = async (
+  messageData: Omit<ChatMessage, 'id' | 'created_at' | 'read' | 'chat_id'>,
+  senderRole: "tutor" | "student",
+  tutorId: string,
+  studentId: string
+): Promise<{ message: ChatMessage, chat: ChatWithParticipants, wasNewChat: boolean }> => {
+  try {
+    // Try to find existing chat first
+    let chat = await findChatBetweenUsers(tutorId, studentId);
+    let wasNewChat = false;
 
-        if (error) {
-            throw error;
-        }
+    // If no chat exists, create one
+    if (!chat) {
+      const newChatData: Omit<ChatData, 'id'> = {
+        tutor_id: tutorId,
+        student_id: studentId,
+        created_at: new Date(),
+        updated_at: new Date(),
+        unread_count_tutor: 0,
+        unread_count_student: 0
+      };
 
-        return data;
-    } catch (error) {
-        console.error("Error creating chat:", error);
-        throw error;
+      const { data, error } = await supabase
+        .from("chats")
+        .insert(newChatData)
+        .select(`
+          *,
+          tutor:tutor_id (
+            id,
+            first_name,
+            last_name,
+            profile_icon_url,
+            email,
+            location
+          ),
+          student:student_id (
+            id,
+            first_name,
+            last_name,
+            profile_icon_url,
+            email,
+            location
+          )
+        `)
+        .single();
+
+      if (error) throw error;
+      chat = data as ChatWithParticipants;
+      wasNewChat = true;
     }
-}
 
-export const postChatMessage = async (message: ChatMessage) => {
-    try {
-        const { data, error } = await supabase
-            .from("messages")
-            .insert(message);
+    // Insert message
+    const { data: messageResult, error: messageError } = await supabase
+      .from("messages")
+      .insert({
+        ...messageData,
+        chat_id: chat.id,
+        created_at: new Date(),
+        read: false
+      })
+      .select()
+      .single();
 
-        if (error) {
-            throw error;
-        }
-
-        return data;
-    } catch (error) {
-        console.error("Error posting chat message:", error);
-        throw error;
+    if (messageError) {
+      throw messageError;
     }
-}
+
+    // Increment unread count for recipient
+    const unreadField = senderRole === 'tutor' ? 'unread_count_student' : 'unread_count_tutor';
+    
+    const { error: chatUpdateError } = await supabase
+        .rpc('increment_unread_count', {
+            chat_id_param: chat.id,
+            field_name: unreadField
+        });
+
+    if (chatUpdateError) {
+        console.error("Error updating chat counters:", chatUpdateError);
+    }
+
+    return { 
+      message: messageResult as ChatMessage, 
+      chat,
+      wasNewChat 
+    };
+  } catch (error) {
+    console.error("Error posting chat message:", error);
+    throw error;
+  }
+};
+
+export const markMessagesAsRead = async (chatId: number, userId: string) => {
+  try {
+    // Mark messages as read
+    const { error: messageError } = await supabase
+      .from("messages")
+      .update({ read: true })
+      .eq("chat_id", chatId)
+      .eq("recipient_id", userId)
+      .eq("read", false);
+
+    if (messageError) throw messageError;
+
+    // Reset unread count for this user
+    const { data: chat } = await supabase
+      .from("chats")
+      .select("tutor_id")
+      .eq("id", chatId)
+      .single();
+
+    const isUserTutor = chat?.tutor_id === userId;
+    const unreadField = isUserTutor ? 'unread_count_tutor' : 'unread_count_student';
+
+    const { error: chatError } = await supabase
+      .from("chats")
+      .update({ [unreadField]: 0 })
+      .eq("id", chatId);
+
+    if (chatError) throw chatError;
+  } catch (error) {
+    console.error("Error marking messages as read:", error);
+    throw error;
+  }
+};

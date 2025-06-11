@@ -62,6 +62,17 @@ export interface ChatMessage {
   recipient_id: string;
   content: string;
   chat_id: number;
+  read: boolean;
+}
+
+export interface ChatMessageWithSender extends ChatMessage {
+  sender: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    profile_icon_url: string;
+    role: "tutor" | "student";
+  };
 }
 
 export interface ChatData {
@@ -70,4 +81,32 @@ export interface ChatData {
   updated_at: Date;
   tutor_id: string;
   student_id: string;
+  unread_count_tutor: number;
+  unread_count_student: number;
+}
+
+export interface ChatWithParticipants extends ChatData {
+  tutor: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    profile_icon_url: string;
+    email: string;
+    location: string;
+  };
+  student: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    profile_icon_url: string;
+    email: string;
+    location: string;
+  };
+  last_message?: {
+    id: number;
+    content: string;
+    created_at: Date;
+    sender_id: string;
+  };
+  unread_count?: number;
 }
