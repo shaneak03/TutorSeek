@@ -5,7 +5,7 @@ import CustomText from './CustomText';
 
 export default function ChatCard({ chat }: { chat: ChatData }) {
   return (
-    <View className='px-4 py-3 flex-row items-center gap-3 border-b border-gray-100'>
+    <View className='px-4 py-3 flex-row items-center gap-3 border-b-hairline border-neutral-300'>
       {/* Profile Picture */}
       <View className='relative'>
         <Image
