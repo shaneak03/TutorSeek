@@ -1,4 +1,4 @@
-import { Chat, ChatMessage, Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
+import { ChatData, ChatMessage, Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
 import { supabase } from "./supabase";
 
 export const postUserProfile = async (profile : UserProfile) => {
@@ -176,7 +176,7 @@ export const postTutorSubject = async (tutor_subject : TutorSubject) => {{
     }
 }}
 
-export const createChat = async (chat : Chat) => {
+export const createChat = async (chat : ChatData) => {
     try {
         const { data, error } = await supabase
             .from("chats")

@@ -1,6 +1,6 @@
 import { filterOptions } from "../app/components/HomeTopNav";
 import {
-  Chat,
+  ChatData,
   ChatMessage,
   Level,
   Review,
@@ -302,7 +302,7 @@ export const getLevelById = async (levelId: string): Promise<Level> => {
   }
 };
 
-export const getChatsByUserId = async (userId: string): Promise<Chat[]> => {
+export const getChatsByUserId = async (userId: string): Promise<ChatData[]> => {
   try {
     const { data, error } = await supabase
       .from("chats")
@@ -313,7 +313,7 @@ export const getChatsByUserId = async (userId: string): Promise<Chat[]> => {
       throw error;
     }
 
-    return data as Chat[];
+    return data as ChatData[];
   } catch (error) {
     console.error("Error getting chat by ID:", error);
     throw error;
