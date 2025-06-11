@@ -1,9 +1,20 @@
 import LargeSolidButton from "@/app/components/LargeSolidButton";
 import ProfileNav from "@/app/components/ProfileNav";
+import { levelNameToId } from "@/app/components/SubjectAdder";
 import TutorProfileDetails from "@/app/components/TutorProfileDetails";
-import { getTutorById, getUserById } from "@/utils/getRoutes";
+import { SubjectContext } from "@/app/contexts/subjectContext";
+import {
+  getSubjectsByTutorId,
+  getTutorById,
+  getUserById,
+} from "@/utils/getRoutes";
 import { TutorProfile, UserProfile } from "@/utils/models";
-import { updateTutorProfile, updateUserProfile } from "@/utils/postRoutes";
+import {
+  addTutorSubjects,
+  deleteTutorSubjects,
+  updateTutorProfile,
+  updateUserProfile,
+} from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -15,6 +26,12 @@ import CoreProfileDetails from "../../components/CoreProfileDetails";
 import CustomText from "../../components/CustomText";
 import LoginModal from "../../components/LoginModal";
 import ProfileIcon, { updateProfileIcon } from "../../components/ProfileIcon";
+
+export type Subject = { subject: string; level: string; id: number };
+
+export type TutorProfileData = TutorProfile & {
+  subjects: Subject[];
+};
 
 const Profile = () => {
   const router = useRouter();
@@ -30,18 +47,21 @@ const Profile = () => {
     email: "",
     profile_icon_url: "",
   });
-  const [tutorData, setTutorData] = useState<TutorProfile>({
+  const [tutorData, setTutorData] = useState<TutorProfileData>({
     id: "",
     bio: "",
     hourly_rate: 0,
     is_published: false,
+    subjects: [],
   });
+  const [subsToDel, setSubsToDel] = useState<number[]>([]);
+  const [subsToAdd, setSubsToAdd] = useState<Subject[]>([]);
   // const [studentData, setStudentData] = useState<StudentProfile>({
   //   id: "",
   // });
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
-
+  const { subjNameToIdMap } = useContext(SubjectContext);
   const fetchProfileData = useCallback(async (currentUser: any) => {
     if (!currentUser) return;
 
@@ -56,8 +76,10 @@ const Profile = () => {
         if (userResult.role === "tutor") {
           const tutorResult = await getTutorById(userResult.id);
           if (tutorResult) {
-            setTutorData(tutorResult);
+            setTutorData(data => ({ ...data, ...tutorResult }));
           }
+          const tutorSubjects = await getSubjectsByTutorId(userResult.id);
+          setTutorData(data => ({ ...data, subjects: tutorSubjects }));
         } else if (userResult.role === "student") {
           // // Fetch student data if needed
           // const studentResult = await getStudentById(userResult.id);
@@ -82,6 +104,8 @@ const Profile = () => {
   useEffect(() => {
     if (isFocused) {
       setIsEditing(false);
+      setSubsToAdd([]);
+      setSubsToDel([]);
     }
   }, [isFocused]);
 
@@ -111,6 +135,14 @@ const Profile = () => {
           tutorData.is_published = false;
         }
         updateTutorProfile(tutorData);
+        const mappedSubsToAdd = subsToAdd.map(s => ({
+          id: s.id,
+          level: levelNameToId[s.level],
+          subject: subjNameToIdMap[s.subject],
+        }));
+
+        addTutorSubjects(mappedSubsToAdd, userData.id);
+        deleteTutorSubjects(subsToDel, userData.id);
       }
     } catch (error) {
       console.log(error);
@@ -158,6 +190,8 @@ const Profile = () => {
               tutorData={tutorData}
               setTutorData={setTutorData}
               isEditing={isEditing}
+              setSubsToAdd={setSubsToAdd}
+              setSubsToDel={setSubsToDel}
             />
           )}
 

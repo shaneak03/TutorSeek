@@ -7,7 +7,6 @@ import {
   StudentProfile,
   Subject,
   TutorProfile,
-  TutorSubject,
   UserProfile,
 } from "./models";
 import { supabase } from "./supabase";
@@ -31,21 +30,24 @@ export const getTutors = async (filters: filterOptions) => {
   }
 
   const { data, error } = await query;
-
   if (error) {
     console.error("Error fetching tutors:", error);
     return [];
   }
 
+  const dedupedTutors = Array.from(
+    new Map(data.map(tutor => [tutor.tutor_id, tutor])).values()
+  );
+
   //Sorting
   if (filters.sortBy === "price_asc") {
-    return data.sort((a, b) => a.hourly_rate - b.hourly_rate);
+    return dedupedTutors.sort((a, b) => a.hourly_rate - b.hourly_rate);
   } else if (filters.sortBy === "price_desc") {
-    return data.sort((a, b) => b.hourly_rate - a.hourly_rate);
+    return dedupedTutors.sort((a, b) => b.hourly_rate - a.hourly_rate);
   } else if (filters.sortBy === "rating_asc") {
-    return data.sort((a, b) => a.rating_count - b.rating_count);
+    return dedupedTutors.sort((a, b) => a.rating_count - b.rating_count);
   } else {
-    return data.sort((a, b) => b.rating_count - a.rating_count);
+    return dedupedTutors.sort((a, b) => b.rating_count - a.rating_count);
   }
 };
 
@@ -91,20 +93,18 @@ export const getTutorsBySubjectAndLevel = async (
   }
 };
 
-export const getSubjectsByTutorId = async (
-  tutor_id: string
-): Promise<TutorSubject[]> => {
+export const getSubjectsByTutorId = async (tutor_id: string) => {
   try {
     const { data, error } = await supabase
-      .from("tutor_subjects")
-      .select("*")
+      .from("tutor_subjects_flatten")
+      .select("subject, level, id")
       .eq("tutor_id", tutor_id);
 
     if (error) {
       throw error;
     }
 
-    return data as TutorSubject[];
+    return data;
   } catch (error) {
     console.error("Error getting tutor subjects:", error);
     throw error;

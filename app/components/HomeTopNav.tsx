@@ -1,10 +1,9 @@
-import { getSubjects } from "@/utils/getRoutes";
-import { Subject } from "@/utils/models";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Pressable, View } from "react-native";
+import { SubjectContext } from "../contexts/subjectContext";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 import FilterNSortModal from "./FilterNSortModal";
@@ -30,7 +29,7 @@ type props = {
 export default function HomeTopNav({ filters, setFilters, tutors }: props) {
   const [isShowFilterModal, setIsShowFilterModal] = useState(false);
   const [isShowSubjPicker, setIsShowSubjPicker] = useState(false);
-  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const { subjects } = useContext(SubjectContext);
 
   const showFilterModal = () => {
     setIsShowFilterModal(true);
@@ -39,19 +38,6 @@ export default function HomeTopNav({ filters, setFilters, tutors }: props) {
   const showSubjectPicker = () => {
     setIsShowSubjPicker(true);
   };
-
-  useEffect(() => {
-    const fetchSubjs = async () => {
-      try {
-        const res = await getSubjects();
-        setSubjects(res);
-        console.log(res);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchSubjs();
-  }, []);
 
   return (
     <>

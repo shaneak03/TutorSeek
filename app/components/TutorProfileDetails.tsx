@@ -1,32 +1,39 @@
-import { TutorProfile } from "@/utils/models";
-import { Octicons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import MultiSlider, {
-  MarkerProps,
-} from "@ptomasroos/react-native-multi-slider";
-import { Dimensions, View } from "react-native";
+import { useState } from "react";
+import { TouchableOpacity, View } from "react-native";
+import { TutorProfileData } from "../(tabs)/profile";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
+import HourlyRateEditor from "./HourlyRateEditor";
 import RoundTextInput from "./RoundedTextInput";
+import SubjectAdder from "./SubjectAdder";
+import TutorSubjectList from "./TutorSubjectList";
+import { Subject } from "../(tabs)/profile";
 
 type props = {
-  tutorData: TutorProfile;
-  setTutorData: React.Dispatch<React.SetStateAction<TutorProfile>>;
+  tutorData: TutorProfileData;
+  setTutorData: React.Dispatch<React.SetStateAction<TutorProfileData>>;
   isEditing: boolean;
+  setSubsToAdd: React.Dispatch<React.SetStateAction<Subject[]>>;
+  setSubsToDel: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 export default function TutorProfileDetails({
   tutorData,
   setTutorData,
   isEditing,
+  setSubsToAdd,
+  setSubsToDel,
 }: props) {
-  const onValChange = (val: number[]) => {
-    console.log(val);
-    setTutorData({ ...tutorData, hourly_rate: val[0] });
-  };
+  const [isShowAddSubModal, setIsShowAddSubModal] = useState(false);
   return (
     <>
+      <SubjectAdder
+        isShowAddSubModal={isShowAddSubModal}
+        setIsShowAddSubModal={setIsShowAddSubModal}
+        setSubsToAdd={setSubsToAdd}
+        setTutorData={setTutorData}
+      />
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Bio</CustomText>
         <RoundTextInput
@@ -36,67 +43,39 @@ export default function TutorProfileDetails({
           isEditing={isEditing}
         />
       </View>
+
+      <HourlyRateEditor
+        tutorData={tutorData}
+        setTutorData={setTutorData}
+        isEditing={isEditing}
+      />
       <View className='w-full'>
         <View className='flex-row justify-between items-center'>
           <CustomText className='font-poppins-semibold mb-2'>
-            Hourly Rate
+            Subjects
           </CustomText>
-          {tutorData.hourly_rate === 0 && (
-            <View className='flex-row justify-between items-center gap-1'>
+          {isEditing && (
+            <TouchableOpacity
+              className='flex-row gap-2'
+              onPress={() => setIsShowAddSubModal(true)}
+            >
+              <CustomText className='text-sm text-primary-700'>
+                Add subjects
+              </CustomText>
               <Feather
-                name='alert-circle'
+                name='plus'
                 size={16}
                 color={themeColors["primary-700"]}
               />
-              <CustomText className='text-sm text-primary-700'>
-                Required
-              </CustomText>
-            </View>
+            </TouchableOpacity>
           )}
         </View>
-
-        {isEditing ? (
-          <View className='flex pt-12 items-center'>
-            <MultiSlider
-              min={0}
-              max={200}
-              sliderLength={Dimensions.get("window").width - 144}
-              customMarker={(markerProps: MarkerProps) => (
-                <View className='w-[88]'>
-                  <View className='p-2 rounded-lg bg-primary-700 flex items-center'>
-                    <CustomText className='text-neutral-100'>
-                      SGD {markerProps.currentValue}
-                    </CustomText>
-                  </View>
-                  <View className='h-20 flex justify-start items-center'>
-                    <Octicons
-                      className='relative bottom-3.5'
-                      name='triangle-down'
-                      size={24}
-                      color={themeColors["primary-700"]}
-                    />
-                    <FontAwesome
-                      className='relative bottom-4'
-                      name='circle'
-                      size={16}
-                      color={themeColors["primary-700"]}
-                    />
-                  </View>
-                </View>
-              )}
-              values={[tutorData.hourly_rate]}
-              onValuesChange={onValChange}
-              selectedStyle={{
-                backgroundColor: themeColors["primary-700"],
-              }}
-              trackStyle={{ height: 3 }}
-            />
-          </View>
-        ) : (
-          <View className='bg-neutral-200 rounded-[48] font-poppins p-4 w-full leading-normal'>
-            <CustomText>SGD {tutorData.hourly_rate}.00</CustomText>
-          </View>
-        )}
+        <TutorSubjectList
+          tutorData={tutorData}
+          setTutorData={setTutorData}
+          isEditing={isEditing}
+          setSubsToDel={setSubsToDel}
+        />
       </View>
     </>
   );

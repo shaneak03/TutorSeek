@@ -9,6 +9,7 @@ import { Stack } from "expo-router";
 import { createContext, useEffect, useState } from "react";
 import { StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import SubjectContextProvider from "./contexts/subjectContext";
 import "./global.css";
 import themeColors from "./themeColors";
 
@@ -40,18 +41,20 @@ export default function RootLayout() {
         backgroundColor={themeColors["neutral-100"]}
         barStyle={"dark-content"}
       />
-      <AuthContext.Provider value={{ user, setUser }}>
-        <SafeAreaProvider>
-          <Stack
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen name='(tabs)' />
-            <Stack.Screen name='(auth)' />
-          </Stack>
-        </SafeAreaProvider>
-      </AuthContext.Provider>
+      <SubjectContextProvider>
+        <AuthContext value={{ user, setUser }}>
+          <SafeAreaProvider>
+            <Stack
+              screenOptions={{
+                headerShown: false,
+              }}
+            >
+              <Stack.Screen name='(tabs)' />
+              <Stack.Screen name='(auth)' />
+            </Stack>
+          </SafeAreaProvider>
+        </AuthContext>
+      </SubjectContextProvider>
     </>
   );
 }

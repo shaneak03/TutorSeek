@@ -33,7 +33,7 @@ const Index = () => {
 
     const fetchTutorData = async () => {
       const result = await getTutors(filters);
-      console.log("Tutors:" + result);
+      console.log(result);
       if (result) setTutors(result);
     };
 

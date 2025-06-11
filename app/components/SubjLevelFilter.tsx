@@ -4,7 +4,6 @@ import RadioGroup from "react-native-radio-buttons-group";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 import { filterOptions } from "./HomeTopNav";
-import LineSeperator from "./LineSeperator";
 
 type props = {
   editData: filterOptions;
