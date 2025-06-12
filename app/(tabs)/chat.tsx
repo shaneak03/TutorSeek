@@ -1,12 +1,12 @@
+import ChatCard from "@/app/components/ChatCard";
+import CustomText from "@/app/components/CustomText";
+import LoginModal from "@/app/components/LoginModal";
 import { getChatsByUserId, getUserById } from "@/utils/getRoutes";
 import { ChatWithParticipants, UserProfile } from "@/utils/models";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
-import ChatCard from "../components/ChatCard";
-import CustomText from "../components/CustomText";
-import LoginModal from "../components/LoginModal";
 
 const Chat = () => {
   const { user } = useContext(AuthContext);

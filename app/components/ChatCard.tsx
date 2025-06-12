@@ -1,6 +1,7 @@
 import { ChatWithParticipants } from '@/utils/models';
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, View } from 'react-native';
+import { Image, TouchableOpacity, View } from 'react-native';
 import CustomText from './CustomText';
 
 interface ChatCardProps {
@@ -9,6 +10,22 @@ interface ChatCardProps {
 }
 
 export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
+  const router = useRouter();
+  
+  const handlePress = () => {
+  router.push({
+    pathname: `/chat/${chat.id}`,
+    params: {
+      otherUser: JSON.stringify({
+        id: otherUser.id,
+        first_name: otherUser.first_name,
+        last_name: otherUser.last_name,
+        profile_icon_url: otherUser.profile_icon_url,
+        role: isCurrentUserTutor ? "student" : "tutor"
+      })
+    }
+  });
+};
 
   const isCurrentUserTutor = chat.tutor_id === currentUserId;
   const otherUser = isCurrentUserTutor ? chat.student : chat.tutor;
@@ -49,7 +66,11 @@ export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
   const displayName = `${otherUser.first_name} ${otherUser.last_name.charAt(0)}.`;
 
   return (
-    <View className='px-4 py-3 flex-row items-center gap-3 border-b-hairline border-neutral-300'>
+    <TouchableOpacity 
+      onPress={handlePress}
+      className='px-4 py-3 flex-row items-center gap-3 border-b-hairline border-neutral-300 active:bg-gray-50'
+      activeOpacity={0.7}
+    >
       <View className='relative'>
         <Image
           source={
@@ -85,6 +106,6 @@ export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
           </View>
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
