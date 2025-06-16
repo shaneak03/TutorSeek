@@ -204,7 +204,7 @@ export const postChatMessage = async (
         .insert(newChatData)
         .select(`
           *,
-          tutor:tutor_id (
+          tutor:tutor_id!chats_tutor_id_fkey (
             id,
             first_name,
             last_name,
@@ -212,7 +212,7 @@ export const postChatMessage = async (
             email,
             location
           ),
-          student:student_id (
+          student:student_id!chats_student_id_fkey (
             id,
             first_name,
             last_name,

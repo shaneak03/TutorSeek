@@ -27,7 +27,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <View className="mb-4">
-      {/* Message Bubble */}
       <View className={`flex-row ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
         <View
           className={`max-w-[280px] px-4 py-3 ${
@@ -46,14 +45,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             elevation: 2,
           }}
         >
-          {/* Sender Name for received messages */}
           {!isCurrentUser && showSenderName && (
             <CustomText className="font-poppins-semibold text-sm text-gray-900 mb-1">
               {message.sender.first_name} {message.sender.last_name}
             </CustomText>
           )}
           
-          {/* Message Content */}
           <CustomText 
             className={`font-poppins-regular text-base leading-5 ${
               isCurrentUser ? 'text-white' : 'text-gray-900'
@@ -63,8 +60,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           </CustomText>
         </View>
       </View>
-      
-      {/* Time and Read Status */}
       {showTime && (
         <View className={`flex-row mt-1 px-2 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
           <View className="flex-row items-center gap-1">

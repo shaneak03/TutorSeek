@@ -110,3 +110,13 @@ export interface ChatWithParticipants extends ChatData {
   };
   unread_count?: number;
 }
+
+export interface OnlineUser {
+  user_id: string;
+  online_at: string;
+}
+
+export interface RealtimeContextType {
+  isOnline: boolean;
+  onlineUsers: { [key: string]: OnlineUser };
+}

@@ -1,16 +1,18 @@
-import { AuthContext } from '@/app/_layout';
+import { AuthContext, RealtimeContext } from '@/app/_layout';
 import CustomText from '@/app/components/CustomText';
 import MessageBubble from '@/app/components/MessageBubble';
 import { getChatMessagesByChatIdAndPages } from '@/utils/getRoutes';
 import { ChatMessageWithSender, UserProfile } from '@/utils/models';
 import { markMessagesAsRead, postChatMessage } from '@/utils/postRoutes';
 import { supabase } from '@/utils/supabase';
+import { Ionicons } from '@expo/vector-icons';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Alert,
   Image,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -23,6 +25,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ChatScreen = () => {
   const { user } = useContext(AuthContext);
+  const { onlineUsers } = useContext(RealtimeContext);
+  
   const router = useRouter();
   const params = useLocalSearchParams();
   const chatId = Number(params.id);
@@ -32,7 +36,7 @@ const ChatScreen = () => {
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,112 +44,296 @@ const ChatScreen = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<string>('DISCONNECTED');
   
   const scrollViewRef = useRef<ScrollView>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const isComponentMountedRef = useRef(true);
+  const reconnectAttempts = useRef(0);
+  const maxReconnectAttempts = 3; // Reduced from 5
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  const PAGE_SIZE = 50; // Adjust based on your needs
+  // Single subscription state to prevent duplicates
+  const subscriptionStateRef = useRef<{
+    isSetupInProgress: boolean;
+    isConnected: boolean;
+    shouldReconnect: boolean;
+  }>({
+    isSetupInProgress: false,
+    isConnected: false,
+    shouldReconnect: true
+  });
+  
+  const PAGE_SIZE = 50;
 
-  // Transform message to include sender info
+  // Memoize static values to prevent unnecessary re-renders
+  const staticChatId = useMemo(() => chatId, []);
+  const staticOtherUser = useMemo(() => otherUser, []);
+  const staticUserId = useMemo(() => user?.id, [user?.id]);
+
+  // Memoize online status check to prevent unnecessary re-renders
+  const isOtherUserOnline = useMemo(() => {
+    return onlineUsers[staticOtherUser.id?.toString()] !== undefined;
+  }, [onlineUsers, staticOtherUser.id]);
+
+  // Transform message to include sender info - memoized with stable dependencies
   const transformMessage = useCallback((msg: any): ChatMessageWithSender => ({
     ...msg,
     sender: {
       id: msg.sender_id,
-      first_name: msg.sender_id === user?.id ? 'You' : otherUser.first_name,
-      last_name: msg.sender_id === user?.id ? '' : otherUser.last_name,
-      profile_icon_url: msg.sender_id === user?.id ? '' : otherUser.profile_icon_url,
-      role: msg.sender_id === user?.id ? (user as UserProfile).role : otherUser.role
+      first_name: msg.sender_id === staticUserId ? 'You' : staticOtherUser.first_name,
+      last_name: msg.sender_id === staticUserId ? '' : staticOtherUser.last_name,
+      profile_icon_url: msg.sender_id === staticUserId ? '' : staticOtherUser.profile_icon_url,
+      role: msg.sender_id === staticUserId ? (user as UserProfile).role : staticOtherUser.role
     }
-  }), [user, otherUser]);
+  }), [staticUserId, staticOtherUser, user]);
 
-  // Setup Supabase realtime subscription
-  const setupRealtimeSubscription = useCallback(() => {
-    if (!user?.id) return;
-    console.log('chatId:', chatId)
-    const channel = supabase
-      .channel(`chat_${chatId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `chat_id=eq.${chatId}`
-        },
-        (payload) => {
-          console.log('New message received:', payload);
-          const newMessage = transformMessage(payload.new);
-          
-          if (newMessage.sender_id !== user.id) {
+  const markChatAsRead = useCallback(async () => {
+    if (!staticUserId) return;
+    try {
+      await markMessagesAsRead(staticChatId, staticUserId);
+      
+      // Broadcast read status to other users
+      if (channelRef.current && subscriptionStateRef.current.isConnected) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'messages_read',
+          payload: {
+            chat_id: staticChatId,
+            user_id: staticUserId,
+            read_at: new Date().toISOString()
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
+    }
+  }, [staticChatId, staticUserId]);
+
+  // Clear any pending reconnection timeouts
+  const clearReconnectTimeout = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Cleanup function
+  const cleanupRealtimeSubscription = useCallback(() => {
+    console.log('Starting realtime subscription cleanup...');
+    
+    // Clear any pending reconnection attempts
+    clearReconnectTimeout();
+    subscriptionStateRef.current.shouldReconnect = false;
+    
+    if (channelRef.current) {
+      try {
+        console.log('Unsubscribing from channel...');
+        channelRef.current.unsubscribe();
+        supabase.removeChannel(channelRef.current);
+        console.log('Channel cleanup completed');
+      } catch (error) {
+        console.warn('Error during subscription cleanup:', error);
+      } finally {
+        channelRef.current = null;
+        setConnectionStatus('DISCONNECTED');
+      }
+    }
+    
+    // Reset subscription state
+    subscriptionStateRef.current = {
+      isSetupInProgress: false,
+      isConnected: false,
+      shouldReconnect: false
+    };
+    reconnectAttempts.current = 0;
+  }, [clearReconnectTimeout]);
+
+  // Setup Supabase realtime subscription 
+  const setupRealtimeSubscription = useCallback(async () => {
+    // Prevent multiple simultaneous setup attempts
+    if (subscriptionStateRef.current.isSetupInProgress) {
+      console.log('Setup already in progress, skipping...');
+      return;
+    }
+    
+    if (!staticUserId || !isComponentMountedRef.current || !subscriptionStateRef.current.shouldReconnect) {
+      console.log('Cannot setup subscription: missing requirements');
+      return;
+    }
+
+    subscriptionStateRef.current.isSetupInProgress = true;
+    
+    try {
+      // Clean up existing channel first
+      if (channelRef.current) {
+        console.log('Cleaning up existing channel before setup...');
+        try {
+          channelRef.current.unsubscribe();
+          await supabase.removeChannel(channelRef.current);
+        } catch (cleanupError) {
+          console.warn('Error during existing channel cleanup:', cleanupError);
+        }
+        channelRef.current = null;
+        subscriptionStateRef.current.isConnected = false;
+      }
+
+      // Wait for cleanup to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Check if component is still mounted and should reconnect
+      if (!isComponentMountedRef.current || !subscriptionStateRef.current.shouldReconnect) {
+        console.log('Component unmounted or reconnect disabled during setup delay, aborting...');
+        subscriptionStateRef.current.isSetupInProgress = false;
+        return;
+      }
+
+      console.log('Setting up new chat channel for chat:', staticChatId);
+
+      // Create unique channel name to prevent conflicts
+      const channelName = `chat-${staticChatId}-${staticUserId}-${Date.now()}`;
+      const channel = supabase.channel(channelName, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: staticUserId.toString() }
+        }
+      });
+      
+      // Event listeners
+      channel
+        .on('broadcast', { event: 'new_message' }, (payload) => {
+          console.log('Received new message via broadcast:', payload);
+            
+          if (!isComponentMountedRef.current || !subscriptionStateRef.current.isConnected) return;
+            
+          const newMessage = payload.payload;
+            
+          if (newMessage.chat_id === staticChatId && newMessage.sender_id !== staticUserId) {
+            const messageWithSender = transformMessage(newMessage);
+              
             setMessages(prev => {
               const exists = prev.some(msg => msg.id === newMessage.id);
               if (exists) return prev;
-              return [...prev, newMessage];
+                
+              return [...prev, messageWithSender];
             });
-            
+              
             setTimeout(() => {
-              scrollViewRef.current?.scrollToEnd({ animated: true });
+              if (scrollViewRef.current && isComponentMountedRef.current) {
+                scrollViewRef.current.scrollToEnd({ animated: true });
+              }
             }, 100);
+              
+            markChatAsRead();
           }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-          filter: `chat_id=eq.${chatId}`
-        },
-        (payload) => {
-          console.log('Message updated:', payload);
-          const updatedMessage = transformMessage(payload.new);
+        })
+        .on('broadcast', { event: 'messages_read' }, (payload) => {
+          console.log('Messages marked as read:', payload);
+            
+          if (!isComponentMountedRef.current || !subscriptionStateRef.current.isConnected) return;
           
-          setMessages(prev => 
-            prev.map(msg => 
-              msg.id === updatedMessage.id ? updatedMessage : msg
-            )
-          );
-        }
-      )
-      .on('presence', { event: 'sync' }, () => {
-        console.log('Presence synced');
-      })
-      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
-        console.log('User joined:', key, newPresences);
-        if (key === otherUser.id) {
-          setIsOnline(true);
-        }
-      })
-      .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
-        console.log('User left:', key, leftPresences);
-        if (key === otherUser.id) {
-          setIsOnline(false);
-        }
-      })
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-        if (!user?.id) {
-          console.warn('Tried to track presence but user.id is undefined');
-          return;
-        }
-        if (status === 'SUBSCRIBED') {
-          channel.track({
-            user_id: user.id,
-            online_at: new Date().toISOString(),
-          });
-        }
-      });
+          const { chat_id, user_id } = payload.payload;
+            
+          if (chat_id === staticChatId && user_id !== staticUserId) {
+            setMessages(prev => 
+              prev.map(msg => 
+                msg.sender_id === staticUserId ? { ...msg, read: true } : msg
+              )
+            );
+          }
+        })
+        .on('presence', { event: 'sync' }, () => {
+          if (!isComponentMountedRef.current || !subscriptionStateRef.current.isConnected) return;
+          console.log('Chat presence sync');
+        })
+        .on('presence', { event: 'join' }, ({ key }) => {
+          if (subscriptionStateRef.current.isConnected) {
+            console.log('User joined chat:', key);
+          }
+        })
+        .on('presence', { event: 'leave' }, ({ key }) => {
+          if (subscriptionStateRef.current.isConnected) {
+            console.log('User left chat:', key);
+          }
+        })
+        .subscribe(async (status, err) => {
+          console.log(`Chat subscription status: ${status}`, err);
+          
+          if (!isComponentMountedRef.current) {
+            console.log('Component unmounted, ignoring subscription status');
+            return;
+          }
+          
+          setConnectionStatus(status);
+          
+          if (status === 'SUBSCRIBED') {
+            console.log('Successfully subscribed to chat channel');
+            subscriptionStateRef.current.isConnected = true;
+            subscriptionStateRef.current.isSetupInProgress = false;
+            reconnectAttempts.current = 0;
+            
+            try {
+              const trackResult = await channel.track({
+                user_id: staticUserId,
+                chat_id: staticChatId,
+                online_at: new Date().toISOString(),
+              });
+              console.log('User tracked in chat:', staticUserId, staticChatId, trackResult);
+            } catch (presenceError) {
+              console.error('Error tracking chat presence:', presenceError);
+            }
+          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            subscriptionStateRef.current.isConnected = false;
+            subscriptionStateRef.current.isSetupInProgress = false;
+            
+            // Only attempt reconnection if we should reconnect and haven't exceeded max attempts
+            if (subscriptionStateRef.current.shouldReconnect && 
+                reconnectAttempts.current < maxReconnectAttempts && 
+                isComponentMountedRef.current) {
+              
+              reconnectAttempts.current++;
+              const delay = Math.min(2000 * Math.pow(2, reconnectAttempts.current - 1), 10000);
+              
+              console.log(`Scheduling reconnection attempt ${reconnectAttempts.current}/${maxReconnectAttempts} in ${delay}ms after ${status}...`);
+              
+              clearReconnectTimeout(); // Clear any existing timeout
+              reconnectTimeoutRef.current = setTimeout(() => {
+                if (isComponentMountedRef.current && subscriptionStateRef.current.shouldReconnect) {
+                  console.log(`Attempting reconnection ${reconnectAttempts.current}/${maxReconnectAttempts}...`);
+                  setupRealtimeSubscription();
+                }
+              }, delay);
+            } else {
+              console.error(`Max reconnection attempts reached, component unmounted, or reconnect disabled. Status: ${status}`);
+            }
+          }
+        });
 
-    channelRef.current = channel;
-  }, [chatId, user?.id, otherUser.id, transformMessage]);
+      channelRef.current = channel;
 
-  const cleanupRealtimeSubscription = useCallback(() => {
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+    } catch (error) {
+      console.error('Error setting up chat realtime subscription:', error);
+      subscriptionStateRef.current.isSetupInProgress = false;
+      subscriptionStateRef.current.isConnected = false;
+      
+      // Only retry on error if we should reconnect and haven't exceeded max attempts
+      if (subscriptionStateRef.current.shouldReconnect && 
+          isComponentMountedRef.current && 
+          reconnectAttempts.current < maxReconnectAttempts) {
+        
+        reconnectAttempts.current++;
+        const delay = 3000;
+        
+        console.log(`Scheduling retry after error in ${delay}ms...`);
+        clearReconnectTimeout();
+        reconnectTimeoutRef.current = setTimeout(() => {
+          if (isComponentMountedRef.current && subscriptionStateRef.current.shouldReconnect) {
+            setupRealtimeSubscription();
+          }
+        }, delay);
+      }
     }
-  }, []);
+  }, [staticChatId, staticUserId, transformMessage, markChatAsRead, clearReconnectTimeout]);
 
   // Fetch messages with pagination
   const fetchMessages = useCallback(async (page: number = 1, append: boolean = false) => {
@@ -156,22 +344,19 @@ const ChatScreen = () => {
         setLoadingMore(true);
       }
 
-      const fetchedMessages = await getChatMessagesByChatIdAndPages(chatId, page, PAGE_SIZE);
+      const fetchedMessages = await getChatMessagesByChatIdAndPages(staticChatId, page, PAGE_SIZE);
       
-      // Transform messages to include sender info
       const messagesWithSender: ChatMessageWithSender[] = fetchedMessages
         .map(transformMessage)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // Ensure chronological order
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       
       if (append) {
-        // Prepend older messages to the beginning
         setMessages(prev => [...messagesWithSender, ...prev]);
       } else {
         setMessages(messagesWithSender);
         setIsInitialLoad(false);
       }
 
-      // Check if there are more messages
       setHasMoreMessages(fetchedMessages.length === PAGE_SIZE);
       
     } catch (error) {
@@ -182,45 +367,35 @@ const ChatScreen = () => {
       setLoadingMore(false);
       setRefreshing(false);
     }
-  }, [chatId, transformMessage]);
+  }, [staticChatId, transformMessage]);
 
   // Load more messages (older messages)
-  const loadMoreMessages = async () => {
+  const loadMoreMessages = useCallback(async () => {
     if (!hasMoreMessages || loadingMore) return;
     
     const nextPage = currentPage + 1;
     await fetchMessages(nextPage, true);
     setCurrentPage(nextPage);
-  };
+  }, [hasMoreMessages, loadingMore, currentPage, fetchMessages]);
 
   // Refresh messages (pull to refresh)
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     setCurrentPage(1);
     setHasMoreMessages(true);
     await fetchMessages(1, false);
-  };
+  }, [fetchMessages]);
 
   // Handle scroll to detect when to load more messages
-  const handleScroll = (event: any) => {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+  const handleScroll = useCallback((event: any) => {
+    const { contentOffset } = event.nativeEvent;
     
-    // Check if scrolled to top (load more messages)
     if (contentOffset.y <= 50 && hasMoreMessages && !loadingMore && !isInitialLoad) {
       loadMoreMessages();
     }
-  };
+  }, [hasMoreMessages, loadingMore, isInitialLoad, loadMoreMessages]);
 
-  const markChatAsRead = useCallback(async () => {
-    if (!user?.id) return;
-    try {
-      await markMessagesAsRead(chatId, user.id);
-    } catch (error) {
-      console.error('Error marking messages as read:', error);
-    }
-  }, [chatId, user.id]);
-
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!messageText.trim() || !user || sending) return;
 
     const messageContent = messageText.trim();
@@ -231,16 +406,16 @@ const ChatScreen = () => {
       
       const currentUserProfile = user as UserProfile;
       const senderRole = currentUserProfile.role;
-      const tutorId = senderRole === 'tutor' ? user.id : otherUser.id;
-      const studentId = senderRole === 'student' ? user.id : otherUser.id;
+      const tutorId = senderRole === 'tutor' ? user.id : staticOtherUser.id;
+      const studentId = senderRole === 'student' ? user.id : staticOtherUser.id;
 
       optimisticMessage = {
         id: Date.now(),
         created_at: new Date().toISOString(),
         sender_id: user.id,
-        recipient_id: otherUser.id,
+        recipient_id: staticOtherUser.id,
         content: messageContent,
-        chat_id: chatId,
+        chat_id: staticChatId,
         read: false,
         sender: {
           id: user.id,
@@ -257,7 +432,7 @@ const ChatScreen = () => {
       const { message: newMessage } = await postChatMessage(
         {
           sender_id: user.id,
-          recipient_id: otherUser.id,
+          recipient_id: staticOtherUser.id,
           content: messageContent
         },
         senderRole,
@@ -265,6 +440,7 @@ const ChatScreen = () => {
         studentId
       );
 
+      // Replace optimistic message with real message
       setMessages(prev => 
         prev.map(msg => 
           msg.id === optimisticMessage!.id 
@@ -275,9 +451,20 @@ const ChatScreen = () => {
             : msg
         )
       );
+
+      // Broadcast new message to other users
+      if (channelRef.current && subscriptionStateRef.current.isConnected) {
+        channelRef.current.send({
+          type: 'broadcast',
+          event: 'new_message',
+          payload: newMessage
+        });
+      }
       
       setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
+        if (scrollViewRef.current && isComponentMountedRef.current) {
+          scrollViewRef.current.scrollToEnd({ animated: true });
+        }
       }, 100);
 
     } catch (error) {
@@ -292,60 +479,126 @@ const ChatScreen = () => {
     } finally {
       setSending(false);
     }
-  };
+  }, [messageText, user, sending, staticOtherUser.id, staticChatId]);
 
+  // Single initialization effect
   useEffect(() => {
-    fetchMessages();
-    markChatAsRead();
-    setupRealtimeSubscription();
+    console.log('Initializing chat screen for chat ID:', staticChatId);
+    isComponentMountedRef.current = true;
+    subscriptionStateRef.current.shouldReconnect = true;
+    
+    const initialize = async () => {
+      try {
+        // Load initial messages
+        await fetchMessages();
+        await markChatAsRead();
+        
+        // Setup realtime subscription after initial load
+        if (staticUserId && staticChatId) {
+          setTimeout(() => {
+            if (isComponentMountedRef.current && subscriptionStateRef.current.shouldReconnect) {
+              setupRealtimeSubscription();
+            }
+          }, 1000); 
+        }
+      } catch (error) {
+        console.error('Error initializing chat:', error);
+      }
+    };
+    
+    initialize();
 
     return () => {
+      console.log('Chat screen unmounting, cleaning up...');
+      isComponentMountedRef.current = false;
       cleanupRealtimeSubscription();
     };
-  }, [chatId, fetchMessages, markChatAsRead, setupRealtimeSubscription, cleanupRealtimeSubscription]);
+  }, [staticChatId, staticUserId, fetchMessages, markChatAsRead, setupRealtimeSubscription, cleanupRealtimeSubscription]);
 
+  // Auto-scroll effect
   useEffect(() => {
-    if (!isInitialLoad) {
+    if (!isInitialLoad && messages.length > 0) {
       setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
+        if (scrollViewRef.current && isComponentMountedRef.current) {
+          scrollViewRef.current.scrollToEnd({ animated: true });
+        }
       }, 100);
     }
-  }, [messages, isInitialLoad]);
+  }, [messages.length, isInitialLoad]);
 
-  const displayName = `${otherUser.first_name} ${otherUser.last_name.charAt(0)}.`;
+  // Keyboard listeners
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+      setTimeout(() => {
+        if (scrollViewRef.current && isComponentMountedRef.current) {
+          scrollViewRef.current.scrollToEnd({ animated: true });
+        }
+      }, 100);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
 
-  if (!user) return null;
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  const displayName = useMemo(() => 
+    `${staticOtherUser.first_name} ${staticOtherUser.last_name.charAt(0)}.`,
+    [staticOtherUser.first_name, staticOtherUser.last_name]
+  );
+
+  if (!user) {
+    return (
+      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+        <CustomText className="text-gray-500">Loading...</CustomText>
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="bg-white border-b border-gray-200 px-4 py-3">
-        <View className="flex-row items-center gap-3">
-          <TouchableOpacity onPress={() => router.back()}>
-            <CustomText className="text-lg text-blue-500">←</CustomText>
-          </TouchableOpacity>
-          <Image
-            source={
-              otherUser.profile_icon_url
-                ? { uri: otherUser.profile_icon_url }
-                : require("@/assets/images/profile_icon.jpg")
-            }
-            className="w-12 h-12 rounded-full"
-          />
-          <View className="flex-1">
-            <CustomText className="font-poppins-semibold text-lg text-gray-900">
-              {displayName}
-            </CustomText>
-            <CustomText className="font-poppins-regular text-sm text-gray-500">
-              {isOnline ? 'Online' : 'Offline'} {loadingMore && '• Loading...'}
-            </CustomText>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={0}
+    >
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="bg-white border-b border-gray-200 px-4 py-3">
+          <View className="flex-row items-center gap-3">
+            <TouchableOpacity 
+              onPress={() => router.back()}
+              className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="chevron-back" size={20} color="#374151" />
+            </TouchableOpacity>
+            <Image
+              source={
+                staticOtherUser.profile_icon_url
+                  ? { uri: staticOtherUser.profile_icon_url }
+                  : require("@/assets/images/profile_icon.jpg")
+              }
+              className="w-12 h-12 rounded-full"
+            />
+            <View className="flex-1">
+              <CustomText className="font-poppins-semibold text-lg text-gray-900">
+                {displayName}
+              </CustomText>
+              <CustomText className="font-poppins-regular text-sm text-gray-500">
+                {isOtherUserOnline ? 'Online' : 'Offline'}
+                {loadingMore && ' • Loading...'}
+                {connectionStatus !== 'SUBSCRIBED' && connectionStatus !== 'DISCONNECTED' && (
+                  <> • {connectionStatus}</>
+                )}
+              </CustomText>
+            </View>
           </View>
         </View>
-      </View>
-      <KeyboardAvoidingView 
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
+
+        {/* Messages */}
         <ScrollView
           ref={scrollViewRef}
           className="flex-1 bg-gray-100 px-4 py-4"
@@ -395,9 +648,11 @@ const ChatScreen = () => {
             })
           )}
         </ScrollView>
+
+        {/* Input */}
         <View className="bg-white border-t border-gray-200 px-4 py-3">
-          <View className="flex-row items-end gap-3">
-            <View className="flex-1 bg-gray-100 rounded-full px-4 py-3 min-h-[44px] justify-center">
+          <View className="flex-row items-center gap-3">
+            <View className="flex-1 bg-gray-100 rounded-full px-4 py-2 min-h-[44px] max-h-24">
               <TextInput
                 value={messageText}
                 onChangeText={setMessageText}
@@ -406,7 +661,7 @@ const ChatScreen = () => {
                 multiline
                 maxLength={1000}
                 className="font-poppins-regular text-base text-gray-900 max-h-24"
-                style={{ textAlignVertical: 'top' }}
+                style={{ textAlignVertical: 'center' }}
                 returnKeyType="send"
                 onSubmitEditing={handleSend}
                 submitBehavior='blurAndSubmit'
@@ -421,17 +676,18 @@ const ChatScreen = () => {
                   ? 'bg-blue-500' 
                   : 'bg-gray-300'
               }`}
+              activeOpacity={0.7}
             >
               {sending ? (
                 <View className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                <CustomText className="text-white text-lg">→</CustomText>
+                <Ionicons name="send" size={18} color="white" />
               )}
             </TouchableOpacity>
           </View>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 };
 
