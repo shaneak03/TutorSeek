@@ -12,7 +12,6 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import {
   Alert,
   Image,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   RefreshControl,
@@ -36,7 +35,6 @@ const ChatScreen = () => {
   const [messageText, setMessageText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -526,26 +524,6 @@ const ChatScreen = () => {
     }
   }, [messages.length, isInitialLoad]);
 
-  // Keyboard listeners
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardVisible(true);
-      setTimeout(() => {
-        if (scrollViewRef.current && isComponentMountedRef.current) {
-          scrollViewRef.current.scrollToEnd({ animated: true });
-        }
-      }, 100);
-    });
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
-
   const displayName = useMemo(() => 
     `${staticOtherUser.first_name} ${staticOtherUser.last_name.charAt(0)}.`,
     [staticOtherUser.first_name, staticOtherUser.last_name]
@@ -560,43 +538,42 @@ const ChatScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}
-    >
-      <SafeAreaView className="flex-1 bg-neutral-100">
-        <View className="bg-neutral-100 border-b border-gray-200 px-4 py-3">
-          <View className="flex-row items-center gap-3">
-            <TouchableOpacity 
-              onPress={() => router.back()}
-              className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center"
-              activeOpacity={0.7}
-            >
-              <Ionicons name="chevron-back" size={20}/>
-            </TouchableOpacity>
-            <Image
-              source={
-                staticOtherUser.profile_icon_url
-                  ? { uri: staticOtherUser.profile_icon_url }
-                  : require("@/assets/images/profile_icon.jpg")
-              }
-              className="w-12 h-12 rounded-full"
-            />
-            <View className="flex-1">
-              <CustomText className="font-poppins-semibold text-lg text-gray-900">
-                {displayName}
-              </CustomText>
-              <CustomText className="font-poppins-regular text-sm text-gray-500">
-                {isOtherUserOnline ? 'Online' : 'Offline'}
-                {loadingMore && ' • Loading...'}
-                {connectionStatus !== 'SUBSCRIBED' && connectionStatus !== 'DISCONNECTED' && (
-                  <> • {connectionStatus}</>
-                )}
-              </CustomText>
-            </View>
+    <SafeAreaView className="flex-1 bg-neutral-100">
+      <View className="bg-neutral-100 border-b border-gray-200 px-4 py-3">
+        <View className="flex-row items-center gap-3">
+          <TouchableOpacity 
+            onPress={() => router.back()}
+            className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center"
+            activeOpacity={0.7}
+          >
+            <Ionicons name="chevron-back" size={20}/>
+          </TouchableOpacity>
+          <Image
+            source={
+              staticOtherUser.profile_icon_url
+                ? { uri: staticOtherUser.profile_icon_url }
+                : require("@/assets/images/profile_icon.jpg")
+            }
+            className="w-12 h-12 rounded-full"
+          />
+          <View className="flex-1">
+            <CustomText className="font-poppins-semibold text-lg text-gray-900">
+              {displayName}
+            </CustomText>
+            <CustomText className="font-poppins-regular text-sm text-gray-500">
+              {isOtherUserOnline ? 'Online' : 'Offline'}
+              {loadingMore && ' • Loading...'}
+              {connectionStatus !== 'SUBSCRIBED' && connectionStatus !== 'DISCONNECTED' && (
+                <> • {connectionStatus}</>
+              )}
+            </CustomText>
           </View>
         </View>
+      </View>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
         <ScrollView
           ref={scrollViewRef}
           className="flex-1 bg-neutral-200 px-4 py-4"
@@ -682,8 +659,8 @@ const ChatScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 

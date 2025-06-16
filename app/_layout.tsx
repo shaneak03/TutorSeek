@@ -28,7 +28,7 @@ export default function RootLayout() {
   const isMountedRef = useRef(true);
 
   // Load fonts
-  const [fontsLoaded] = useFonts({
+  useFonts({
     Poppins_400Regular,
     Poppins_600SemiBold,
     Poppins_700Bold,
@@ -42,7 +42,6 @@ export default function RootLayout() {
         } = await supabase.auth.getSession();
         
         if (session?.user && isMountedRef.current) {
-          // Fetch the full user profile using your helper function
           const userProfile = await getUserById(session.user.id);
           setUser(userProfile);
         } else {
