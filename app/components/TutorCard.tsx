@@ -5,11 +5,12 @@ import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 
 export type tutorCardData = {
-  id: string;
+  tutor_id: string;
   first_name: string;
   last_name: string;
   hourly_rate: number;
   profile_icon_url: string;
+  bio: string;
   rating_count: number;
   review_count: number;
   is_published: boolean;

@@ -6,10 +6,10 @@ import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 
 type props = {
-  isEditing: boolean;
   tutorData: TutorProfileData;
   setTutorData: React.Dispatch<React.SetStateAction<TutorProfileData>>;
   setSubsToDel: React.Dispatch<React.SetStateAction<number[]>>;
+  isEditing?: boolean;
 };
 
 const TutorSubjectList = ({

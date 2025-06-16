@@ -13,7 +13,7 @@ import { supabase } from "./supabase";
 
 export const getTutors = async (filters: filterOptions) => {
   let query = supabase
-    .from("tutors_distinct")
+    .from("tutor_distinct")
     .select("*")
     .eq("is_published", true)
     .gte("hourly_rate", filters.minPrice)
@@ -48,48 +48,6 @@ export const getTutors = async (filters: filterOptions) => {
     return dedupedTutors.sort((a, b) => a.rating_count - b.rating_count);
   } else {
     return dedupedTutors.sort((a, b) => b.rating_count - a.rating_count);
-  }
-};
-
-export const getTutorsByLevel = async (
-  level_id: number
-): Promise<TutorProfile[]> => {
-  try {
-    const { data, error } = await supabase
-      .from("tutors")
-      .select("*, tutor_subjects!inner(*)")
-      .eq("tutor_subjects.level_id", level_id);
-
-    if (error) {
-      throw error;
-    }
-
-    return data as TutorProfile[];
-  } catch (error) {
-    console.error("Error getting tutors by level:", error);
-    throw error;
-  }
-};
-
-export const getTutorsBySubjectAndLevel = async (
-  subject_id: number,
-  level_id: number
-): Promise<TutorProfile[]> => {
-  try {
-    const { data, error } = await supabase
-      .from("tutors")
-      .select("*, tutor_subjects!inner(*)")
-      .eq("tutor_subjects.subject_id", subject_id)
-      .eq("tutor_subjects.level_id", level_id);
-
-    if (error) {
-      throw error;
-    }
-
-    return data as TutorProfile[];
-  } catch (error) {
-    console.error("Error getting tutors by level:", error);
-    throw error;
   }
 };
 
@@ -240,6 +198,39 @@ export const getReviewsByStudentId = async (
     return data as Review[];
   } catch (error) {
     console.error("Error getting reviews by student id", error);
+    throw error;
+  }
+};
+
+export const getReviewPreview = async (tutorId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from("reviews")
+      .select(
+        `*, 
+        students (
+          users (
+            first_name,
+            last_name,
+            profile_icon_url
+          )
+        )`
+      )
+      .eq("tutor_id", tutorId)
+      .limit(4);
+
+    if (error) {
+      throw error;
+    }
+
+    return data.map(r => ({
+      ...r,
+      profile_icon_url: r.students.users.profile_icon_url,
+      first_name: r.students.users.first_name,
+      last_name: r.students.users.last_name,
+    }));
+  } catch (error) {
+    console.error("Error getting review preview", error);
     throw error;
   }
 };

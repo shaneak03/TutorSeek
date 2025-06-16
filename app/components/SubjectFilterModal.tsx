@@ -22,6 +22,7 @@ const SubjectFilterModal = ({
   setFilters,
 }: props) => {
   const activeSubj = filters.subject;
+  const defaultSub = { id: 0, name: "All subjects" };
 
   return (
     <FullPageModal
@@ -33,7 +34,7 @@ const SubjectFilterModal = ({
         contentContainerClassName={"flex gap-4 p-4"}
         showsVerticalScrollIndicator={false}
       >
-        {subjects.map(s => (
+        {[defaultSub, ...subjects].map(s => (
           <TouchableOpacity
             className={
               "flex-row justify-between py-4 px-8 rounded-2xl " +
