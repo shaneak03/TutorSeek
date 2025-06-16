@@ -360,17 +360,17 @@ const ChatScreen = () => {
                 ? { uri: staticOtherUser.profile_icon_url }
                 : require("@/assets/images/profile_icon.jpg")
             }
-            className="w-12 h-12 rounded-full"
+            className="w-16 h-16 rounded-full"
           />
           <View className="flex-1">
-            <CustomText className="font-poppins-semibold text-lg text-gray-900">
+            <CustomText className="font-poppins-semibold text-xl text-gray-900">
               {displayName}
             </CustomText>
             <CustomText className="font-poppins-regular text-sm text-gray-500">
               {isOtherUserOnline
                 ? 'Online'
                 : `Last seen ${formatRelativeTime(staticOtherUser.last_online_at)}`}
-              {loadingMore && ' • Loading...'}
+              {loadingMore && 'Loading...'}
             </CustomText>
           </View>
         </View>
