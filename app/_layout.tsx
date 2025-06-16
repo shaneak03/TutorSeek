@@ -62,21 +62,17 @@ export default function RootLayout() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user && isMountedRef.current) {
-        // Fetch the full user profile from your database
-        const { data: userProfile, error } = await supabase
-          .from('users') // Replace 'users' with your actual table name
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching user profile:', error);
-          setUser(null);
+      if (!isMountedRef.current) return;
+
+      try {
+        if (session?.user) {
+          const userProfile = await getUserById(session.user.id);
+          setUser(userProfile);
         } else {
-          setUser(userProfile as UserProfile);
+          setUser(null);
         }
-      } else if (isMountedRef.current) {
+      } catch (error) {
+        console.error('Error handling auth state change:', error);
         setUser(null);
       }
     });
@@ -110,21 +106,19 @@ export default function RootLayout() {
         const state = channel.presenceState();
         console.log("Presence sync, full state:", state);
         
-        const transformedUsers: { [key: string]: OnlineUser } = {};
-        Object.entries(state).forEach(([key, presences]) => {
-          if (Array.isArray(presences) && presences.length > 0) {
-            const presence = presences[0] as any;
-            if (presence.user_id && presence.online_at) {
-              transformedUsers[key] = {
-                user_id: presence.user_id,
-                online_at: presence.online_at
-              };
-            }
+        const newOnlineUsers: { [key: string]: OnlineUser } = {};
+        Object.values(state).forEach((presences) => {
+          const presence = (presences as any[])[0];
+          if (presence?.user_id) {
+            newOnlineUsers[presence.user_id] = {
+              user_id: presence.user_id,
+              online_at: presence.online_at || new Date().toISOString()
+            };
           }
         });
         
-        setOnlineUsers(transformedUsers);
-        console.log("Online users:", Object.keys(transformedUsers));
+        setOnlineUsers(newOnlineUsers);
+        console.log("Online users:", Object.keys(newOnlineUsers));
       })
       .on("presence", { event: "join" }, ({ key, newPresences }) => {
         if (!isMountedRef.current) return;
@@ -144,11 +138,22 @@ export default function RootLayout() {
           }));
         }
       })
-      .on("presence", { event: "leave" }, ({ key }) => {
+      .on("presence", { event: "leave" }, async ({ key }) => {
         if (!isMountedRef.current) return;
-        
-        console.log("User left:", key);
-        setOnlineUsers((prev) => {
+
+        try {
+          const { error } = await supabase
+            .from('users')
+            .update({ last_online_at: new Date().toISOString() })
+            .eq('id', key);
+          
+          if (error) throw error;
+        } catch (err) {
+          console.error("Failed to update last_online_at:", err);
+        }
+
+        // Then update local state
+        setOnlineUsers(prev => {
           const newState = { ...prev };
           delete newState[key];
           return newState;

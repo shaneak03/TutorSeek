@@ -17,6 +17,7 @@ export interface UserProfile {
   role: "tutor" | "student";
   email: string;
   profile_icon_url: string;
+  last_online_at?: string;
   // profileDetails: TutorProfile | StudentProfile
 }
 
@@ -86,22 +87,8 @@ export interface ChatData {
 }
 
 export interface ChatWithParticipants extends ChatData {
-  tutor: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    profile_icon_url: string;
-    email: string;
-    location: string;
-  };
-  student: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    profile_icon_url: string;
-    email: string;
-    location: string;
-  };
+  tutor: UserProfile;
+  student: UserProfile;
   last_message?: {
     id: number;
     content: string;

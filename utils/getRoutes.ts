@@ -308,22 +308,8 @@ export const getChatsByUserId = async (userId: string): Promise<ChatWithParticip
       .from("chats")
       .select(`
         *,
-        tutor:users!chats_tutor_id_fkey (
-          id,
-          first_name,
-          last_name,
-          profile_icon_url,
-          email,
-          location
-        ),
-        student:users!chats_student_id_fkey (
-          id,
-          first_name,
-          last_name,
-          profile_icon_url,
-          email,
-          location
-        )
+        tutor:users!chats_tutor_id_fkey (*),
+        student:users!chats_student_id_fkey (*)
       `)
       .or(`tutor_id.eq.${userId},student_id.eq.${userId}`)
       .order('updated_at', { ascending: false });
@@ -373,22 +359,8 @@ export const findChatBetweenUsers = async (
       .from("chats")
       .select(`
         *,
-        tutor:tutor_id (
-          id,
-          first_name,
-          last_name,
-          profile_icon_url,
-          email,
-          location
-        ),
-        student:student_id (
-          id,
-          first_name,
-          last_name,
-          profile_icon_url,
-          email,
-          location
-        )
+        tutor:users!chats_tutor_id_fkey (*),
+        student:users!chats_student_id_fkey (*)
       `)
       .eq("tutor_id", tutorId)
       .eq("student_id", studentId)
