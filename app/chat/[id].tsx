@@ -608,16 +608,12 @@ const ChatScreen = () => {
           ) : (
             messages.map((message, index) => {
               const isCurrentUser = message.sender_id === user.id;
-              const showTime = index === messages.length - 1 || 
-                messages[index + 1]?.sender_id !== message.sender_id;
 
               return (
                 <MessageBubble
                   key={message.id}
                   message={message}
                   isCurrentUser={isCurrentUser}
-                  showTime={showTime}
-                  showSenderName={true}
                 />
               );
             })
@@ -630,7 +626,7 @@ const ChatScreen = () => {
                 value={messageText}
                 onChangeText={setMessageText}
                 placeholder="Type a message"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="gray-400"
                 multiline
                 maxLength={1000}
                 className="font-poppins-regular text-base text-gray-900 max-h-24"

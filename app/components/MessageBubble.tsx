@@ -6,15 +6,11 @@ import CustomText from './CustomText';
 interface MessageBubbleProps {
   message: ChatMessageWithSender;
   isCurrentUser: boolean;
-  showTime: boolean;
-  showSenderName?: boolean;
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   isCurrentUser,
-  showTime,
-  showSenderName = true
 }) => {
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -45,12 +41,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             elevation: 2,
           }}
         >
-          {!isCurrentUser && showSenderName && (
-            <CustomText className="font-poppins-semibold text-sm text-gray-900 mb-1">
-              {message.sender.first_name} {message.sender.last_name}
-            </CustomText>
-          )}
-          
           <CustomText 
             className={`font-poppins-regular text-base leading-5 ${
               isCurrentUser ? 'text-neutral-100' : 'text-gray-900'
@@ -60,7 +50,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           </CustomText>
         </View>
       </View>
-      {showTime && (
         <View className={`flex-row mt-1 px-2 ${isCurrentUser ? 'justify-end' : 'justify-start'}`}>
           <View className="flex-row items-center gap-1">
             <CustomText className="font-poppins-regular text-xs text-gray-400">
@@ -71,7 +60,6 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
             )}
           </View>
         </View>
-      )}
     </View>
   );
 };
