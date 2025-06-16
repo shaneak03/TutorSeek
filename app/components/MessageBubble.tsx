@@ -31,8 +31,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         <View
           className={`max-w-[280px] px-4 py-3 ${
             isCurrentUser
-              ? 'bg-blue-500 rounded-3xl rounded-br-lg'
-              : 'bg-white rounded-3xl rounded-bl-lg'
+              ? 'bg-primary-700 rounded-3xl rounded-br-lg'
+              : 'bg-neutral-100 rounded-3xl rounded-bl-lg'
           }`}
           style={{
             shadowColor: '#000',
@@ -53,7 +53,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           
           <CustomText 
             className={`font-poppins-regular text-base leading-5 ${
-              isCurrentUser ? 'text-white' : 'text-gray-900'
+              isCurrentUser ? 'text-neutral-100' : 'text-gray-900'
             }`}
           >
             {message.content}

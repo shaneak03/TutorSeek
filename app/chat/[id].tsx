@@ -553,7 +553,7 @@ const ChatScreen = () => {
 
   if (!user) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <SafeAreaView className="flex-1 bg-neutral-100 justify-center items-center">
         <CustomText className="text-gray-500">Loading...</CustomText>
       </SafeAreaView>
     );
@@ -565,15 +565,15 @@ const ChatScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={0}
     >
-      <SafeAreaView className="flex-1 bg-white">
-        <View className="bg-white border-b border-gray-200 px-4 py-3">
+      <SafeAreaView className="flex-1 bg-neutral-100">
+        <View className="bg-neutral-100 border-b border-gray-200 px-4 py-3">
           <View className="flex-row items-center gap-3">
             <TouchableOpacity 
               onPress={() => router.back()}
-              className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center"
+              className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center"
               activeOpacity={0.7}
             >
-              <Ionicons name="chevron-back" size={20} color="#374151" />
+              <Ionicons name="chevron-back" size={20}/>
             </TouchableOpacity>
             <Image
               source={
@@ -597,11 +597,9 @@ const ChatScreen = () => {
             </View>
           </View>
         </View>
-
-        {/* Messages */}
         <ScrollView
           ref={scrollViewRef}
-          className="flex-1 bg-gray-100 px-4 py-4"
+          className="flex-1 bg-neutral-200 px-4 py-4"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
           onScroll={handleScroll}
@@ -648,11 +646,9 @@ const ChatScreen = () => {
             })
           )}
         </ScrollView>
-
-        {/* Input */}
-        <View className="bg-white border-t border-gray-200 px-4 py-3">
+        <View className="bg-neutral-100 border-t border-gray-200 px-4 py-3">
           <View className="flex-row items-center gap-3">
-            <View className="flex-1 bg-gray-100 rounded-full px-4 py-2 min-h-[44px] max-h-24">
+            <View className="flex-1 bg-neutral-200 rounded-full px-4 py-2 min-h-[44px] max-h-24">
               <TextInput
                 value={messageText}
                 onChangeText={setMessageText}
@@ -673,13 +669,13 @@ const ChatScreen = () => {
               disabled={!messageText.trim() || sending}
               className={`w-11 h-11 rounded-full items-center justify-center ${
                 messageText.trim() && !sending 
-                  ? 'bg-blue-500' 
+                  ? 'bg-primary-700' 
                   : 'bg-gray-300'
               }`}
               activeOpacity={0.7}
             >
               {sending ? (
-                <View className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <View className="w-5 h-5 border-2 border-neutral-100 border-t-transparent rounded-full animate-spin" />
               ) : (
                 <Ionicons name="send" size={18} color="white" />
               )}
