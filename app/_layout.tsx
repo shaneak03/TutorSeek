@@ -35,6 +35,20 @@ export default function RootLayout() {
     Poppins_600SemiBold,
     Poppins_700Bold,
   });
+
+  const cleanupPresence = async () => {
+    if (channelRef.current && user?.id) {
+      try {
+        await channelRef.current.untrack();
+      } catch (err) {
+        console.error("Error untracking during cleanup:", err);
+      }
+      channelRef.current.unsubscribe();
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+      console.log("Cleaned up presence channel");
+    }
+  };
   
   useEffect(() => {
     const getSession = async () => {
@@ -48,6 +62,7 @@ export default function RootLayout() {
           setUser(userProfile);
         } else {
           setUser(null);
+
         }
       
       } catch (error) {
@@ -72,9 +87,7 @@ export default function RootLayout() {
           setUser(userProfile);
         } else {
           setUser(null);
-          if (channelRef.current) {
-            await channelRef.current.untrack();
-          }
+          await cleanupPresence();
         }
       } catch (error) {
         console.error('Error handling auth state change:', error);
@@ -93,14 +106,7 @@ export default function RootLayout() {
 
       if (nextAppState === 'background' || nextAppState === 'inactive') {
         try {
-          await Promise.all([
-            channelRef.current.send({
-              type: 'broadcast',
-              event: 'user_leaving',
-              payload: { user_id: user.id, timestamp: new Date().toISOString() }
-            }),
-            channelRef.current.untrack()
-          ]);
+          await cleanupPresence(); 
           
           console.log('User went offline due to app going to background');
         } catch (error) {
@@ -129,7 +135,6 @@ export default function RootLayout() {
   const removeUserFromOnline = (userId: string) => {
     setOnlineUsers(prev => {
       const newState = { ...prev };
-      // Remove by user_id value, not by key
       Object.keys(newState).forEach(key => {
         if (newState[key].user_id === userId) {
           delete newState[key];
@@ -143,12 +148,7 @@ export default function RootLayout() {
   useEffect(() => {
     if (!user?.id || !isMountedRef.current) return;
 
-    if (channelRef.current) {
-      channelRef.current.untrack().catch(console.error);
-      channelRef.current.unsubscribe();
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-    }
+    cleanupPresence(); 
 
     const channel = supabase
       .channel("presence-global", {
@@ -196,43 +196,19 @@ export default function RootLayout() {
       })
       .on("presence", { event: "leave" }, async ({ key, leftPresences }) => {
         if (!isMountedRef.current) return;
-        console.log("User leaving presence with key:", key, "leftPresences:", leftPresences);
 
-        let userId = key;
-        if (leftPresences && leftPresences.length > 0) {
-          const leftPresence = leftPresences[0] as any;
-          if (leftPresence.user_id) {
-            userId = leftPresence.user_id;
-          }
-        }
+        console.log("User leaving:", key, leftPresences);
 
-        try{
+        const left = Array.isArray(leftPresences) ? leftPresences[0] : leftPresences;
+        const userId = left?.user_id || key;
+
+        try {
           await updateLastSeen(userId);
-          removeUserFromOnline(userId)
-        } catch (error) {
-          console.error('Error handling user leave:', error)
-          removeUserFromOnline(userId)
+        } catch (e) {
+          console.error("Failed to update last seen on leave:", e);
         }
-      })
-      .on("broadcast", { event: "user_leaving" }, async ({ payload }) => {
-        if (!isMountedRef.current) return;
-        console.log("Received user leaving broadcast:", payload);
-        
-        if (payload.user_id) {
-          try {
-            const { error } = await supabase
-              .from('users')
-              .update({ last_online_at: payload.timestamp || new Date().toISOString() })
-              .eq('id', payload.user_id);
-            
-            if (error) throw error;
-            console.log(`Updated last_online_at for user ${payload.user_id} via broadcast`);
-          } catch (err) {
-            console.error("Failed to update last_online_at via broadcast:", err);
-          }
 
-          removeUserFromOnline(payload.user_id)
-        }
+        removeUserFromOnline(userId);
       })
       .subscribe(async (status) => {
         console.log("Global presence subscription status:", status);
@@ -251,41 +227,8 @@ export default function RootLayout() {
 
     channelRef.current = channel;
 
-    return () => {
-      const cleanup = async () => {
-        if (channelRef.current && user?.id) {
-          try {
-            await Promise.all([
-              channelRef.current.send({
-                type: 'broadcast',
-                event: 'user_leaving',
-                payload: { user_id: user.id, timestamp: new Date().toISOString() }
-              }),
-              channelRef.current.untrack()
-            ]);
-            
-            channelRef.current.unsubscribe();
-            supabase.removeChannel(channelRef.current);
-            channelRef.current = null;
-            console.log("Cleanup completed successfully");
-          } catch (error) {
-            console.error("Error during cleanup:", error);
-            // Fallback cleanup
-            try {
-              await channelRef.current.untrack();
-            } catch (e) {
-              console.error("Error in fallback cleanup:", e);
-            }
-            channelRef.current.unsubscribe();
-            supabase.removeChannel(channelRef.current);
-            channelRef.current = null;
-          }
-        }
-      };
-      
-      cleanup();
-    };
-  }, [user?.id]);
+    return () => { cleanupPresence() };
+}, [user?.id]);
 
   useEffect(() => {
     return () => {
