@@ -2,6 +2,20 @@ import { findChatBetweenUsers } from "./getRoutes";
 import { ChatData, ChatMessage, ChatWithParticipants, Level, Review, StudentProfile, Subject, TutorProfile, TutorSubject, UserProfile } from "./models";
 import { supabase } from "./supabase";
 
+export const updateLastSeen = async (userId: string) => {
+    try {
+        const { error } = await supabase
+        .from('users')
+        .update({ last_online_at: new Date().toISOString() })
+        .eq('id', userId);
+        
+        if (error) throw error;
+        console.log(`Updated last_online_at for user ${userId}`);
+    } catch (err) {
+        console.error("Failed to update last_online_at:", err);
+    }
+}
+
 export const postUserProfile = async (profile : UserProfile) => {
     try {
         const { data, error } = await supabase
