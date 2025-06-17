@@ -34,7 +34,7 @@ export default function RootLayout() {
     Poppins_600SemiBold,
     Poppins_700Bold,
   });
-
+  
   useEffect(() => {
     const getSession = async () => {
       try {
@@ -92,22 +92,18 @@ export default function RootLayout() {
 
       if (nextAppState === 'background' || nextAppState === 'inactive') {
         try {
-          await channelRef.current.send({
-            type: 'broadcast',
-            event: 'user_leaving',
-            payload: { user_id: user.id, timestamp: new Date().toISOString() }
-          });
+          await Promise.all([
+            channelRef.current.send({
+              type: 'broadcast',
+              event: 'user_leaving',
+              payload: { user_id: user.id, timestamp: new Date().toISOString() }
+            }),
+            channelRef.current.untrack()
+          ]);
           
-          setTimeout(async () => {
-            try {
-              await channelRef.current.untrack();
-              console.log('Untracked presence due to app going to background');
-            } catch (error) {
-              console.error('Error untracking presence:', error);
-            }
-          }, 100);
+          console.log('User went offline due to app going to background');
         } catch (error) {
-          console.error('Error sending leave broadcast:', error);
+          console.error('Error handling app state change:', error);
         }
       } else if (nextAppState === 'active') {
         try {
@@ -115,7 +111,7 @@ export default function RootLayout() {
             user_id: user.id,
             online_at: new Date().toISOString(),
           });
-          console.log('Retracked presence due to app coming to foreground');
+          console.log('User came online due to app coming to foreground');
         } catch (error) {
           console.error('Error retracking presence:', error);
         }
@@ -128,6 +124,20 @@ export default function RootLayout() {
       subscription?.remove();
     };
   }, [user?.id]);
+
+  const removeUserFromOnline = (userId: string) => {
+    setOnlineUsers(prev => {
+      const newState = { ...prev };
+      // Remove by user_id value, not by key
+      Object.keys(newState).forEach(key => {
+        if (newState[key].user_id === userId) {
+          delete newState[key];
+        }
+      });
+      console.log(`Removed user ${userId} from online users`);
+      return newState;
+    });
+  };
 
   useEffect(() => {
     if (!user?.id || !isMountedRef.current) return;
@@ -147,47 +157,21 @@ export default function RootLayout() {
         },
       })
       .on("presence", { event: "sync" }, () => {
-        if (!isMountedRef.current) return;
-        
-        const state = channel.presenceState();
-        console.log("Presence sync, full state:", state);
-        
-        const newOnlineUsers: { [key: string]: OnlineUser } = {};
-        Object.entries(state).forEach(([key, presences]) => {
+        const newState: { [id: string]: OnlineUser } = {};
+  
+        Object.values(channel.presenceState()).forEach(presences => {
           const presence = (presences as any[])[0];
           if (presence?.user_id) {
-            newOnlineUsers[key] = {
+            newState[presence.user_id] = {
               user_id: presence.user_id,
               online_at: presence.online_at || new Date().toISOString()
             };
           }
         });
         
-        setOnlineUsers(prevUsers => {
-          const prevKeys = Object.keys(prevUsers);
-          const newKeys = Object.keys(newOnlineUsers);
-          
-          const leftUsers = prevKeys.filter(key => !newKeys.includes(key));
-          
-          leftUsers.forEach(async (key) => {
-            try {
-              const userId = prevUsers[key]?.user_id || key;
-              const { error } = await supabase
-                .from('users')
-                .update({ last_online_at: new Date().toISOString() })
-                .eq('id', userId);
-              
-              if (error) throw error;
-              console.log(`Updated last_online_at for user ${userId} (detected via sync)`);
-            } catch (err) {
-              console.error("Failed to update last_online_at via sync:", err);
-            }
-          });
-          
-          return newOnlineUsers;
-        });
+        setOnlineUsers(newState);
         
-        console.log("Online users:", Object.keys(newOnlineUsers));
+        console.log("Online users:", Object.keys(newState));
       })
       .on("presence", { event: "join" }, async ({ key, newPresences }) => {
         if (!isMountedRef.current) return;
@@ -221,14 +205,13 @@ export default function RootLayout() {
           }
         }
 
-        await updateLastSeen(userId)
-
-        setOnlineUsers(prev => {
-          const newState = { ...prev };
-          delete newState[key];
-          console.log(`Removed user ${key} from online users`);
-          return newState;
-        });
+        try{
+          await updateLastSeen(userId);
+          removeUserFromOnline(userId)
+        } catch (error) {
+          console.error('Error handling user leave:', error)
+          removeUserFromOnline(userId)
+        }
       })
       .on("broadcast", { event: "user_leaving" }, async ({ payload }) => {
         if (!isMountedRef.current) return;
@@ -247,16 +230,7 @@ export default function RootLayout() {
             console.error("Failed to update last_online_at via broadcast:", err);
           }
 
-          setOnlineUsers(prev => {
-            const newState = { ...prev };
-            Object.keys(newState).forEach(key => {
-              if (newState[key].user_id === payload.user_id) {
-                delete newState[key];
-                console.log(`Removed user ${payload.user_id} from online users via broadcast`);
-              }
-            });
-            return newState;
-          });
+          removeUserFromOnline(payload.user_id)
         }
       })
       .subscribe(async (status) => {
@@ -280,30 +254,26 @@ export default function RootLayout() {
       const cleanup = async () => {
         if (channelRef.current && user?.id) {
           try {
-            await channelRef.current.send({
-              type: 'broadcast',
-              event: 'user_leaving',
-              payload: { user_id: user.id, timestamp: new Date().toISOString() }
-            });
-            setTimeout(async () => {
-              try {
-                await channelRef.current.untrack();
-                console.log("Untracked presence before cleanup");
-              } catch (error) {
-                console.error("Error untracking during cleanup:", error);
-              }
-              
-              channelRef.current.unsubscribe();
-              supabase.removeChannel(channelRef.current);
-              channelRef.current = null;
-              console.log("Unsubscribed from global presence channel");
-            }, 100);
+            await Promise.all([
+              channelRef.current.send({
+                type: 'broadcast',
+                event: 'user_leaving',
+                payload: { user_id: user.id, timestamp: new Date().toISOString() }
+              }),
+              channelRef.current.untrack()
+            ]);
+            
+            channelRef.current.unsubscribe();
+            supabase.removeChannel(channelRef.current);
+            channelRef.current = null;
+            console.log("Cleanup completed successfully");
           } catch (error) {
-            console.error("Error sending leave broadcast during cleanup:", error);
+            console.error("Error during cleanup:", error);
+            // Fallback cleanup
             try {
               await channelRef.current.untrack();
             } catch (e) {
-              console.error("Error untracking during fallback cleanup:", e);
+              console.error("Error in fallback cleanup:", e);
             }
             channelRef.current.unsubscribe();
             supabase.removeChannel(channelRef.current);
