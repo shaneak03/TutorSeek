@@ -218,22 +218,8 @@ export const postChatMessage = async (
         .insert(newChatData)
         .select(`
           *,
-          tutor:tutor_id!chats_tutor_id_fkey (
-            id,
-            first_name,
-            last_name,
-            profile_icon_url,
-            email,
-            location
-          ),
-          student:student_id!chats_student_id_fkey (
-            id,
-            first_name,
-            last_name,
-            profile_icon_url,
-            email,
-            location
-          )
+          tutor:users!chats_tutor_id_fkey (*),
+          student:users!chats_student_id_fkey (*)
         `)
         .single();
 
@@ -254,22 +240,18 @@ export const postChatMessage = async (
       .select()
       .single();
 
-    if (messageError) {
-      throw messageError;
-    }
+    if (messageError) throw messageError;
 
     // Increment unread count for recipient
     const unreadField = senderRole === 'tutor' ? 'unread_count_student' : 'unread_count_tutor';
     
-    const { error: chatUpdateError } = await supabase
-        .rpc('increment_unread_count', {
-            chat_id_param: chat.id,
-            field_name: unreadField
-        });
+    const { error: rpcError } = await supabase
+      .rpc('increment_unread_count', {
+        chat_id_param: chat.id,
+        field_name: unreadField
+      });
 
-    if (chatUpdateError) {
-        console.error("Error updating chat counters:", chatUpdateError);
-    }
+    if (rpcError) throw rpcError;
 
     return { 
       message: messageResult as ChatMessage, 
@@ -284,32 +266,27 @@ export const postChatMessage = async (
 
 export const markMessagesAsRead = async (chatId: number, userId: string) => {
   try {
-    // Mark messages as read
-    const { error: messageError } = await supabase
-      .from("messages")
-      .update({ read: true })
-      .eq("chat_id", chatId)
-      .eq("recipient_id", userId)
-      .eq("read", false);
-
-    if (messageError) throw messageError;
-
-    // Reset unread count for this user
-    const { data: chat } = await supabase
+    const { data: chat, error: chatError } = await supabase
       .from("chats")
       .select("tutor_id")
       .eq("id", chatId)
       .single();
 
-    const isUserTutor = chat?.tutor_id === userId;
+    if (chatError) throw chatError;
+    if (!chat) throw new Error("Chat not found");
+
+    const isUserTutor = chat.tutor_id === userId;
     const unreadField = isUserTutor ? 'unread_count_tutor' : 'unread_count_student';
 
-    const { error: chatError } = await supabase
-      .from("chats")
-      .update({ [unreadField]: 0 })
-      .eq("id", chatId);
+    const { error: rpcError } = await supabase
+      .rpc('mark_messages_read', {
+        chat_id_param: chatId,
+        user_id_param: userId,
+        field_name: unreadField
+      });
 
-    if (chatError) throw chatError;
+    if (rpcError) throw rpcError;
+
   } catch (error) {
     console.error("Error marking messages as read:", error);
     throw error;

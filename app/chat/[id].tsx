@@ -65,8 +65,8 @@ const ChatScreen = () => {
   const PAGE_SIZE = 50;
 
   // Memoize static values to prevent unnecessary re-renders
-  const staticChatId = useMemo(() => chatId, []);
-  const staticOtherUser = useMemo(() => otherUser, []);
+  const staticChatId = useMemo(() => chatId, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const staticOtherUser = useMemo(() => otherUser, []); // eslint-disable-line react-hooks/exhaustive-deps
   const staticUserId = useMemo(() => user?.id, [user?.id]);
 
   // Transform message to include sender info 
