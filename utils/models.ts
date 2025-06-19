@@ -17,6 +17,7 @@ export interface UserProfile {
   role: "tutor" | "student";
   email: string;
   profile_icon_url: string;
+  last_online_at?: string;
   // profileDetails: TutorProfile | StudentProfile
 }
 
@@ -39,7 +40,7 @@ export interface Level {
 
 export interface Review {
   id: number;
-  created_at: Date;
+  created_at: string;
   tutor_id: string;
   student_id: string;
   rating: number;
@@ -57,16 +58,52 @@ export interface TutorWithSubjectsAndLevels extends TutorProfile {
 
 export interface ChatMessage {
   id: number;
-  created_at: Date;
+  created_at: string;
   sender_id: string;
   recipient_id: string;
   content: string;
   chat_id: number;
+  read: boolean;
 }
 
-export interface Chat {
+export interface ChatMessageWithSender extends ChatMessage {
+  sender: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    profile_icon_url: string;
+    role: "tutor" | "student";
+  };
+}
+
+export interface ChatData {
   id: number;
-  created_at: Date;
+  created_at: string;
+  updated_at: string;
   tutor_id: string;
   student_id: string;
+  unread_count_tutor: number;
+  unread_count_student: number;
+}
+
+export interface ChatWithParticipants extends ChatData {
+  tutor: UserProfile;
+  student: UserProfile;
+  last_message?: {
+    id: number;
+    content: string;
+    created_at: string;
+    sender_id: string;
+  };
+  unread_count?: number;
+}
+
+export interface OnlineUser {
+  user_id: string;
+  online_at: string;
+}
+
+export interface RealtimeContextType {
+  isOnline: boolean;
+  onlineUsers: { [key: string]: OnlineUser };
 }

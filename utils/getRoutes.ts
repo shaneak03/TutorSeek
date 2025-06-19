@@ -1,12 +1,12 @@
 import { filterOptions } from "../app/components/HomeTopNav";
 import {
-  Chat,
   ChatMessage,
+  ChatWithParticipants,
   Level,
   StudentProfile,
   Subject,
   TutorProfile,
-  UserProfile,
+  UserProfile
 } from "./models";
 import { supabase } from "./supabase";
 
@@ -282,20 +282,73 @@ export const getLevelById = async (levelId: string): Promise<Level> => {
   }
 };
 
-export const getChatsByUserId = async (userId: string): Promise<Chat[]> => {
+export const getChatsByUserId = async (userId: string): Promise<ChatWithParticipants[]> => {
   try {
     const { data, error } = await supabase
       .from("chats")
-      .select("*")
-      .or(`tutor_id.eq.${userId},student_id.eq.${userId}`);
+      .select(`
+        *,
+        tutor:users!chats_tutor_id_fkey (*),
+        student:users!chats_student_id_fkey (*)
+      `)
+      .or(`tutor_id.eq.${userId},student_id.eq.${userId}`)
+      .order('updated_at', { ascending: false });
 
     if (error) {
       throw error;
     }
 
-    return data as Chat[];
+    console.log("Chats data:", data);
+
+    // Get last message for each chat and get unread count
+    const processedData = await Promise.all(
+      (data || []).map(async (chat) => {
+        // Get last message
+        const { data: lastMessageData } = await supabase
+          .from("messages")
+          .select("id, content, created_at, sender_id")
+          .eq("chat_id", chat.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        // Determine if user is tutor or student and get unread count
+        const isUserTutor = chat.tutor_id === userId;
+        const unreadCount = isUserTutor ? chat.unread_count_tutor : chat.unread_count_student;
+
+        return {
+          ...chat,
+          last_message: lastMessageData?.[0] || null,
+          unread_count: unreadCount
+        };
+      })
+    );
+
+    return processedData as ChatWithParticipants[];
   } catch (error) {
-    console.error("Error getting chat by ID:", error);
+    console.error("Error getting chats by user ID:", error);
+    throw error;
+  }
+};
+
+export const findChatBetweenUsers = async (
+  tutorId: string, 
+  studentId: string
+): Promise<ChatWithParticipants | null> => {
+  try {
+    const { data, error } = await supabase
+      .from("chats")
+      .select(`
+        *,
+        tutor:users!chats_tutor_id_fkey (*),
+        student:users!chats_student_id_fkey (*)
+      `)
+      .eq("tutor_id", tutorId)
+      .eq("student_id", studentId)
+      .single();
+
+    return data as ChatWithParticipants || null;
+  } catch (error) {
+    console.error("Error finding chat between users:", error);
     throw error;
   }
 };

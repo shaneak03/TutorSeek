@@ -6,7 +6,6 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
 import { Pressable, View } from "react-native";
-import Icon from "../../assets/images/default_user_icon.svg";
 import themeColors from "../themeColors";
 
 type props = {
@@ -119,15 +118,11 @@ export default function ProfileIcon({
         disabled={!isEditing}
       >
         <View className='bg-neutral-200 rounded-full border-4 border-primary-700 flex items-center justify-center w-[176] h-[176]'>
-          {avatarUrl ? (
-            <Image
-              source={avatarUrl}
-              style={{ width: 168, height: 168, borderRadius: 100 }}
-              contentFit='cover'
-            />
-          ) : (
-            <Icon width={100} height={100} fill={themeColors["neutral-300"]} />
-          )}
+          <Image
+            source={avatarUrl ? avatarUrl : require("@/assets/images/default_user_icon.svg")}
+            style={{ width: 168, height: 168, borderRadius: 100 }}
+            contentFit='cover'
+          />
         </View>
         {isEditing && (
           <View className='bg-primary-700 rounded-full p-[12] absolute bottom-1 right-1'>
