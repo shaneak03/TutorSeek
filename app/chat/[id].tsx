@@ -425,15 +425,13 @@ const ChatScreen = () => {
         >
           {refreshing ? (
             <View className="flex-row items-center gap-2">
-              <View className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <View className="w-4 h-4 border-2 border-primary-700 border-t-transparent rounded-full animate-spin" />
               <CustomText className="text-primary-700 text-sm">Refreshing...</CustomText>
             </View>
           ) : (
             <CustomText className="text-primary-700 text-sm">Press to refresh</CustomText>
           )}
         </TouchableOpacity>
-        
-        {/* Loading more messages indicator */}
         {loadingMore && (
           <View className="py-2 items-center">
             <View className="flex-row items-center gap-2">
