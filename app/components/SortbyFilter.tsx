@@ -40,7 +40,7 @@ export default function SortByFilter({ editData, setEditData }: props) {
   };
 
   return (
-    <View className='flex p-4 gap-1 items-center'>
+    <View className='flex px-4 pb-4 gap-1 items-center'>
       <CustomText className='font-poppins-semibold text-xl'>Sort by</CustomText>
       <RadioGroup
         radioButtons={radioButtons}

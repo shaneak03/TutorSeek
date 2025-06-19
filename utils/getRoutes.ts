@@ -3,7 +3,6 @@ import {
   Chat,
   ChatMessage,
   Level,
-  Review,
   StudentProfile,
   Subject,
   TutorProfile,
@@ -182,27 +181,7 @@ export const getSubjects = async (): Promise<Subject[]> => {
   }
 };
 
-export const getReviewsByStudentId = async (
-  studentId: string
-): Promise<Review[]> => {
-  try {
-    const { data, error } = await supabase
-      .from("reviews")
-      .select("*")
-      .eq("student_id", studentId);
-
-    if (error) {
-      throw error;
-    }
-
-    return data as Review[];
-  } catch (error) {
-    console.error("Error getting reviews by student id", error);
-    throw error;
-  }
-};
-
-export const getReviewPreview = async (tutorId: string) => {
+export const getReviewsByStudentId = async (studentId: string) => {
   try {
     const { data, error } = await supabase
       .from("reviews")
@@ -216,8 +195,7 @@ export const getReviewPreview = async (tutorId: string) => {
           )
         )`
       )
-      .eq("tutor_id", tutorId)
-      .limit(4);
+      .eq("student_id", studentId);
 
     if (error) {
       throw error;
@@ -230,27 +208,38 @@ export const getReviewPreview = async (tutorId: string) => {
       last_name: r.students.users.last_name,
     }));
   } catch (error) {
-    console.error("Error getting review preview", error);
+    console.error("Error getting tutor reviews", error);
     throw error;
   }
 };
-
-export const getReviewsByTutorId = async (
-  tutorId: string
-): Promise<Review[]> => {
+export const getReviewsByTutorId = async (tutorId: string) => {
   try {
     const { data, error } = await supabase
       .from("reviews")
-      .select("*")
+      .select(
+        `*, 
+        students (
+          users (
+            first_name,
+            last_name,
+            profile_icon_url
+          )
+        )`
+      )
       .eq("tutor_id", tutorId);
 
     if (error) {
       throw error;
     }
 
-    return data as Review[];
+    return data.map(r => ({
+      ...r,
+      profile_icon_url: r.students.users.profile_icon_url,
+      first_name: r.students.users.first_name,
+      last_name: r.students.users.last_name,
+    }));
   } catch (error) {
-    console.error("Error getting reviews by tutor id", error);
+    console.error("Error getting tutor reviews", error);
     throw error;
   }
 };

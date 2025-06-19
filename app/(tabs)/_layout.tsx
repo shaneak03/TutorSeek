@@ -31,7 +31,7 @@ const _layout = () => {
       }}
     >
       <Tabs.Screen
-        name='index'
+        name='(home)'
         options={{
           title: "Home",
           headerShown: false,
@@ -51,7 +51,7 @@ const _layout = () => {
         }}
       />
       <Tabs.Screen
-        name='profile'
+        name='(profile)'
         options={{
           title: "Profile",
           headerShown: false,

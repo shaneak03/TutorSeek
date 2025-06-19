@@ -1,4 +1,4 @@
-import { TutorProfileData } from "@/app/(tabs)/profile";
+import { TutorProfileData } from "@/app/(tabs)/(profile)";
 import {
   Chat,
   ChatMessage,

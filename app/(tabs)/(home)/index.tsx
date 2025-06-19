@@ -1,19 +1,18 @@
 import { getTutors } from "@/utils/getRoutes";
+import { useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthContext } from "../_layout";
-import FilterOptions, { filterOptions } from "../components/HomeTopNav";
-import LoginModal from "../components/LoginModal";
-import TutorCard, { tutorCardData } from "../components/TutorCard";
-import TutorExpandedPage from "../components/TutorExpandedPage";
+import { AuthContext } from "../../_layout";
+import FilterOptions, { filterOptions } from "../../components/HomeTopNav";
+import LoginModal from "../../components/LoginModal";
+import TutorCard, { tutorCardData } from "../../components/TutorCard";
 
 const Index = () => {
   const { user } = useContext(AuthContext);
+  const router = useRouter();
   const [tutors, setTutors] = useState<tutorCardData[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [isExpandTutor, setIsExpandTutor] = useState(false);
-  const [selectedTutor, setSelectedTutor] = useState<tutorCardData>();
   const [filters, setFilters] = useState<filterOptions>({
     subject: 0,
     level: 0,
@@ -43,19 +42,16 @@ const Index = () => {
   };
 
   const onClickTutor = (tutor: tutorCardData) => {
-    setSelectedTutor(tutor);
-    setIsExpandTutor(true);
+    router.navigate({
+      pathname: "/(tabs)/(home)/viewTutor",
+      params: { ...tutor, is_published: tutor.is_published.toString() },
+    });
   };
 
   if (!user) return <LoginModal />;
   else
     return (
       <SafeAreaView className=' bg-neutral-100'>
-        <TutorExpandedPage
-          isVisible={isExpandTutor}
-          setIsVisible={setIsExpandTutor}
-          tutor={selectedTutor}
-        />
         <FilterOptions
           filters={filters}
           setFilters={setFilters}

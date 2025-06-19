@@ -1,5 +1,6 @@
 import LargeSolidButton from "@/app/components/LargeSolidButton";
 import ProfileNav from "@/app/components/ProfileNav";
+import ProfileReviews from "@/app/components/ProfileReviews";
 import { levelNameToId } from "@/app/components/SubjectAdder";
 import TutorProfileDetails from "@/app/components/TutorProfileDetails";
 import { SubjectContext } from "@/app/contexts/subjectContext";
@@ -56,15 +57,13 @@ const Profile = () => {
   });
   const [subsToDel, setSubsToDel] = useState<number[]>([]);
   const [subsToAdd, setSubsToAdd] = useState<Subject[]>([]);
-  // const [studentData, setStudentData] = useState<StudentProfile>({
-  //   id: "",
-  // });
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
   const { subjNameToIdMap } = useContext(SubjectContext);
+  const [isReviews, setIsReviews] = useState(false);
+
   const fetchProfileData = useCallback(async (currentUser: any) => {
     if (!currentUser) return;
-
     try {
       // Fetch user data
       const userResult = await getUserById(currentUser.id);
@@ -76,16 +75,13 @@ const Profile = () => {
         if (userResult.role === "tutor") {
           const tutorResult = await getTutorById(userResult.id);
           if (tutorResult) {
-            setTutorData(data => ({ ...data, ...tutorResult }));
+            const tutorSubjects = await getSubjectsByTutorId(userResult.id);
+            setTutorData(data => ({
+              ...data,
+              ...tutorResult,
+              subjects: tutorSubjects,
+            }));
           }
-          const tutorSubjects = await getSubjectsByTutorId(userResult.id);
-          setTutorData(data => ({ ...data, subjects: tutorSubjects }));
-        } else if (userResult.role === "student") {
-          // // Fetch student data if needed
-          // const studentResult = await getStudentById(userResult.id);
-          // if (studentResult) {
-          //   setStudentData(studentResult);
-          // }
         }
       }
     } catch (error) {
@@ -154,56 +150,61 @@ const Profile = () => {
   if (!user) return <LoginModal />;
   else
     return (
-      <SafeAreaView className='flex-1 px-8 bg-neutral-100' edges={["top"]}>
-        <ProfileNav />
-        <ScrollView
-          className='flex-1 pt-4'
-          contentContainerClassName={"items-center gap-4 " + bottomPadding}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          <CustomText className='font-poppins-bold text-xl'>
-            {userData?.role === "tutor" ? "Tutor" : "Student"}
-          </CustomText>
-          <ProfileIcon
-            avatarUrl={avatarUrl}
-            setAvatarUrl={setAvatarUrl}
-            isEditing={isEditing}
-          />
+      <SafeAreaView className='flex-1 bg-neutral-100' edges={["top"]}>
+        <ProfileNav isReviews={isReviews} setIsReviews={setIsReviews} />
 
-          <CustomText
-            onPress={() => setIsEditing(true)}
-            className='underline text-primary-700'
+        {isReviews ? (
+          <ProfileReviews role={userData.role} id={userData.id} />
+        ) : (
+          <ScrollView
+            className='flex-1 pt-4 px-8'
+            contentContainerClassName={"items-center gap-4 " + bottomPadding}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
           >
-            Edit profile
-          </CustomText>
-
-          <CoreProfileDetails
-            profileData={userData}
-            setProfileData={setUserData}
-            isEditing={isEditing}
-          />
-          {userData.role === "tutor" && (
-            <TutorProfileDetails
-              tutorData={tutorData}
-              setTutorData={setTutorData}
+            <CustomText className='font-poppins-bold text-xl'>
+              {userData?.role === "tutor" ? "Tutor" : "Student"}
+            </CustomText>
+            <ProfileIcon
+              avatarUrl={avatarUrl}
+              setAvatarUrl={setAvatarUrl}
               isEditing={isEditing}
-              setSubsToAdd={setSubsToAdd}
-              setSubsToDel={setSubsToDel}
             />
-          )}
 
-          <CustomText
-            onPress={handleLogout}
-            className='underline text-center text-neutral-300'
-          >
-            Sign out
-          </CustomText>
-        </ScrollView>
+            <CustomText
+              onPress={() => setIsEditing(true)}
+              className='underline text-primary-700'
+            >
+              Edit profile
+            </CustomText>
+
+            <CoreProfileDetails
+              profileData={userData}
+              setProfileData={setUserData}
+              isEditing={isEditing}
+            />
+            {userData.role === "tutor" && (
+              <TutorProfileDetails
+                tutorData={tutorData}
+                setTutorData={setTutorData}
+                isEditing={isEditing}
+                setSubsToAdd={setSubsToAdd}
+                setSubsToDel={setSubsToDel}
+              />
+            )}
+
+            <CustomText
+              onPress={handleLogout}
+              className='underline text-center text-neutral-300'
+            >
+              Sign out
+            </CustomText>
+          </ScrollView>
+        )}
         {isEditing && (
-          <View className='flex-row justify-center w-full absolute bottom-0 left-8 pb-4 z-10'>
+          <View className='flex-row justify-center w-full absolute bottom-0 pb-4 z-10 px-8'>
             <LargeSolidButton buttonText='Save' onPress={handleSave} />
           </View>
         )}

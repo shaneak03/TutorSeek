@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import BottomSticyButton from "./BottomStickyButton";
+import CustomText from "./CustomText";
 import FullPageModal from "./FullPageModal";
 import { filterOptions } from "./HomeTopNav";
 import PriceFilter from "./PriceFilter";
-import RatingFilter from "./RatingFIlter";
 import SortByFilter from "./SortbyFilter";
+import RatingFilter from "./StarRow";
 import SubjectLevelPicker from "./SubjLevelFilter";
 
 type props = {
@@ -41,6 +42,10 @@ export default function FilterNSortModal({
     setIsShowFilterModal(false);
   };
 
+  const onClickStar = (rating: number) => {
+    setEditData({ ...editData, rating });
+  };
+
   return (
     <FullPageModal
       isVisible={isShowFilterModal}
@@ -48,7 +53,19 @@ export default function FilterNSortModal({
       title='Filter & Sort'
     >
       <ScrollView>
-        <RatingFilter editData={editData} setEditData={setEditData} />
+        <View className='flex p-4 gap-2 items-center '>
+          <CustomText className='font-poppins-semibold text-xl'>
+            Rating
+          </CustomText>
+          <CustomText>
+            {">"} {editData.rating} stars
+          </CustomText>
+          <RatingFilter
+            size={32}
+            rating={editData.rating}
+            onClickStar={onClickStar}
+          />
+        </View>
         <SubjectLevelPicker editData={editData} setEditData={setEditData} />
         <PriceFilter editData={editData} setEditData={setEditData} />
         <SortByFilter editData={editData} setEditData={setEditData} />

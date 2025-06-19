@@ -15,7 +15,7 @@ const ReviewList = ({ reviews, horizontal = false }: props) => {
       contentContainerClassName={horizontal ? "flex-row gap-4" : ""}
     >
       {reviews.map(r => (
-        <ReviewCard review={r} rounded={horizontal} />
+        <ReviewCard key={r.id} review={r} rounded={horizontal} />
       ))}
     </ScrollView>
   );
