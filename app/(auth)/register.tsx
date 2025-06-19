@@ -121,7 +121,10 @@ const Register = () => {
   //         }
   
   //         // Update Auth Context
-  //         setUser(data.session?.user);
+  //         if (data.session) {
+  //           const profile = await getUserById(data.session?.user.id);
+  //           setUser(profile);
+  //         }
   //         // Navigate to the main app
   //         router.push("/(tabs)");
   //       } else {

@@ -62,9 +62,7 @@ export default function RootLayout() {
           setUser(userProfile);
         } else {
           setUser(null);
-
         }
-      
       } catch (error) {
         console.error('Error getting session:', error);
         if (isMountedRef.current) {
@@ -78,27 +76,34 @@ export default function RootLayout() {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMountedRef.current) return;
 
+      console.log("Auth state change event:", event, session?.user?.id);
+
       try {
+        await cleanupPresence();
+        
         if (session?.user) {
           const userProfile = await getUserById(session.user.id);
+          console.log("Fetched new user profile:", userProfile.id);
           setUser(userProfile);
         } else {
+          console.log("No session, setting user to null");
           setUser(null);
-          await cleanupPresence();
+          setOnlineUsers({});
         }
       } catch (error) {
         console.error('Error handling auth state change:', error);
         setUser(null);
+        setOnlineUsers({});
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, []); 
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: string) => {
@@ -107,7 +112,6 @@ export default function RootLayout() {
       if (nextAppState === 'background' || nextAppState === 'inactive') {
         try {
           await cleanupPresence(); 
-          
           console.log('User went offline due to app going to background');
         } catch (error) {
           console.error('Error handling app state change:', error);
@@ -146,7 +150,13 @@ export default function RootLayout() {
   };
 
   useEffect(() => {
-    if (!user?.id || !isMountedRef.current) return;
+    if (!user?.id || !isMountedRef.current) {
+      if (!user?.id) {
+        cleanupPresence();
+        setOnlineUsers({});
+      }
+      return;
+    }
 
     cleanupPresence(); 
 
@@ -171,7 +181,6 @@ export default function RootLayout() {
         });
         
         setOnlineUsers(newState);
-        
         console.log("Online users:", Object.keys(newState));
       })
       .on("presence", { event: "join" }, async ({ key, newPresences }) => {
@@ -199,8 +208,21 @@ export default function RootLayout() {
 
         console.log("User leaving:", key, leftPresences);
 
-        const left = Array.isArray(leftPresences) ? leftPresences[0] : leftPresences;
-        const userId = left?.user_id || key;
+        let userId = key;
+        
+        if (leftPresences && leftPresences.length > 0) {
+          const leftPresence = leftPresences[0];
+          if (leftPresence?.user_id) {
+            userId = leftPresence.user_id;
+          }
+        }
+
+        if (userId === user.id) {
+          console.log("Ignoring leave event for self:", userId);
+          return;
+        }
+
+        console.log("Processing leave for other user:", userId);
 
         try {
           await updateLastSeen(userId);
@@ -225,10 +247,12 @@ export default function RootLayout() {
         }
       });
 
-    channelRef.current = channel;
+      channelRef.current = channel;
 
-    return () => { cleanupPresence() };
-}, [user?.id]);
+      return () => { 
+        cleanupPresence();
+      };
+  }, [user?.id]);
 
   useEffect(() => {
     return () => {

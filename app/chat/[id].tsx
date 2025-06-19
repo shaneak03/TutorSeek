@@ -226,8 +226,25 @@ const ChatScreen = () => {
       
       const currentUserProfile = user as UserProfile;
       const senderRole = currentUserProfile.role;
-      const tutorId = senderRole === 'tutor' ? user.id : staticOtherUser.id;
-      const studentId = senderRole === 'student' ? user.id : staticOtherUser.id;
+      
+      let tutorId: string;
+      let studentId: string;
+
+      if (senderRole === 'tutor') {
+        tutorId = user.id;
+        studentId = staticOtherUser.id; 
+      } else if (senderRole === 'student') {
+        tutorId = staticOtherUser.id; 
+        studentId = user.id;
+      } else {
+        console.error('Invalid current user role:', senderRole);
+        console.error('Expected "tutor" or "student", got:', typeof senderRole, senderRole);
+        throw new Error(`Invalid current user role for chat: "${senderRole}". Expected "tutor" or "student".`);
+      }
+
+      if (tutorId === studentId) {
+        throw new Error('Tutor and student cannot be the same person');
+      }
 
       optimisticMessage = {
         id: Date.now(),
@@ -249,9 +266,20 @@ const ChatScreen = () => {
       setMessages(prev => [...prev, optimisticMessage!]);
       setMessageText('');
 
+      const { data: userData, error: authError } = await supabase.auth.getUser();
+      if (authError) throw authError;
+
+      const currentUserId = userData?.user?.id;
+      console.log("Inserting chat as:", currentUserId, "tutorId:", tutorId, "studentId:", studentId);
+      console.log("Current user role:", senderRole, "Other user role:", staticOtherUser.role);
+
+      // if (currentUserId !== tutorId && currentUserId !== studentId) {
+      //   throw new Error("Current user is not authorized to create this chat");
+      // }
+
       const { message: newMessage } = await postChatMessage(
         {
-          sender_id: user.id,
+          sender_id: currentUserId,
           recipient_id: staticOtherUser.id,
           content: messageContent
         },
