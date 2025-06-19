@@ -16,7 +16,6 @@ import {
   KeyboardAvoidingView,
   ListRenderItem,
   Platform,
-  RefreshControl,
   TextInput,
   TouchableOpacity,
   View
@@ -65,7 +64,7 @@ const ChatScreen = () => {
     if (diffMins < 60) return `${diffMins} min ago`;
     if (diffMins < 120) return `${Math.floor(diffMins / 60)} hour ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hours ago`;
-    if (diffMins < 2880) return `${Math.floor(diffMins / 1440)} day ago`
+    if (diffMins < 2880) return `${Math.floor(diffMins / 1440)} day ago`;
     return `${Math.floor(diffMins / 1440)} days ago`;
   };
 
@@ -87,9 +86,9 @@ const ChatScreen = () => {
     } else if (messageDate === yesterdayDate) {
       return 'Yesterday';
     } else if (date >= startOfWeek && date < today) {
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long' 
-    });
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'long' 
+      });
     } else {
       return date.toLocaleDateString('en-SG', { 
         year: 'numeric', 
@@ -123,7 +122,6 @@ const ChatScreen = () => {
       const message = messages[i];
       const previousMessage = i > 0 ? messages[i - 1] : undefined;
       
-      // Add date separator if needed
       if (needsDateSeparator(message, previousMessage)) {
         items.push({
           id: `date-${message.created_at}`,
@@ -132,7 +130,7 @@ const ChatScreen = () => {
         });
       }
       
-      // Add message
+      // Add the message
       items.push({
         id: `message-${message.id}`,
         type: 'message',
@@ -140,7 +138,7 @@ const ChatScreen = () => {
       });
     }
     
-    return items;
+    return items.reverse();
   }, [messages]);
 
   // Transform message to include sender info 
@@ -176,17 +174,6 @@ const ChatScreen = () => {
       console.error('Error marking messages as read:', error);
     }
   }, [staticChatId, staticUserId]);
-
-  const scrollToBottom = useCallback((animated: boolean = true) => {
-    if (!flatListRef.current || !isComponentMountedRef.current || messages.length === 0) return;
-    
-    // Scroll to the end of the list (most recent message)
-    setTimeout(() => {
-      if (flatListRef.current && isComponentMountedRef.current) {
-        flatListRef.current.scrollToEnd({ animated });
-      }
-    }, 100);
-  }, [messages.length]);
 
   const setupChatChannel = useCallback(() => {
     if (!staticUserId || !isComponentMountedRef.current) return;
@@ -251,17 +238,14 @@ const ChatScreen = () => {
       const messagesWithSender: ChatMessageWithSender[] = fetchedMessages.map(transformMessage);
       
       if (append) {
-        // For loading older messages (prepend to the beginning)
         setMessages(prev => {
           const existingIds = new Set(prev.map(msg => msg.id));
           const newMessages = messagesWithSender.filter(msg => !existingIds.has(msg.id));
-          const allMessages = [...newMessages, ...prev];
-          return allMessages.sort((a, b) => 
+          return [...newMessages, ...prev].sort((a, b) => 
             new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
           );
         });
       } else {
-        // For initial load or refresh
         const sortedMessages = messagesWithSender.sort((a, b) => 
           new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         );
@@ -426,26 +410,41 @@ const ChatScreen = () => {
     return null;
   }, [user?.id]);
 
-
-
   // Key extractor
   const keyExtractor = useCallback((item: MessageItem) => item.id, []);
 
-  // List header component (for loading more messages)
-  const ListHeaderComponent = useCallback(() => {
-    if (!loadingMore) return null;
-    
+  // List header component (for loading more messages and refresh)
+  const ListFooterComponent = useCallback(() => {
     return (
-      <View className="py-4 items-center">
-        <CustomText className="text-gray-500 text-sm">Loading older messages...</CustomText>
+      <View>
+        <TouchableOpacity 
+          onPress={onRefresh}
+          disabled={refreshing}
+          className="py-4 items-center"
+          activeOpacity={0.7}
+        >
+          {refreshing ? (
+            <View className="flex-row items-center gap-2">
+              <View className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <CustomText className="text-primary-700 text-sm">Refreshing...</CustomText>
+            </View>
+          ) : (
+            <CustomText className="text-primary-700 text-sm">Press to refresh</CustomText>
+          )}
+        </TouchableOpacity>
+        
+        {/* Loading more messages indicator */}
+        {loadingMore && (
+          <View className="py-2 items-center">
+            <View className="flex-row items-center gap-2">
+              <View className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              <CustomText className="text-gray-500 text-sm">Loading older messages...</CustomText>
+            </View>
+          </View>
+        )}
       </View>
     );
-  }, [loadingMore]);
-
-  // List footer component
-  const ListFooterComponent = useCallback(() => {
-    return <View className="h-5" />;
-  }, []);
+  }, [loadingMore, refreshing, onRefresh]);
 
   // List empty component
   const ListEmptyComponent = useCallback(() => {
@@ -456,7 +455,7 @@ const ChatScreen = () => {
         </View>
       );
     }
-    
+
     return (
       <View className="flex-1 justify-center items-center py-20">
         <CustomText className="text-gray-500 text-center">
@@ -486,16 +485,6 @@ const ChatScreen = () => {
       }
     };
   }, [fetchMessages, markChatAsRead, setupChatChannel]);
-
-  // Effect to scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (messages.length > 0 && !loadingMore && !loading) {
-      // Small delay to ensure the new message is rendered
-      setTimeout(() => {
-        scrollToBottom(true);
-      }, 100);
-    }
-  }, [messages.length, loadingMore, loading, scrollToBottom]);
 
   const displayName = `${staticOtherUser.first_name} ${staticOtherUser.last_name.charAt(0)}.`;
 
@@ -550,25 +539,15 @@ const ChatScreen = () => {
           keyExtractor={keyExtractor}
           className="flex-1 bg-neutral-200 px-4"
           showsVerticalScrollIndicator={false}
-          onScroll={({ nativeEvent }) => {
-            // Load more messages when scrolling near the top
-            const { contentOffset, layoutMeasurement, contentSize } = nativeEvent;
-            const isNearTop = contentOffset.y < 100; 
-            
-            if (isNearTop && hasMoreMessages && !loadingMore && !loading) {
+          inverted={true}
+          onEndReached={() => {
+            if (hasMoreMessages && !loadingMore && !loading) {
               loadMoreMessages();
             }
           }}
-          scrollEventThrottle={16}
-          ListHeaderComponent={ListHeaderComponent}
+          onEndReachedThreshold={0.1}
           ListFooterComponent={ListFooterComponent}
           ListEmptyComponent={ListEmptyComponent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-            />
-          }
           maintainVisibleContentPosition={{
             minIndexForVisible: 1,
             autoscrollToTopThreshold: 50,
@@ -579,7 +558,6 @@ const ChatScreen = () => {
           initialNumToRender={20}
           windowSize={10}
         />
-        
         <View className="bg-neutral-100 border-t border-gray-200 px-4 py-3">
           <View className="flex-row items-center gap-3">
             <View className="flex-1 bg-neutral-200 rounded-full px-4 py-2 min-h-[44px] max-h-24">
