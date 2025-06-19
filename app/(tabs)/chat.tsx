@@ -3,7 +3,9 @@ import CustomText from "@/app/components/CustomText";
 import LoginModal from "@/app/components/LoginModal";
 import { getChatsByUserId, getUserById } from "@/utils/getRoutes";
 import { ChatWithParticipants, UserProfile } from "@/utils/models";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import { supabase } from "@/utils/supabase";
+import { RealtimeChannel } from "@supabase/supabase-js";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
@@ -22,6 +24,7 @@ const Chat = () => {
   const [userChat, setUserChat] = useState<ChatWithParticipants[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
@@ -53,6 +56,40 @@ const Chat = () => {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // Clean up existing
+    if (channelRef.current) {
+      channelRef.current.unsubscribe();
+      supabase.removeChannel(channelRef.current);
+    }
+
+    const channel = supabase.channel('chat-global')
+      .on('broadcast', { event: 'new_message' }, (payload) => {
+        const message = payload.payload;
+        if (message.sender_id !== user.id) {
+          console.log("Received new message broadcast:", message);
+          fetchData(); 
+        }
+      })
+      .on('broadcast', { event: "messages_read" }, async (payload) => {
+        console.log("Received read broadcast:", payload);
+        await fetchData();
+      })
+      .subscribe((status) => {
+        console.log("Chat list realtime status:", status);
+      });
+
+    channelRef.current = channel;
+
+    return () => {
+      if (channelRef.current) {
+        channelRef.current.unsubscribe();
+        supabase.removeChannel(channelRef.current);
+      }
+    };
+  }, [user?.id, fetchData]);
 
   if (!user) return <LoginModal />;
 

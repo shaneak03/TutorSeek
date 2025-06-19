@@ -383,6 +383,7 @@ export const getChatMessagesByChatIdAndPages = async (
       .from("messages")
       .select("*")
       .eq("chat_id", chatId)
+      .order("created_at", { ascending: false }) 
       .range((page - 1) * pageSize, page * pageSize - 1);
 
     if (error) {

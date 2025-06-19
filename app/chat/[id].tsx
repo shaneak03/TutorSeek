@@ -47,6 +47,8 @@ const ChatScreen = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const isComponentMountedRef = useRef(true);
+  const shouldScrollToBottomRef = useRef(true);
+  const scrollToBottomTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -60,6 +62,40 @@ const ChatScreen = () => {
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hours ago`;
     if (diffMins < 2880) return `${Math.floor(diffMins / 1440)} day ago`
     return `${Math.floor(diffMins / 1440)} days ago`;
+  };
+
+  // Format date for separators
+  const formatDateSeparator = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    const messageDate = date.toDateString();
+    const todayDate = today.toDateString();
+    const yesterdayDate = yesterday.toDateString();
+    
+    if (messageDate === todayDate) {
+      return 'Today';
+    } else if (messageDate === yesterdayDate) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+    }
+  };
+
+  const needsDateSeparator = (currentMessage: ChatMessageWithSender, previousMessage?: ChatMessageWithSender) => {
+    if (!previousMessage) return true;
+    
+    const currentDate = new Date(currentMessage.created_at).toDateString();
+    const previousDate = new Date(previousMessage.created_at).toDateString();
+    
+    return currentDate !== previousDate;
   };
   
   const PAGE_SIZE = 50;
@@ -103,6 +139,27 @@ const ChatScreen = () => {
     }
   }, [staticChatId, staticUserId]);
 
+  const scrollToBottom = useCallback((animated: boolean = true) => {
+    if (!scrollViewRef.current || !isComponentMountedRef.current) return;
+    
+    if (scrollToBottomTimeoutRef.current) {
+      clearTimeout(scrollToBottomTimeoutRef.current);
+    }
+    
+    // Use multiple attempts with increasing delays to ensure scrolling works
+    const attemptScroll = (attempt: number = 0) => {
+      if (!isComponentMountedRef.current || attempt > 3) return;
+      
+      scrollViewRef.current?.scrollToEnd({ animated: animated && attempt === 0 });
+      
+      if (attempt < 3) {
+        scrollToBottomTimeoutRef.current = setTimeout(() => attemptScroll(attempt + 1), 50 * (attempt + 1));
+      }
+    };
+    
+    attemptScroll(0);
+  }, []);
+
   const setupChatChannel = useCallback(() => {
     if (!staticUserId || !isComponentMountedRef.current) return;
 
@@ -122,12 +179,11 @@ const ChatScreen = () => {
           
           setMessages(prev => {
             const exists = prev.some(msg => msg.id === newMessage.id);
-            return exists ? prev : [...prev, messageWithSender];
+            if (exists) return prev;
+            
+            shouldScrollToBottomRef.current = true;
+            return [...prev, messageWithSender];
           });
-          
-          setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-          }, 100);
           
           markChatAsRead();
         }
@@ -154,7 +210,6 @@ const ChatScreen = () => {
     };
   }, [staticChatId, staticUserId, transformMessage, markChatAsRead]);
 
-
   // Fetch messages with pagination
   const fetchMessages = useCallback(async (page: number = 1, append: boolean = false) => {
     try {
@@ -166,19 +221,28 @@ const ChatScreen = () => {
 
       const fetchedMessages = await getChatMessagesByChatIdAndPages(staticChatId, page, PAGE_SIZE);
       
-      const messagesWithSender: ChatMessageWithSender[] = fetchedMessages
-        .map(transformMessage)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      const messagesWithSender: ChatMessageWithSender[] = fetchedMessages.map(transformMessage);
       
       if (append) {
-        setMessages(prev => [...messagesWithSender, ...prev]);
+        // For loading older messages, don't scroll to bottom
+        shouldScrollToBottomRef.current = false;
+        setMessages(prev => {
+          const existingIds = new Set(prev.map(msg => msg.id));
+          const newMessages = messagesWithSender.filter(msg => !existingIds.has(msg.id));
+          const allMessages = [...newMessages, ...prev];
+          return allMessages.sort((a, b) => 
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+        });
       } else {
-        setMessages(messagesWithSender);
-        setIsInitialLoad(false);
+        // For initial load or refresh, scroll to bottom
+        shouldScrollToBottomRef.current = true;
+        const sortedMessages = messagesWithSender.sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        setMessages(sortedMessages);
       }
-
-      setHasMoreMessages(fetchedMessages.length === PAGE_SIZE);
-      
+      setHasMoreMessages(fetchedMessages.length === PAGE_SIZE);   
     } catch (error) {
       console.error('Error fetching messages:', error);
       Alert.alert('Error', 'Failed to load messages');
@@ -186,6 +250,7 @@ const ChatScreen = () => {
       setLoading(false);
       setLoadingMore(false);
       setRefreshing(false);
+      setIsInitialLoad(false);
     }
   }, [staticChatId, transformMessage]);
 
@@ -203,6 +268,7 @@ const ChatScreen = () => {
     setRefreshing(true);
     setCurrentPage(1);
     setHasMoreMessages(true);
+    shouldScrollToBottomRef.current = true;
     await fetchMessages(1, false);
   }, [fetchMessages]);
 
@@ -263,6 +329,7 @@ const ChatScreen = () => {
         }
       };
 
+      shouldScrollToBottomRef.current = true;
       setMessages(prev => [...prev, optimisticMessage!]);
       setMessageText('');
 
@@ -272,10 +339,6 @@ const ChatScreen = () => {
       const currentUserId = userData?.user?.id;
       console.log("Inserting chat as:", currentUserId, "tutorId:", tutorId, "studentId:", studentId);
       console.log("Current user role:", senderRole, "Other user role:", staticOtherUser.role);
-
-      // if (currentUserId !== tutorId && currentUserId !== studentId) {
-      //   throw new Error("Current user is not authorized to create this chat");
-      // }
 
       const { message: newMessage } = await postChatMessage(
         {
@@ -308,12 +371,6 @@ const ChatScreen = () => {
           payload: newMessage
         });
       }
-      
-      setTimeout(() => {
-        if (scrollViewRef.current && isComponentMountedRef.current) {
-          scrollViewRef.current.scrollToEnd({ animated: true });
-        }
-      }, 100);
 
     } catch (error) {
       console.error('Error sending message:', error);
@@ -347,19 +404,29 @@ const ChatScreen = () => {
         channelRef.current.unsubscribe();
         supabase.removeChannel(channelRef.current);
       }
+      if (scrollToBottomTimeoutRef.current) {
+        clearTimeout(scrollToBottomTimeoutRef.current);
+      }
     };
   }, [fetchMessages, markChatAsRead, setupChatChannel]);
 
-  // Auto-scroll effect
+  // Effect to handle scrolling to bottom when messages change
   useEffect(() => {
-    if (!isInitialLoad && messages.length > 0) {
-      setTimeout(() => {
-        if (scrollViewRef.current && isComponentMountedRef.current) {
-          scrollViewRef.current.scrollToEnd({ animated: true });
-        }
-      }, 100);
+    if (shouldScrollToBottomRef.current && messages.length > 0 && !loadingMore && !loading) {
+      shouldScrollToBottomRef.current = false;
+      
+      // Use requestAnimationFrame to ensure the layout is complete
+      requestAnimationFrame(() => {
+        scrollToBottom(!isInitialLoad);
+      });
     }
-  }, [messages.length, isInitialLoad]);
+  }, [messages, isInitialLoad, loadingMore, loading, scrollToBottom]);
+
+  const handleContentSizeChange = useCallback(() => {
+    if (shouldScrollToBottomRef.current && !loadingMore && !loading) {
+      scrollToBottom(false);
+    }
+  }, [loadingMore, loading, scrollToBottom]);
 
   const displayName = `${staticOtherUser.first_name} ${staticOtherUser.last_name.charAt(0)}.`;
 
@@ -414,6 +481,7 @@ const ChatScreen = () => {
           contentContainerStyle={{ paddingBottom: 20 }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
+          onContentSizeChange={handleContentSizeChange}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -441,13 +509,25 @@ const ChatScreen = () => {
           ) : (
             messages.map((message, index) => {
               const isCurrentUser = message.sender_id === user.id;
+              const previousMessage = index > 0 ? messages[index - 1] : undefined;
+              const showDateSeparator = needsDateSeparator(message, previousMessage);
 
               return (
-                <MessageBubble
-                  key={message.id}
-                  message={message}
-                  isCurrentUser={isCurrentUser}
-                />
+                <React.Fragment key={message.id}>
+                  {showDateSeparator && (
+                    <View className="items-center my-4">
+                      <View className="bg-gray-400 px-3 py-1 rounded-full">
+                        <CustomText className="text-m text-white font-poppins-medium">
+                          {formatDateSeparator(message.created_at)}
+                        </CustomText>
+                      </View>
+                    </View>
+                  )}
+                  <MessageBubble
+                    message={message}
+                    isCurrentUser={isCurrentUser}
+                  />
+                </React.Fragment>
               );
             })
           )}
