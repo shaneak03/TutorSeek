@@ -1,9 +1,10 @@
 import { Review } from "@/utils/models";
-import { AntDesign, Entypo } from "@expo/vector-icons";
+import dayjs from "dayjs";
 import { Image } from "expo-image";
 import { View } from "react-native";
-import themeColors from "../themeColors";
 import CustomText from "./CustomText";
+
+import StarRow from "./StarRow";
 
 export type ReviewData = Review & {
   first_name: string;
@@ -17,10 +18,12 @@ type props = {
 };
 
 const roundContainer =
-  "w-[220] h-[180] p-4 border-hairline border-neutral-300 rounded-3xl";
-const boxContainer = "w-full px-4 py-6";
+  "w-[280] h-[160] p-4 border-hairline border-neutral-300 rounded-3xl";
+const boxContainer = "w-full px-4 py-6 border-b-hairline border-neutral-300";
 
 const ReviewCard = ({ review, rounded = false }: props) => {
+  const createdAt = dayjs(review.created_at).format("D MMMM YYYY");
+
   return (
     <View className={rounded ? roundContainer : boxContainer}>
       <View className='flex-row gap-2'>
@@ -34,31 +37,14 @@ const ReviewCard = ({ review, rounded = false }: props) => {
           contentFit='cover'
         />
         <View>
-          <View className='flex-row gap-1 items-center'>
+          <View className='flex-row gap-2 items-center'>
             <CustomText className='font-poppins-bold'>
-              {review.first_name} {review.last_name}
+              {review.first_name} {review.last_name[0]}.
             </CustomText>
-            <Entypo
-              name='dot-single'
-              size={8}
-              color={themeColors["neutral-900"]}
-            />
-            <CustomText className='text-sm'>11 aug</CustomText>
+
+            <CustomText className='text-sm'>{createdAt}</CustomText>
           </View>
-          <View className='flex-row justify-start items-center'>
-            {[1, 2, 3, 4, 5].map(i => {
-              return (
-                review.rating >= i && (
-                  <AntDesign
-                    key={i}
-                    name='star'
-                    size={16}
-                    color={themeColors["primary-700"]}
-                  />
-                )
-              );
-            })}
-          </View>
+          <StarRow rating={review.rating} size={14} />
         </View>
       </View>
       <CustomText>{review.description}</CustomText>

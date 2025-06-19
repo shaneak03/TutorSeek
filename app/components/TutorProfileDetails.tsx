@@ -1,14 +1,13 @@
 import Feather from "@expo/vector-icons/Feather";
 import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
-import { TutorProfileData } from "../(tabs)/profile";
+import { Subject, TutorProfileData } from "../(tabs)/(profile)";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 import HourlyRateEditor from "./HourlyRateEditor";
 import RoundTextInput from "./RoundedTextInput";
 import SubjectAdder from "./SubjectAdder";
 import TutorSubjectList from "./TutorSubjectList";
-import { Subject } from "../(tabs)/profile";
 
 type props = {
   tutorData: TutorProfileData;

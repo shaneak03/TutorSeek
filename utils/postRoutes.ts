@@ -1,29 +1,30 @@
-import { TutorProfileData } from "@/app/(tabs)/profile";
+import { TutorProfileData } from "@/app/(tabs)/(profile)";
 import { findChatBetweenUsers } from "./getRoutes";
+
 import {
-    ChatData,
-    ChatMessage,
-    ChatWithParticipants,
-    Review,
-    StudentProfile,
-    TutorProfile,
-    UserProfile
+  ChatData,
+  ChatMessage,
+  ChatWithParticipants,
+  Review,
+  StudentProfile,
+  TutorProfile,
+  UserProfile,
 } from "./models";
 import { supabase } from "./supabase";
 
 export const updateLastSeen = async (userId: string) => {
-    try {
-        const { error } = await supabase
-        .from('users')
-        .update({ last_online_at: new Date().toISOString() })
-        .eq('id', userId);
-        
-        if (error) throw error;
-        console.log(`Updated last_online_at for user ${userId}`);
-    } catch (err) {
-        console.error("Failed to update last_online_at:", err);
-    }
-}
+  try {
+    const { error } = await supabase
+      .from("users")
+      .update({ last_online_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    if (error) throw error;
+    console.log(`Updated last_online_at for user ${userId}`);
+  } catch (err) {
+    console.error("Failed to update last_online_at:", err);
+  }
+};
 
 export const postUserProfile = async (profile: UserProfile) => {
   try {
@@ -212,11 +213,15 @@ export const postTutorSubject = async (
 };
 
 export const postChatMessage = async (
-  messageData: Omit<ChatMessage, 'id' | 'created_at' | 'read' | 'chat_id'>,
+  messageData: Omit<ChatMessage, "id" | "created_at" | "read" | "chat_id">,
   senderRole: "tutor" | "student",
   tutorId: string,
   studentId: string
-): Promise<{ message: ChatMessage, chat: ChatWithParticipants, wasNewChat: boolean }> => {
+): Promise<{
+  message: ChatMessage;
+  chat: ChatWithParticipants;
+  wasNewChat: boolean;
+}> => {
   try {
     // Try to find existing chat first
     let chat = await findChatBetweenUsers(tutorId, studentId);
@@ -224,23 +229,25 @@ export const postChatMessage = async (
 
     // If no chat exists, create one
     if (!chat) {
-      const newChatData: Omit<ChatData, 'id'> = {
+      const newChatData: Omit<ChatData, "id"> = {
         tutor_id: tutorId,
         student_id: studentId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         unread_count_tutor: 0,
-        unread_count_student: 0
+        unread_count_student: 0,
       };
 
       const { data, error } = await supabase
         .from("chats")
         .insert(newChatData)
-        .select(`
+        .select(
+          `
           *,
           tutor:users!chats_tutor_id_fkey (*),
           student:users!chats_student_id_fkey (*)
-        `)
+        `
+        )
         .single();
 
       if (error) throw error;
@@ -255,7 +262,7 @@ export const postChatMessage = async (
         ...messageData,
         chat_id: chat.id,
         created_at: new Date().toISOString(),
-        read: false
+        read: false,
       })
       .select()
       .single();
@@ -263,20 +270,20 @@ export const postChatMessage = async (
     if (messageError) throw messageError;
 
     // Increment unread count for recipient
-    const unreadField = senderRole === 'tutor' ? 'unread_count_student' : 'unread_count_tutor';
-    
-    const { error: rpcError } = await supabase
-      .rpc('increment_unread_count', {
-        chat_id_param: chat.id,
-        field_name: unreadField
-      });
+    const unreadField =
+      senderRole === "tutor" ? "unread_count_student" : "unread_count_tutor";
+
+    const { error: rpcError } = await supabase.rpc("increment_unread_count", {
+      chat_id_param: chat.id,
+      field_name: unreadField,
+    });
 
     if (rpcError) throw rpcError;
 
-    return { 
-      message: messageResult as ChatMessage, 
+    return {
+      message: messageResult as ChatMessage,
       chat,
-      wasNewChat 
+      wasNewChat,
     };
   } catch (error) {
     console.error("Error posting chat message:", error);
@@ -296,17 +303,17 @@ export const markMessagesAsRead = async (chatId: number, userId: string) => {
     if (!chat) throw new Error("Chat not found");
 
     const isUserTutor = chat.tutor_id === userId;
-    const unreadField = isUserTutor ? 'unread_count_tutor' : 'unread_count_student';
+    const unreadField = isUserTutor
+      ? "unread_count_tutor"
+      : "unread_count_student";
 
-    const { error: rpcError } = await supabase
-      .rpc('mark_messages_read', {
-        chat_id_param: chatId,
-        user_id_param: userId,
-        field_name: unreadField
-      });
+    const { error: rpcError } = await supabase.rpc("mark_messages_read", {
+      chat_id_param: chatId,
+      user_id_param: userId,
+      field_name: unreadField,
+    });
 
     if (rpcError) throw rpcError;
-
   } catch (error) {
     console.error("Error marking messages as read:", error);
     throw error;

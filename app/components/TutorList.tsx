@@ -1,11 +1,10 @@
-import { TutorProfile } from "@/utils/models";
 import { RefreshControl, ScrollView } from "react-native";
-import TutorCard from "./TutorCard";
+import TutorCard, { tutorCardData } from "./TutorCard";
 
 type props = {
   refreshing: boolean;
   onRefresh: any;
-  tutors: TutorProfile[];
+  tutors: tutorCardData[];
 };
 
 export default function TutorList({ refreshing, onRefresh, tutors }: props) {

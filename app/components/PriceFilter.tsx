@@ -17,7 +17,7 @@ export default function PriceFilter({ editData, setEditData }: props) {
   return (
     <View className='flex p-4 items-center'>
       <CustomText className='font-poppins-semibold text-xl'>Price</CustomText>
-      <CustomText className='mt-4'>
+      <CustomText className='mt-2'>
         SGD {editData.minPrice} - SGD {editData.maxPrice}
       </CustomText>
       <MultiSlider
