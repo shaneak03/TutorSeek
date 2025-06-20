@@ -18,7 +18,7 @@ type props = {
 };
 
 const roundContainer =
-  "w-[280] h-[160] p-4 border-hairline border-neutral-300 rounded-3xl";
+  "w-[280] h-[160] p-4 border-hairline border-neutral-300 rounded-3xl shadow-xs";
 const boxContainer = "w-full px-4 py-6 border-b-hairline border-neutral-300";
 
 const ReviewCard = ({ review, rounded = false }: props) => {

@@ -5,7 +5,6 @@ export default function ViewTutorLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShadowVisible: false,
         headerStyle: {
           backgroundColor: themeColors["neutral-100"],
         },

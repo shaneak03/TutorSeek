@@ -1,6 +1,7 @@
 import CustomText from "@/app/components/CustomText";
 import FullPageModal from "@/app/components/FullPageModal";
 import HollowButton from "@/app/components/HollowButton";
+import LargeSolidButton from "@/app/components/LargeSolidButton";
 import RatingReviewCount from "@/app/components/RatingReviewCount";
 import { ReviewData } from "@/app/components/ReviewCard";
 import ReviewList from "@/app/components/ReviewList";
@@ -11,7 +12,7 @@ import {
   getTutor,
 } from "@/utils/getRoutes";
 import { FontAwesome } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +20,7 @@ import themeColors from "../../../themeColors";
 
 const viewTutor = () => {
   const params = useLocalSearchParams();
+  const router = useRouter();
   const tutorId = params?.id as string;
   const [tutor, setTutor] = useState<tutorCardData>();
   const [isShowAllReviews, setIsShowAllReviews] = useState(false);
@@ -53,6 +55,10 @@ const viewTutor = () => {
     setIsShowAllReviews(true);
   };
 
+  const onContactTutor = () => {
+    //TODO: THANKS SHANE
+  };
+
   if (!tutor) return;
   return (
     <>
@@ -68,9 +74,8 @@ const viewTutor = () => {
         <ReviewList reviews={reviews} />
       </FullPageModal>
       <SafeAreaView className='flex-1 bg-neutral-100'>
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <TutorCard tutor={tutor} />
-
           <View className='flex p-4 gap-2 border-b-hairline border-neutral-300'>
             <CustomText className='font-poppins-bold text-xl'>
               About me
@@ -102,7 +107,7 @@ const viewTutor = () => {
             </View>
           )}
 
-          <View className='flex p-4 gap-2 border-b-hairline border-neutral-300'>
+          <View className='flex p-4 gap-2'>
             <CustomText className='font-poppins-bold text-xl'>
               Subjects I teach
             </CustomText>
@@ -133,6 +138,9 @@ const viewTutor = () => {
             </View>
           </View>
         </ScrollView>
+        <View className='p-4 border-t-hairline border-neutral-300'>
+          <LargeSolidButton buttonText='Contact me' onPress={onContactTutor} />
+        </View>
       </SafeAreaView>
     </>
   );

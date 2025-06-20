@@ -1,14 +1,21 @@
-import { AuthContext, RealtimeContext } from '@/app/_layout';
-import CustomText from '@/app/components/CustomText';
-import MessageBubble from '@/app/components/MessageBubble';
-import { getChatMessagesByChatIdAndPages } from '@/utils/getRoutes';
-import { ChatMessageWithSender, UserProfile } from '@/utils/models';
-import { markMessagesAsRead, postChatMessage } from '@/utils/postRoutes';
-import { supabase } from '@/utils/supabase';
-import { Ionicons } from '@expo/vector-icons';
-import { RealtimeChannel } from '@supabase/supabase-js';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { AuthContext, RealtimeContext } from "@/app/_layout";
+import CustomText from "@/app/components/CustomText";
+import MessageBubble from "@/app/components/MessageBubble";
+import { getChatMessagesByChatIdAndPages } from "@/utils/getRoutes";
+import { ChatMessageWithSender, UserProfile } from "@/utils/models";
+import { markMessagesAsRead, postChatMessage } from "@/utils/postRoutes";
+import { supabase } from "@/utils/supabase";
+import { Ionicons } from "@expo/vector-icons";
+import { RealtimeChannel } from "@supabase/supabase-js";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   FlatList,
@@ -16,15 +23,16 @@ import {
   KeyboardAvoidingView,
   ListRenderItem,
   Platform,
+  Pressable,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface MessageItem {
   id: string;
-  type: 'message' | 'date-separator';
+  type: "message" | "date-separator";
   message?: ChatMessageWithSender;
   dateText?: string;
 }
@@ -32,24 +40,24 @@ interface MessageItem {
 const ChatScreen = () => {
   const { user } = useContext(AuthContext);
   const { onlineUsers } = useContext(RealtimeContext);
-  
+
   const router = useRouter();
   const params = useLocalSearchParams();
   const chatId = Number(params.id);
   const otherUser = JSON.parse(params.otherUser as string);
   const isOtherUserOnline = Boolean(onlineUsers[otherUser.id]);
-  
+
   const [messages, setMessages] = useState<ChatMessageWithSender[]>([]);
-  const [messageText, setMessageText] = useState('');
+  const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  
+
   const flatListRef = useRef<FlatList>(null);
   const channelRef = useRef<RealtimeChannel | null>(null);
   const isComponentMountedRef = useRef(true);
@@ -59,8 +67,8 @@ const ChatScreen = () => {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.round(diffMs / (1000 * 60));
-    
-    if (diffMins < 1) return 'just now';
+
+    if (diffMins < 1) return "just now";
     if (diffMins < 60) return `${diffMins} min ago`;
     if (diffMins < 120) return `${Math.floor(diffMins / 60)} hour ago`;
     if (diffMins < 1440) return `${Math.floor(diffMins / 60)} hours ago`;
@@ -73,40 +81,43 @@ const ChatScreen = () => {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
-    
+
     const messageDate = date.toDateString();
     const todayDate = today.toDateString();
     const yesterdayDate = yesterday.toDateString();
 
     const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay()); 
-    
+    startOfWeek.setDate(today.getDate() - today.getDay());
+
     if (messageDate === todayDate) {
-      return 'Today';
+      return "Today";
     } else if (messageDate === yesterdayDate) {
-      return 'Yesterday';
+      return "Yesterday";
     } else if (date >= startOfWeek && date < today) {
-      return date.toLocaleDateString('en-US', { 
-        weekday: 'long' 
+      return date.toLocaleDateString("en-US", {
+        weekday: "long",
       });
     } else {
-      return date.toLocaleDateString('en-SG', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
+      return date.toLocaleDateString("en-SG", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
       });
     }
   };
 
-  const needsDateSeparator = (currentMessage: ChatMessageWithSender, previousMessage?: ChatMessageWithSender) => {
+  const needsDateSeparator = (
+    currentMessage: ChatMessageWithSender,
+    previousMessage?: ChatMessageWithSender
+  ) => {
     if (!previousMessage) return true;
-    
+
     const currentDate = new Date(currentMessage.created_at).toDateString();
     const previousDate = new Date(previousMessage.created_at).toDateString();
-    
+
     return currentDate !== previousDate;
   };
-  
+
   const PAGE_SIZE = 50;
 
   // Memoize static values to prevent unnecessary re-renders
@@ -117,61 +128,72 @@ const ChatScreen = () => {
   // Transform messages into FlatList items with date separators
   const flatListData = useMemo((): MessageItem[] => {
     const items: MessageItem[] = [];
-    
+
     for (let i = 0; i < messages.length; i++) {
       const message = messages[i];
       const previousMessage = i > 0 ? messages[i - 1] : undefined;
-      
+
       if (needsDateSeparator(message, previousMessage)) {
         items.push({
           id: `date-${message.created_at}`,
-          type: 'date-separator',
-          dateText: formatDateSeparator(message.created_at)
+          type: "date-separator",
+          dateText: formatDateSeparator(message.created_at),
         });
       }
-      
+
       // Add the message
       items.push({
         id: `message-${message.id}`,
-        type: 'message',
-        message
+        type: "message",
+        message,
       });
     }
-    
+
     return items.reverse();
   }, [messages]);
 
-  // Transform message to include sender info 
-  const transformMessage = useCallback((msg: any): ChatMessageWithSender => ({
-    ...msg,
-    sender: {
-      id: msg.sender_id,
-      first_name: msg.sender_id === staticUserId ? 'You' : staticOtherUser.first_name,
-      last_name: msg.sender_id === staticUserId ? '' : staticOtherUser.last_name,
-      profile_icon_url: msg.sender_id === staticUserId ? '' : staticOtherUser.profile_icon_url,
-      role: msg.sender_id === staticUserId ? (user as UserProfile).role : staticOtherUser.role,
-    }
-  }), [staticUserId, staticOtherUser, user]);
+  // Transform message to include sender info
+  const transformMessage = useCallback(
+    (msg: any): ChatMessageWithSender => ({
+      ...msg,
+      sender: {
+        id: msg.sender_id,
+        first_name:
+          msg.sender_id === staticUserId ? "You" : staticOtherUser.first_name,
+        last_name:
+          msg.sender_id === staticUserId ? "" : staticOtherUser.last_name,
+        profile_icon_url:
+          msg.sender_id === staticUserId
+            ? ""
+            : staticOtherUser.profile_icon_url,
+        role:
+          msg.sender_id === staticUserId
+            ? (user as UserProfile).role
+            : staticOtherUser.role,
+      },
+    }),
+    [staticUserId, staticOtherUser, user]
+  );
 
   const markChatAsRead = useCallback(async () => {
     if (!staticUserId) return;
     try {
       await markMessagesAsRead(staticChatId, staticUserId);
-      
+
       // Broadcast read status to other users
       if (channelRef.current) {
         channelRef.current.send({
-          type: 'broadcast',
-          event: 'messages_read',
+          type: "broadcast",
+          event: "messages_read",
           payload: {
             chat_id: staticChatId,
             user_id: staticUserId,
-            read_at: new Date().toISOString()
-          }
+            read_at: new Date().toISOString(),
+          },
         });
       }
     } catch (error) {
-      console.error('Error marking messages as read:', error);
+      console.error("Error marking messages as read:", error);
     }
   }, [staticChatId, staticUserId]);
 
@@ -184,31 +206,35 @@ const ChatScreen = () => {
       supabase.removeChannel(channelRef.current);
     }
 
-    const channel = supabase.channel(`chat-messages-${staticChatId}`)
-      .on('broadcast', { event: 'new_message' }, (payload) => {
+    const channel = supabase
+      .channel(`chat-messages-${staticChatId}`)
+      .on("broadcast", { event: "new_message" }, payload => {
         if (!isComponentMountedRef.current) return;
-        
+
         const newMessage = payload.payload;
-        if (newMessage.chat_id === staticChatId && newMessage.sender_id !== staticUserId) {
+        if (
+          newMessage.chat_id === staticChatId &&
+          newMessage.sender_id !== staticUserId
+        ) {
           const messageWithSender = transformMessage(newMessage);
-          
+
           setMessages(prev => {
             const exists = prev.some(msg => msg.id === newMessage.id);
             if (exists) return prev;
-            
+
             return [...prev, messageWithSender];
           });
-          
+
           markChatAsRead();
         }
       })
-      .on('broadcast', { event: 'messages_read' }, (payload) => {
+      .on("broadcast", { event: "messages_read" }, payload => {
         if (!isComponentMountedRef.current) return;
-        
+
         const { chat_id, user_id } = payload.payload;
         if (chat_id === staticChatId && user_id !== staticUserId) {
-          setMessages(prev => 
-            prev.map(msg => 
+          setMessages(prev =>
+            prev.map(msg =>
               msg.sender_id === staticUserId ? { ...msg, read: true } : msg
             )
           );
@@ -225,47 +251,61 @@ const ChatScreen = () => {
   }, [staticChatId, staticUserId, transformMessage, markChatAsRead]);
 
   // Fetch messages with pagination
-  const fetchMessages = useCallback(async (page: number = 1, append: boolean = false) => {
-    try {
-      if (!append) {
-        setLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
+  const fetchMessages = useCallback(
+    async (page: number = 1, append: boolean = false) => {
+      try {
+        if (!append) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
 
-      const fetchedMessages = await getChatMessagesByChatIdAndPages(staticChatId, page, PAGE_SIZE);
-      
-      const messagesWithSender: ChatMessageWithSender[] = fetchedMessages.map(transformMessage);
-      
-      if (append) {
-        setMessages(prev => {
-          const existingIds = new Set(prev.map(msg => msg.id));
-          const newMessages = messagesWithSender.filter(msg => !existingIds.has(msg.id));
-          return [...newMessages, ...prev].sort((a, b) => 
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          );
-        });
-      } else {
-        const sortedMessages = messagesWithSender.sort((a, b) => 
-          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        const fetchedMessages = await getChatMessagesByChatIdAndPages(
+          staticChatId,
+          page,
+          PAGE_SIZE
         );
-        setMessages(sortedMessages);
+
+        const messagesWithSender: ChatMessageWithSender[] =
+          fetchedMessages.map(transformMessage);
+
+        if (append) {
+          setMessages(prev => {
+            const existingIds = new Set(prev.map(msg => msg.id));
+            const newMessages = messagesWithSender.filter(
+              msg => !existingIds.has(msg.id)
+            );
+            return [...newMessages, ...prev].sort(
+              (a, b) =>
+                new Date(a.created_at).getTime() -
+                new Date(b.created_at).getTime()
+            );
+          });
+        } else {
+          const sortedMessages = messagesWithSender.sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime()
+          );
+          setMessages(sortedMessages);
+        }
+        setHasMoreMessages(fetchedMessages.length === PAGE_SIZE);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+        Alert.alert("Error", "Failed to load messages");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+        setRefreshing(false);
       }
-      setHasMoreMessages(fetchedMessages.length === PAGE_SIZE);   
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-      Alert.alert('Error', 'Failed to load messages');
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setRefreshing(false);
-    }
-  }, [staticChatId, transformMessage]);
+    },
+    [staticChatId, transformMessage]
+  );
 
   // Load more messages (older messages)
   const loadMoreMessages = useCallback(async () => {
     if (!hasMoreMessages || loadingMore) return;
-    
+
     const nextPage = currentPage + 1;
     await fetchMessages(nextPage, true);
     setCurrentPage(nextPage);
@@ -279,6 +319,11 @@ const ChatScreen = () => {
     await fetchMessages(1, false);
   }, [fetchMessages]);
 
+  const navToUser = () => {
+    if (otherUser.role === "student") return;
+    router.navigate(`/(tabs)/(home)/viewTutor/${otherUser?.id}`);
+  };
+
   const handleSend = useCallback(async () => {
     if (!messageText.trim() || !user || sending) return;
 
@@ -287,27 +332,33 @@ const ChatScreen = () => {
 
     try {
       setSending(true);
-      
+
       const currentUserProfile = user as UserProfile;
       const senderRole = currentUserProfile.role;
-      
+
       let tutorId: string;
       let studentId: string;
 
-      if (senderRole === 'tutor') {
+      if (senderRole === "tutor") {
         tutorId = user.id;
-        studentId = staticOtherUser.id; 
-      } else if (senderRole === 'student') {
-        tutorId = staticOtherUser.id; 
+        studentId = staticOtherUser.id;
+      } else if (senderRole === "student") {
+        tutorId = staticOtherUser.id;
         studentId = user.id;
       } else {
-        console.error('Invalid current user role:', senderRole);
-        console.error('Expected "tutor" or "student", got:', typeof senderRole, senderRole);
-        throw new Error(`Invalid current user role for chat: "${senderRole}". Expected "tutor" or "student".`);
+        console.error("Invalid current user role:", senderRole);
+        console.error(
+          'Expected "tutor" or "student", got:',
+          typeof senderRole,
+          senderRole
+        );
+        throw new Error(
+          `Invalid current user role for chat: "${senderRole}". Expected "tutor" or "student".`
+        );
       }
 
       if (tutorId === studentId) {
-        throw new Error('Tutor and student cannot be the same person');
+        throw new Error("Tutor and student cannot be the same person");
       }
 
       optimisticMessage = {
@@ -320,28 +371,41 @@ const ChatScreen = () => {
         read: false,
         sender: {
           id: user.id,
-          first_name: 'You',
-          last_name: '',
-          profile_icon_url: '',
-          role: senderRole
-        }
+          first_name: "You",
+          last_name: "",
+          profile_icon_url: "",
+          role: senderRole,
+        },
       };
 
       setMessages(prev => [...prev, optimisticMessage!]);
-      setMessageText('');
+      setMessageText("");
 
-      const { data: userData, error: authError } = await supabase.auth.getUser();
+      const { data: userData, error: authError } =
+        await supabase.auth.getUser();
       if (authError) throw authError;
 
       const currentUserId = userData?.user?.id;
-      console.log("Inserting chat as:", currentUserId, "tutorId:", tutorId, "studentId:", studentId);
-      console.log("Current user role:", senderRole, "Other user role:", staticOtherUser.role);
+      console.log(
+        "Inserting chat as:",
+        currentUserId,
+        "tutorId:",
+        tutorId,
+        "studentId:",
+        studentId
+      );
+      console.log(
+        "Current user role:",
+        senderRole,
+        "Other user role:",
+        staticOtherUser.role
+      );
 
       const { message: newMessage } = await postChatMessage(
         {
           sender_id: currentUserId,
           recipient_id: staticOtherUser.id,
-          content: messageContent
+          content: messageContent,
         },
         senderRole,
         tutorId,
@@ -349,13 +413,13 @@ const ChatScreen = () => {
       );
 
       // Replace optimistic message with real message
-      setMessages(prev => 
-        prev.map(msg => 
-          msg.id === optimisticMessage!.id 
+      setMessages(prev =>
+        prev.map(msg =>
+          msg.id === optimisticMessage!.id
             ? {
                 ...newMessage,
-                sender: optimisticMessage!.sender
-              } 
+                sender: optimisticMessage!.sender,
+              }
             : msg
         )
       );
@@ -363,20 +427,21 @@ const ChatScreen = () => {
       // Broadcast new message to other users
       if (channelRef.current) {
         channelRef.current.send({
-          type: 'broadcast',
-          event: 'new_message',
-          payload: newMessage
+          type: "broadcast",
+          event: "new_message",
+          payload: newMessage,
         });
       }
-
     } catch (error) {
-      console.error('Error sending message:', error);
-      Alert.alert('Error', 'Failed to send message');
-      
+      console.error("Error sending message:", error);
+      Alert.alert("Error", "Failed to send message");
+
       if (optimisticMessage) {
-        setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage!.id));
+        setMessages(prev =>
+          prev.filter(msg => msg.id !== optimisticMessage!.id)
+        );
       }
-      
+
       setMessageText(messageContent);
     } finally {
       setSending(false);
@@ -384,31 +449,31 @@ const ChatScreen = () => {
   }, [messageText, user, sending, staticOtherUser.id, staticChatId]);
 
   // Render item for FlatList
-  const renderItem: ListRenderItem<MessageItem> = useCallback(({ item }) => {
-    if (item.type === 'date-separator') {
-      return (
-        <View className="items-center my-4">
-          <View className="bg-gray-400 px-3 py-1 rounded-full">
-            <CustomText className="text-sm text-white font-poppins-medium">
-              {item.dateText}
-            </CustomText>
+  const renderItem: ListRenderItem<MessageItem> = useCallback(
+    ({ item }) => {
+      if (item.type === "date-separator") {
+        return (
+          <View className='items-center my-4'>
+            <View className='bg-gray-400 px-3 py-1 rounded-full'>
+              <CustomText className='text-sm text-white font-poppins-medium'>
+                {item.dateText}
+              </CustomText>
+            </View>
           </View>
-        </View>
-      );
-    }
+        );
+      }
 
-    if (item.type === 'message' && item.message) {
-      const isCurrentUser = item.message.sender_id === user?.id;
-      return (
-        <MessageBubble
-          message={item.message}
-          isCurrentUser={isCurrentUser}
-        />
-      );
-    }
+      if (item.type === "message" && item.message) {
+        const isCurrentUser = item.message.sender_id === user?.id;
+        return (
+          <MessageBubble message={item.message} isCurrentUser={isCurrentUser} />
+        );
+      }
 
-    return null;
-  }, [user?.id]);
+      return null;
+    },
+    [user?.id]
+  );
 
   // Key extractor
   const keyExtractor = useCallback((item: MessageItem) => item.id, []);
@@ -417,26 +482,32 @@ const ChatScreen = () => {
   const ListFooterComponent = useCallback(() => {
     return (
       <View>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={onRefresh}
           disabled={refreshing}
-          className="py-4 items-center"
+          className='py-4 items-center'
           activeOpacity={0.7}
         >
           {refreshing ? (
-            <View className="flex-row items-center gap-2">
-              <View className="w-4 h-4 border-2 border-primary-700 border-t-transparent rounded-full animate-spin" />
-              <CustomText className="text-primary-700 text-sm">Refreshing...</CustomText>
+            <View className='flex-row items-center gap-2'>
+              <View className='w-4 h-4 border-2 border-primary-700 border-t-transparent rounded-full animate-spin' />
+              <CustomText className='text-primary-700 text-sm'>
+                Refreshing...
+              </CustomText>
             </View>
           ) : (
-            <CustomText className="text-primary-700 text-sm">Press to refresh</CustomText>
+            <CustomText className='text-primary-700 text-sm'>
+              Press to refresh
+            </CustomText>
           )}
         </TouchableOpacity>
         {loadingMore && (
-          <View className="py-2 items-center">
-            <View className="flex-row items-center gap-2">
-              <View className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-              <CustomText className="text-gray-500 text-sm">Loading older messages...</CustomText>
+          <View className='py-2 items-center'>
+            <View className='flex-row items-center gap-2'>
+              <View className='w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin' />
+              <CustomText className='text-gray-500 text-sm'>
+                Loading older messages...
+              </CustomText>
             </View>
           </View>
         )}
@@ -448,15 +519,15 @@ const ChatScreen = () => {
   const ListEmptyComponent = useCallback(() => {
     if (loading) {
       return (
-        <View className="flex-1 justify-center items-center py-20">
-          <CustomText className="text-gray-500">Loading messages...</CustomText>
+        <View className='flex-1 justify-center items-center py-20'>
+          <CustomText className='text-gray-500'>Loading messages...</CustomText>
         </View>
       );
     }
 
     return (
-      <View className="flex-1 justify-center items-center py-20">
-        <CustomText className="text-gray-500 text-center">
+      <View className='flex-1 justify-center items-center py-20'>
+        <CustomText className='text-gray-500 text-center'>
           No messages yet. Start the conversation!
         </CustomText>
       </View>
@@ -466,13 +537,13 @@ const ChatScreen = () => {
   // Initialization
   useEffect(() => {
     isComponentMountedRef.current = true;
-    
+
     const initialize = async () => {
       await fetchMessages();
       await markChatAsRead();
       setupChatChannel();
     };
-    
+
     initialize();
 
     return () => {
@@ -484,58 +555,64 @@ const ChatScreen = () => {
     };
   }, [fetchMessages, markChatAsRead, setupChatChannel]);
 
-  const displayName = `${staticOtherUser.first_name} ${staticOtherUser.last_name.charAt(0)}.`;
+  const displayName = `${
+    staticOtherUser.first_name
+  } ${staticOtherUser.last_name.charAt(0)}.`;
 
   if (!user) {
     return (
-      <SafeAreaView className="flex-1 bg-neutral-100 justify-center items-center">
-        <CustomText className="text-gray-500">Loading...</CustomText>
+      <SafeAreaView className='flex-1 bg-neutral-100 justify-center items-center'>
+        <CustomText className='text-gray-500'>Loading...</CustomText>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-neutral-100">
-      <View className="bg-neutral-100 border-b border-gray-200 px-4 py-3">
-        <View className="flex-row items-center gap-3">
-          <TouchableOpacity 
+    <SafeAreaView className='flex-1 bg-neutral-100'>
+      <View className='bg-neutral-100 border-b border-gray-200 px-4 py-3'>
+        <View className='flex-row items-center gap-3'>
+          <TouchableOpacity
             onPress={() => router.back()}
-            className="w-10 h-10 rounded-full bg-neutral-100 items-center justify-center"
+            className='w-10 h-10 rounded-full bg-neutral-100 items-center justify-center'
             activeOpacity={0.7}
           >
-            <Ionicons name="chevron-back" size={20}/>
+            <Ionicons name='chevron-back' size={20} />
           </TouchableOpacity>
-          <Image
-            source={
-              staticOtherUser.profile_icon_url
-                ? { uri: staticOtherUser.profile_icon_url }
-                : require("@/assets/images/profile_icon.jpg")
-            }
-            className="w-16 h-16 rounded-full"
-          />
-          <View className="flex-1">
-            <CustomText className="font-poppins-semibold text-xl text-gray-900">
+          <Pressable onPress={navToUser}>
+            <Image
+              source={
+                staticOtherUser.profile_icon_url
+                  ? { uri: staticOtherUser.profile_icon_url }
+                  : require("@/assets/images/profile_icon.jpg")
+              }
+              className='w-16 h-16 rounded-full'
+            />
+          </Pressable>
+          <View className='flex-1'>
+            <CustomText className='font-poppins-semibold text-xl text-gray-900'>
               {displayName}
             </CustomText>
-            <CustomText className="font-poppins-regular text-sm text-gray-500">
+            <CustomText className='font-poppins-regular text-sm text-gray-500'>
               {isOtherUserOnline
-                ? 'Online'
-                : `Last seen ${formatRelativeTime(staticOtherUser.last_online_at)}`}
+                ? "Online"
+                : `Last seen ${formatRelativeTime(
+                    staticOtherUser.last_online_at
+                  )}`}
             </CustomText>
           </View>
         </View>
       </View>
-      
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <FlatList
           ref={flatListRef}
           data={flatListData}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
-          className="flex-1 bg-neutral-200 px-4"
+          className='flex-1 bg-neutral-200 px-4'
           showsVerticalScrollIndicator={false}
           inverted={true}
           onEndReached={() => {
@@ -556,38 +633,38 @@ const ChatScreen = () => {
           initialNumToRender={20}
           windowSize={10}
         />
-        <View className="bg-neutral-100 border-t border-gray-200 px-4 py-3">
-          <View className="flex-row items-center gap-3">
-            <View className="flex-1 bg-neutral-200 rounded-full px-4 py-2 min-h-[44px] max-h-24">
+        <View className='bg-neutral-100 border-t border-gray-200 px-4 py-3'>
+          <View className='flex-row items-center gap-3'>
+            <View className='flex-1 bg-neutral-200 rounded-full px-4 py-2 min-h-[44px] max-h-24'>
               <TextInput
                 value={messageText}
                 onChangeText={setMessageText}
-                placeholder="Type a message"
-                placeholderTextColor="gray-400"
+                placeholder='Type a message'
+                placeholderTextColor='gray-400'
                 multiline
                 maxLength={1000}
-                className="font-poppins-regular text-base text-gray-900 max-h-24"
-                style={{ textAlignVertical: 'center' }}
-                returnKeyType="send"
+                className='font-poppins-regular text-base text-gray-900 max-h-24'
+                style={{ textAlignVertical: "center" }}
+                returnKeyType='send'
                 onSubmitEditing={handleSend}
                 submitBehavior='blurAndSubmit'
                 editable={!sending}
               />
             </View>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={handleSend}
               disabled={!messageText.trim() || sending}
               className={`w-11 h-11 rounded-full items-center justify-center ${
-                messageText.trim() && !sending 
-                  ? 'bg-primary-700' 
-                  : 'bg-gray-300'
+                messageText.trim() && !sending
+                  ? "bg-primary-700"
+                  : "bg-gray-300"
               }`}
               activeOpacity={0.7}
             >
               {sending ? (
-                <View className="w-5 h-5 border-2 border-neutral-100 border-t-transparent rounded-full animate-spin" />
+                <View className='w-5 h-5 border-2 border-neutral-100 border-t-transparent rounded-full animate-spin' />
               ) : (
-                <Ionicons name="send" size={18} color="white" />
+                <Ionicons name='send' size={18} color='white' />
               )}
             </TouchableOpacity>
           </View>
