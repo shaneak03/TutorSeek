@@ -5,24 +5,22 @@ import RatingReviewCount from "@/app/components/RatingReviewCount";
 import { ReviewData } from "@/app/components/ReviewCard";
 import ReviewList from "@/app/components/ReviewList";
 import TutorCard, { tutorCardData } from "@/app/components/TutorCard";
-import { getReviewsByTutorId, getSubjectsByTutorId } from "@/utils/getRoutes";
+import {
+  getReviewsByTutorId,
+  getSubjectsByTutorId,
+  getTutor,
+} from "@/utils/getRoutes";
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import themeColors from "../../themeColors";
+import themeColors from "../../../themeColors";
 
 const viewTutor = () => {
   const params = useLocalSearchParams();
-  const tutor = useMemo(
-    () =>
-      ({
-        ...params,
-        is_published: params?.is_published === "true",
-      } as tutorCardData),
-    [params]
-  );
+  const tutorId = params?.id as string;
+  const [tutor, setTutor] = useState<tutorCardData>();
   const [isShowAllReviews, setIsShowAllReviews] = useState(false);
   const [bioLineCount, setBioLineCount] = useState<number | undefined>(3);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
@@ -35,16 +33,21 @@ const viewTutor = () => {
   >([]);
 
   useEffect(() => {
-    const fetchReviewsAndSubjects = async () => {
-      if (!tutor) return;
-      const subjectsRes = await getSubjectsByTutorId(tutor.tutor_id);
-      const reviewsRes = await getReviewsByTutorId(tutor.tutor_id);
-      setReviews(reviewsRes);
-      setSubjects(subjectsRes);
+    const fetchDetails = async () => {
+      try {
+        const tutorRes: tutorCardData = await getTutor(tutorId);
+        const subjectsRes = await getSubjectsByTutorId(tutorRes.tutor_id);
+        const reviewsRes = await getReviewsByTutorId(tutorRes.tutor_id);
+        setTutor(tutorRes);
+        setReviews(reviewsRes);
+        setSubjects(subjectsRes);
+      } catch (error) {
+        console.log(error);
+      }
     };
 
-    fetchReviewsAndSubjects();
-  }, [tutor.tutor_id]);
+    fetchDetails();
+  }, [tutorId]);
 
   const showReviewsModal = () => {
     setIsShowAllReviews(true);

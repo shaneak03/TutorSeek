@@ -1,3 +1,4 @@
+import { tutorCardData } from "@/app/components/TutorCard";
 import { filterOptions } from "../app/components/HomeTopNav";
 import {
   ChatMessage,
@@ -6,7 +7,7 @@ import {
   StudentProfile,
   Subject,
   TutorProfile,
-  UserProfile
+  UserProfile,
 } from "./models";
 import { supabase } from "./supabase";
 
@@ -48,6 +49,36 @@ export const getTutors = async (filters: filterOptions) => {
   } else {
     return dedupedTutors.sort((a, b) => b.rating_count - a.rating_count);
   }
+};
+
+export const getTutor = async (tutorId: string) => {
+  let query = supabase
+    .from("tutors")
+    .select(
+      `*,
+      users (
+        first_name,
+        last_name,
+        profile_icon_url
+      )`
+    )
+    .eq("id", tutorId)
+    .single();
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  const { users, ...flatData } = {
+    ...data,
+    tutor_id: data?.id,
+    first_name: data?.users?.first_name,
+    last_name: data?.users.last_name,
+    profile_icon_url: data?.users.profile_icon_url,
+  };
+  return flatData as tutorCardData;
 };
 
 export const getSubjectsByTutorId = async (tutor_id: string) => {
@@ -282,17 +313,21 @@ export const getLevelById = async (levelId: string): Promise<Level> => {
   }
 };
 
-export const getChatsByUserId = async (userId: string): Promise<ChatWithParticipants[]> => {
+export const getChatsByUserId = async (
+  userId: string
+): Promise<ChatWithParticipants[]> => {
   try {
     const { data, error } = await supabase
       .from("chats")
-      .select(`
+      .select(
+        `
         *,
         tutor:users!chats_tutor_id_fkey (*),
         student:users!chats_student_id_fkey (*)
-      `)
+      `
+      )
       .or(`tutor_id.eq.${userId},student_id.eq.${userId}`)
-      .order('updated_at', { ascending: false });
+      .order("updated_at", { ascending: false });
 
     if (error) {
       throw error;
@@ -302,23 +337,25 @@ export const getChatsByUserId = async (userId: string): Promise<ChatWithParticip
 
     // Get last message for each chat and get unread count
     const processedData = await Promise.all(
-      (data || []).map(async (chat) => {
+      (data || []).map(async chat => {
         // Get last message
         const { data: lastMessageData } = await supabase
           .from("messages")
           .select("id, content, created_at, sender_id")
           .eq("chat_id", chat.id)
-          .order('created_at', { ascending: false })
+          .order("created_at", { ascending: false })
           .limit(1);
 
         // Determine if user is tutor or student and get unread count
         const isUserTutor = chat.tutor_id === userId;
-        const unreadCount = isUserTutor ? chat.unread_count_tutor : chat.unread_count_student;
+        const unreadCount = isUserTutor
+          ? chat.unread_count_tutor
+          : chat.unread_count_student;
 
         return {
           ...chat,
           last_message: lastMessageData?.[0] || null,
-          unread_count: unreadCount
+          unread_count: unreadCount,
         };
       })
     );
@@ -331,22 +368,24 @@ export const getChatsByUserId = async (userId: string): Promise<ChatWithParticip
 };
 
 export const findChatBetweenUsers = async (
-  tutorId: string, 
+  tutorId: string,
   studentId: string
 ): Promise<ChatWithParticipants | null> => {
   try {
     const { data, error } = await supabase
       .from("chats")
-      .select(`
+      .select(
+        `
         *,
         tutor:users!chats_tutor_id_fkey (*),
         student:users!chats_student_id_fkey (*)
-      `)
+      `
+      )
       .eq("tutor_id", tutorId)
       .eq("student_id", studentId)
       .single();
 
-    return data as ChatWithParticipants || null;
+    return (data as ChatWithParticipants) || null;
   } catch (error) {
     console.error("Error finding chat between users:", error);
     throw error;
@@ -383,7 +422,7 @@ export const getChatMessagesByChatIdAndPages = async (
       .from("messages")
       .select("*")
       .eq("chat_id", chatId)
-      .order("created_at", { ascending: false }) 
+      .order("created_at", { ascending: false })
       .range((page - 1) * pageSize, page * pageSize - 1);
 
     if (error) {

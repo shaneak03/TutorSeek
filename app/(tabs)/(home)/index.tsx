@@ -41,11 +41,8 @@ const Index = () => {
     setRefreshing(false);
   };
 
-  const onClickTutor = (tutor: tutorCardData) => {
-    router.navigate({
-      pathname: "/(tabs)/(home)/viewTutor",
-      params: { ...tutor, is_published: tutor.is_published.toString() },
-    });
+  const onClickTutor = (tutorId: string) => {
+    router.push(`/(tabs)/(home)/viewTutor/${tutorId}`);
   };
 
   if (!user) return <LoginModal />;
@@ -67,7 +64,7 @@ const Index = () => {
             tutor.is_published ? (
               <Pressable
                 key={tutor.tutor_id}
-                onPress={() => onClickTutor(tutor)}
+                onPress={() => onClickTutor(tutor.tutor_id)}
               >
                 <TutorCard tutor={tutor} />
               </Pressable>
