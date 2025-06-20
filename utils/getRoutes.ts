@@ -86,7 +86,8 @@ export const getSubjectsByTutorId = async (tutor_id: string) => {
     const { data, error } = await supabase
       .from("tutor_subjects_flatten")
       .select("subject, level, id")
-      .eq("tutor_id", tutor_id);
+      .eq("tutor_id", tutor_id)
+      .order("level");
 
     if (error) {
       throw error;

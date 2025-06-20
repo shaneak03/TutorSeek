@@ -11,6 +11,7 @@ type props = {
   isShowAddSubModal: boolean;
   setIsShowAddSubModal: React.Dispatch<React.SetStateAction<boolean>>;
   setSubsToAdd: React.Dispatch<React.SetStateAction<Subject[]>>;
+  tutorData: TutorProfileData;
   setTutorData: React.Dispatch<React.SetStateAction<TutorProfileData>>;
 };
 
@@ -39,6 +40,7 @@ const SubjectAdder = ({
   isShowAddSubModal,
   setIsShowAddSubModal,
   setSubsToAdd,
+  tutorData,
   setTutorData,
 }: props) => {
   const { subjects } = useContext(SubjectContext);
@@ -47,6 +49,14 @@ const SubjectAdder = ({
 
   const onAddSubject = () => {
     if (selectedSub === "" || selectedLevel === "") return;
+    if (
+      tutorData.subjects.some(
+        s => s.subject === selectedSub && s.level === selectedLevel
+      )
+    ) {
+      setIsShowAddSubModal(false);
+      return console.log("already added");
+    }
     setTutorData(data => {
       const latestId = data?.subjects[data.subjects.length - 1]?.id ?? 0;
       const newSubject = {

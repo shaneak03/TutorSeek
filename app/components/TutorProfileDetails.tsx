@@ -31,6 +31,7 @@ export default function TutorProfileDetails({
         isShowAddSubModal={isShowAddSubModal}
         setIsShowAddSubModal={setIsShowAddSubModal}
         setSubsToAdd={setSubsToAdd}
+        tutorData={tutorData}
         setTutorData={setTutorData}
       />
       <View className='w-full'>
