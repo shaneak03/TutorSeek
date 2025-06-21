@@ -41,6 +41,7 @@ export default function TutorProfileDetails({
           onChangeText={text => setTutorData(data => ({ ...data, bio: text }))}
           placeholder='Enter your bio'
           isEditing={isEditing}
+          multiline={true}
         />
       </View>
 

@@ -105,10 +105,10 @@ const Profile = () => {
     }
   }, [isFocused]);
 
-  // Fetch data when user changes
+  // Fetch profile data
   useEffect(() => {
     if (user && isFocused) fetchProfileData(user);
-  }, [user, fetchProfileData, isFocused]);
+  }, [user, fetchProfileData, isFocused, isReviews]);
 
   const handleLogout = async () => {
     router.push("/login");
@@ -151,7 +151,11 @@ const Profile = () => {
   else
     return (
       <SafeAreaView className='flex-1 bg-neutral-100' edges={["top"]}>
-        <ProfileNav isReviews={isReviews} setIsReviews={setIsReviews} />
+        <ProfileNav
+          isReviews={isReviews}
+          setIsReviews={setIsReviews}
+          setIsEditing={setIsEditing}
+        />
 
         {isReviews ? (
           <ProfileReviews role={userData.role} id={userData.id} />

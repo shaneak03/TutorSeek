@@ -2,11 +2,11 @@ import { supabase } from "@/utils/supabase";
 import Feather from "@expo/vector-icons/Feather";
 import { Buffer } from "buffer";
 import * as FileSystem from "expo-file-system";
-import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
 import { Pressable, View } from "react-native";
 import themeColors from "../themeColors";
+import UserIcon from "./UserIcon";
 
 type props = {
   avatarUrl: string;
@@ -117,13 +117,7 @@ export default function ProfileIcon({
         className='relative'
         disabled={!isEditing}
       >
-        <View className='bg-neutral-200 rounded-full border-4 border-primary-700 flex items-center justify-center w-[176] h-[176]'>
-          <Image
-            source={avatarUrl ? avatarUrl : require("@/assets/images/default_user_icon.svg")}
-            style={{ width: 168, height: 168, borderRadius: 100 }}
-            contentFit='cover'
-          />
-        </View>
+        <UserIcon avatarUrl={avatarUrl} size={168} border={3} />
         {isEditing && (
           <View className='bg-primary-700 rounded-full p-[12] absolute bottom-1 right-1'>
             <Feather

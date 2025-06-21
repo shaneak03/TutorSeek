@@ -19,7 +19,6 @@ import React, {
 import {
   Alert,
   FlatList,
-  Image,
   KeyboardAvoidingView,
   ListRenderItem,
   Platform,
@@ -29,6 +28,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import UserIcon from "../components/UserIcon";
 
 interface MessageItem {
   id: string;
@@ -555,9 +555,7 @@ const ChatScreen = () => {
     };
   }, [fetchMessages, markChatAsRead, setupChatChannel]);
 
-  const displayName = `${
-    staticOtherUser.first_name
-  } ${staticOtherUser.last_name.charAt(0)}.`;
+  const displayName = `${staticOtherUser.first_name} ${staticOtherUser.last_name}`;
 
   if (!user) {
     return (
@@ -579,17 +577,17 @@ const ChatScreen = () => {
             <Ionicons name='chevron-back' size={20} />
           </TouchableOpacity>
           <Pressable onPress={navToUser}>
-            <Image
-              source={
+            <UserIcon
+              avatarUrl={
                 staticOtherUser.profile_icon_url
                   ? { uri: staticOtherUser.profile_icon_url }
                   : require("@/assets/images/profile_icon.jpg")
               }
-              className='w-16 h-16 rounded-full'
+              size={48}
             />
           </Pressable>
           <View className='flex-1'>
-            <CustomText className='font-poppins-semibold text-xl text-gray-900'>
+            <CustomText className='font-poppins-bold text-xl'>
               {displayName}
             </CustomText>
             <CustomText className='font-poppins-regular text-sm text-gray-500'>

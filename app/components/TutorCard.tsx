@@ -1,8 +1,8 @@
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { Image } from "expo-image";
 import { View } from "react-native";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
+import UserIcon from "./UserIcon";
 
 export type tutorCardData = {
   tutor_id: string;
@@ -19,15 +19,7 @@ export type tutorCardData = {
 const TutorCard = ({ tutor }: { tutor: tutorCardData }) => {
   return (
     <View className='p-4 flex-row items-center gap-4 border-b-hairline border-neutral-300'>
-      <Image
-        source={
-          tutor.profile_icon_url
-            ? tutor.profile_icon_url
-            : require("../../assets/images/profile_icon.jpg")
-        }
-        style={{ width: 96, height: 96, borderRadius: 100 }}
-        contentFit='cover'
-      />
+      <UserIcon avatarUrl={tutor.profile_icon_url} size={96} />
       <View className='flex-grow p-2'>
         <View>
           <CustomText className='font-poppins-bold text-xl'>
