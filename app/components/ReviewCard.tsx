@@ -18,7 +18,7 @@ type props = {
 };
 
 const roundContainer =
-  "w-[280] h-[160] p-4 border-hairline border-neutral-300 rounded-3xl shadow-xs";
+  "w-[280px] h-[160px] p-4 rounded-3xl shadow-xs bg-indigo-50";
 const boxContainer = "w-full px-4 py-6 border-b-hairline border-neutral-300";
 
 const ReviewCard = ({ review, rounded = false }: props) => {
@@ -47,7 +47,9 @@ const ReviewCard = ({ review, rounded = false }: props) => {
           <StarRow rating={review.rating} size={14} />
         </View>
       </View>
-      <CustomText>{review.description}</CustomText>
+      <CustomText numberOfLines={4} ellipsizeMode='tail'>
+        {review.description}
+      </CustomText>
     </View>
   );
 };

@@ -1,0 +1,74 @@
+import { getAvgRatingAndReviewCount } from "@/utils/getRoutes";
+import { postReview, updateRatingReview } from "@/utils/postRoutes";
+import { useContext, useState } from "react";
+import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { AuthContext } from "../_layout";
+import CustomText from "./CustomText";
+import FullPageModal from "./FullPageModal";
+import LargeSolidButton from "./LargeSolidButton";
+import RoundTextInput from "./RoundedTextInput";
+import StarRow from "./StarRow";
+
+type props = {
+  isVisible: boolean;
+  setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  tutorId: string;
+};
+
+const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
+  const [desc, setDesc] = useState("");
+  const [rating, setRating] = useState(4);
+  const { user } = useContext(AuthContext);
+
+  const publishReview = async () => {
+    try {
+      await postReview(user.id, tutorId, rating, desc);
+      const res = await getAvgRatingAndReviewCount(tutorId);
+      console.log(res);
+      if (res)
+        await updateRatingReview(
+          res?.average_rating,
+          res?.review_count,
+          tutorId
+        );
+      setIsVisible(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onClickStar = (rating: number) => {
+    setRating(rating);
+  };
+
+  const onChangeText = (val: string) => {
+    if (val.length <= 200) {
+      setDesc(val);
+    }
+  };
+
+  return (
+    <FullPageModal title='' isVisible={isVisible} setIsVisible={setIsVisible}>
+      <SafeAreaView className='flex-1 justify-center items-center p-8 gap-8'>
+        <View>
+          <CustomText className='font-poppins-semibold text-xl mb-4 text-center'>
+            Leave a review
+          </CustomText>
+          <StarRow rating={rating} size={36} onClickStar={onClickStar} />
+        </View>
+        <RoundTextInput
+          value={desc}
+          onChangeText={onChangeText}
+          borderRadius={32}
+          multiline={true}
+          placeholder='Your review'
+          style={{ minHeight: 150, textAlignVertical: "top" }}
+        />
+        <LargeSolidButton buttonText='Publish review' onPress={publishReview} />
+      </SafeAreaView>
+    </FullPageModal>
+  );
+};
+
+export default PostReviewModal;

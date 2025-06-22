@@ -7,6 +7,7 @@ import { markMessagesAsRead, postChatMessage } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, {
   useCallback,
@@ -28,6 +29,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import PostReviewModal from "../components/PostReviewModal";
 import UserIcon from "../components/UserIcon";
 
 interface MessageItem {
@@ -51,6 +53,7 @@ const ChatScreen = () => {
   const [messageText, setMessageText] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [isShowReviewModal, setIsShowReviewModal] = useState(false);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
@@ -447,7 +450,6 @@ const ChatScreen = () => {
       setSending(false);
     }
   }, [messageText, user, sending, staticOtherUser.id, staticChatId]);
-
   // Render item for FlatList
   const renderItem: ListRenderItem<MessageItem> = useCallback(
     ({ item }) => {
@@ -566,109 +568,125 @@ const ChatScreen = () => {
   }
 
   return (
-    <SafeAreaView className='flex-1 bg-neutral-100'>
-      <View className='bg-neutral-100 border-b border-gray-200 px-4 py-3'>
-        <View className='flex-row items-center gap-3'>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            className='w-10 h-10 rounded-full bg-neutral-100 items-center justify-center'
-            activeOpacity={0.7}
-          >
-            <Ionicons name='chevron-back' size={20} />
-          </TouchableOpacity>
-          <Pressable onPress={navToUser}>
-            <UserIcon
-              avatarUrl={
-                staticOtherUser.profile_icon_url
-                  ? { uri: staticOtherUser.profile_icon_url }
-                  : require("@/assets/images/profile_icon.jpg")
-              }
-              size={48}
-            />
-          </Pressable>
-          <View className='flex-1'>
-            <CustomText className='font-poppins-bold text-xl'>
-              {displayName}
-            </CustomText>
-            <CustomText className='font-poppins-regular text-sm text-gray-500'>
-              {isOtherUserOnline
-                ? "Online"
-                : `Last seen ${formatRelativeTime(
-                    staticOtherUser.last_online_at
-                  )}`}
-            </CustomText>
-          </View>
-        </View>
-      </View>
-
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-      >
-        <FlatList
-          ref={flatListRef}
-          data={flatListData}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          className='flex-1 bg-neutral-200 px-4'
-          showsVerticalScrollIndicator={false}
-          inverted={true}
-          onEndReached={() => {
-            if (hasMoreMessages && !loadingMore && !loading) {
-              loadMoreMessages();
-            }
-          }}
-          onEndReachedThreshold={0.1}
-          ListFooterComponent={ListFooterComponent}
-          ListEmptyComponent={ListEmptyComponent}
-          maintainVisibleContentPosition={{
-            minIndexForVisible: 1,
-            autoscrollToTopThreshold: 50,
-          }}
-          removeClippedSubviews={true}
-          maxToRenderPerBatch={10}
-          updateCellsBatchingPeriod={50}
-          initialNumToRender={20}
-          windowSize={10}
-        />
-        <View className='bg-neutral-100 border-t border-gray-200 px-4 py-3'>
+    <>
+      <PostReviewModal
+        isVisible={isShowReviewModal}
+        setIsVisible={setIsShowReviewModal}
+        tutorId={otherUser?.id}
+      />
+      <SafeAreaView className='flex-1 bg-neutral-100'>
+        <View className='bg-neutral-100 border-b border-gray-200 px-4 py-3'>
           <View className='flex-row items-center gap-3'>
-            <View className='flex-1 bg-neutral-200 rounded-full px-4 py-2 min-h-[44px] max-h-24'>
-              <TextInput
-                value={messageText}
-                onChangeText={setMessageText}
-                placeholder='Type a message'
-                placeholderTextColor='gray-400'
-                multiline
-                maxLength={1000}
-                className='font-poppins-regular text-base text-gray-900 max-h-24'
-                style={{ textAlignVertical: "center" }}
-                returnKeyType='send'
-                onSubmitEditing={handleSend}
-                submitBehavior='blurAndSubmit'
-                editable={!sending}
-              />
-            </View>
             <TouchableOpacity
-              onPress={handleSend}
-              disabled={!messageText.trim() || sending}
-              className={`w-11 h-11 rounded-full items-center justify-center ${
-                messageText.trim() && !sending
-                  ? "bg-primary-700"
-                  : "bg-gray-300"
-              }`}
+              onPress={() => router.back()}
+              className='w-10 h-10 rounded-full bg-neutral-100 items-center justify-center'
               activeOpacity={0.7}
             >
-              {sending ? (
-                <View className='w-5 h-5 border-2 border-neutral-100 border-t-transparent rounded-full animate-spin' />
-              ) : (
-                <Ionicons name='send' size={18} color='white' />
-              )}
+              <Ionicons name='chevron-back' size={20} />
             </TouchableOpacity>
+            <Pressable onPress={navToUser}>
+              <UserIcon
+                avatarUrl={
+                  staticOtherUser.profile_icon_url
+                    ? { uri: staticOtherUser.profile_icon_url }
+                    : require("@/assets/images/profile_icon.jpg")
+                }
+                size={48}
+              />
+            </Pressable>
+            <View className='flex-1 flex-row justify-between items-center'>
+              <View className='flex'>
+                <CustomText className='font-poppins-bold text-xl'>
+                  {displayName}
+                </CustomText>
+                <CustomText className='font-poppins-regular text-sm text-gray-500'>
+                  {isOtherUserOnline
+                    ? "Online"
+                    : `Last seen ${formatRelativeTime(
+                        staticOtherUser.last_online_at
+                      )}`}
+                </CustomText>
+              </View>
+              <Pressable onPress={() => setIsShowReviewModal(true)}>
+                <Image
+                  source={require("../../assets/images/review.png")}
+                  style={{ width: 24, height: 24 }}
+                  contentFit='cover'
+                />
+              </Pressable>
+            </View>
           </View>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <FlatList
+            ref={flatListRef}
+            data={flatListData}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            className='flex-1 bg-neutral-200 px-4'
+            showsVerticalScrollIndicator={false}
+            inverted={true}
+            onEndReached={() => {
+              if (hasMoreMessages && !loadingMore && !loading) {
+                loadMoreMessages();
+              }
+            }}
+            onEndReachedThreshold={0.1}
+            ListFooterComponent={ListFooterComponent}
+            ListEmptyComponent={ListEmptyComponent}
+            maintainVisibleContentPosition={{
+              minIndexForVisible: 1,
+              autoscrollToTopThreshold: 50,
+            }}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            updateCellsBatchingPeriod={50}
+            initialNumToRender={20}
+            windowSize={10}
+          />
+          <View className='bg-neutral-100 border-t border-gray-200 px-4 py-3'>
+            <View className='flex-row items-center gap-3'>
+              <View className='flex-1 bg-neutral-200 rounded-full px-4 py-2 min-h-[44px] max-h-24'>
+                <TextInput
+                  value={messageText}
+                  onChangeText={setMessageText}
+                  placeholder='Type a message'
+                  placeholderTextColor='gray-400'
+                  multiline
+                  maxLength={1000}
+                  className='font-poppins-regular text-base text-gray-900 max-h-24'
+                  style={{ textAlignVertical: "center" }}
+                  returnKeyType='send'
+                  onSubmitEditing={handleSend}
+                  submitBehavior='blurAndSubmit'
+                  editable={!sending}
+                />
+              </View>
+              <TouchableOpacity
+                onPress={handleSend}
+                disabled={!messageText.trim() || sending}
+                className={`w-11 h-11 rounded-full items-center justify-center ${
+                  messageText.trim() && !sending
+                    ? "bg-primary-700"
+                    : "bg-gray-300"
+                }`}
+                activeOpacity={0.7}
+              >
+                {sending ? (
+                  <View className='w-5 h-5 border-2 border-neutral-100 border-t-transparent rounded-full animate-spin' />
+                ) : (
+                  <Ionicons name='send' size={18} color='white' />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </>
   );
 };
 

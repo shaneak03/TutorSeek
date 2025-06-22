@@ -1,6 +1,5 @@
 import CustomText from "@/app/components/CustomText";
 import FullPageModal from "@/app/components/FullPageModal";
-import HollowButton from "@/app/components/HollowButton";
 import LargeSolidButton from "@/app/components/LargeSolidButton";
 import RatingReviewCount from "@/app/components/RatingReviewCount";
 import { ReviewData } from "@/app/components/ReviewCard";
@@ -12,7 +11,7 @@ import {
   getTutor,
 } from "@/utils/getRoutes";
 import { FontAwesome } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,7 +19,6 @@ import themeColors from "../../../themeColors";
 
 const viewTutor = () => {
   const params = useLocalSearchParams();
-  const router = useRouter();
   const tutorId = params?.id as string;
   const [tutor, setTutor] = useState<tutorCardData>();
   const [isShowAllReviews, setIsShowAllReviews] = useState(false);
@@ -98,11 +96,10 @@ const viewTutor = () => {
               <CustomText className='font-poppins-bold text-xl'>
                 What my students say
               </CustomText>
-              <ReviewList reviews={reviews.slice(0, 3)} horizontal={true} />
-              <HollowButton
-                buttonText='Show all reviews'
-                onPress={showReviewsModal}
-                className='p-4'
+              <ReviewList
+                reviews={reviews.slice(0, 3)}
+                horizontal={true}
+                setIsShowAllReviews={setIsShowAllReviews}
               />
             </View>
           )}

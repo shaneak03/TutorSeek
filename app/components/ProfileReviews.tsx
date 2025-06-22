@@ -13,6 +13,11 @@ type props = {
 const ProfileReviews = ({ role, id }: props) => {
   const [reviews, setReviews] = useState<ReviewData[]>([]);
 
+  const avgRating =
+    reviews.length > 0
+      ? reviews.reduce((acc, cur) => acc + cur.rating, 0) / reviews.length
+      : 0;
+
   useEffect(() => {
     const fetchReviews = async () => {
       const reviewData =
@@ -28,7 +33,10 @@ const ProfileReviews = ({ role, id }: props) => {
   return (
     <View>
       {role === "tutor" && (
-        <RatingReviewCount ratingCount={2} reviewCount={2} />
+        <RatingReviewCount
+          ratingCount={avgRating}
+          reviewCount={reviews.length}
+        />
       )}
       <ReviewList reviews={reviews} />
     </View>

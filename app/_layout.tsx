@@ -18,14 +18,16 @@ import themeColors from "./themeColors";
 
 export const AuthContext = createContext<any>(null);
 
-export const RealtimeContext = createContext<RealtimeContextType>({ 
-  isOnline: false, 
-  onlineUsers: {} 
+export const RealtimeContext = createContext<RealtimeContextType>({
+  isOnline: false,
+  onlineUsers: {},
 });
 
 export default function RootLayout() {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: OnlineUser }>({});
+  const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: OnlineUser }>(
+    {}
+  );
   const channelRef = useRef<any>(null);
   const isMountedRef = useRef(true);
 
@@ -49,14 +51,14 @@ export default function RootLayout() {
       console.log("Cleaned up presence channel");
     }
   };
-  
+
   useEffect(() => {
     const getSession = async () => {
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        
+
         if (session?.user && isMountedRef.current) {
           const userProfile = await getUserById(session.user.id);
           setUser(userProfile);
@@ -64,13 +66,13 @@ export default function RootLayout() {
           setUser(null);
         }
       } catch (error) {
-        console.error('Error getting session:', error);
+        console.error("Error getting session:", error);
         if (isMountedRef.current) {
           setUser(null);
         }
       }
     };
-    
+
     getSession();
 
     // Listen for auth changes
@@ -83,7 +85,7 @@ export default function RootLayout() {
 
       try {
         await cleanupPresence();
-        
+
         if (session?.user) {
           const userProfile = await getUserById(session.user.id);
           console.log("Fetched new user profile:", userProfile.id);
@@ -94,7 +96,7 @@ export default function RootLayout() {
           setOnlineUsers({});
         }
       } catch (error) {
-        console.error('Error handling auth state change:', error);
+        console.error("Error handling auth state change:", error);
         setUser(null);
         setOnlineUsers({});
       }
@@ -103,33 +105,36 @@ export default function RootLayout() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []); 
+  }, []);
 
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: string) => {
       if (!user?.id || !channelRef.current) return;
 
-      if (nextAppState === 'background' || nextAppState === 'inactive') {
+      if (nextAppState === "background" || nextAppState === "inactive") {
         try {
-          await cleanupPresence(); 
-          console.log('User went offline due to app going to background');
+          await cleanupPresence();
+          console.log("User went offline due to app going to background");
         } catch (error) {
-          console.error('Error handling app state change:', error);
+          console.error("Error handling app state change:", error);
         }
-      } else if (nextAppState === 'active') {
+      } else if (nextAppState === "active") {
         try {
           await channelRef.current.track({
             user_id: user.id,
             online_at: new Date().toISOString(),
           });
-          console.log('User came online due to app coming to foreground');
+          console.log("User came online due to app coming to foreground");
         } catch (error) {
-          console.error('Error retracking presence:', error);
+          console.error("Error retracking presence:", error);
         }
       }
     };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
 
     return () => {
       subscription?.remove();
@@ -158,7 +163,7 @@ export default function RootLayout() {
       return;
     }
 
-    cleanupPresence(); 
+    cleanupPresence();
 
     const channel = supabase
       .channel("presence-global", {
@@ -169,37 +174,39 @@ export default function RootLayout() {
       })
       .on("presence", { event: "sync" }, () => {
         const newState: { [id: string]: OnlineUser } = {};
-  
+
         Object.values(channel.presenceState()).forEach(presences => {
           const presence = (presences as any[])[0];
           if (presence?.user_id) {
             newState[presence.user_id] = {
               user_id: presence.user_id,
-              online_at: presence.online_at || new Date().toISOString()
+              online_at: presence.online_at || new Date().toISOString(),
             };
           }
         });
-        
+
         setOnlineUsers(newState);
         console.log("Online users:", Object.keys(newState));
       })
       .on("presence", { event: "join" }, async ({ key, newPresences }) => {
         if (!isMountedRef.current) return;
-        
+
         console.log("User joined:", key, newPresences);
 
-        await updateLastSeen(key)
-        
-        const presenceArray = Array.isArray(newPresences) ? newPresences : [newPresences];
+        await updateLastSeen(key);
+
+        const presenceArray = Array.isArray(newPresences)
+          ? newPresences
+          : [newPresences];
         const presence = presenceArray[0] as any;
-        
+
         if (presence && presence.user_id && presence.online_at) {
-          setOnlineUsers((prev) => ({ 
-            ...prev, 
+          setOnlineUsers(prev => ({
+            ...prev,
             [key]: {
               user_id: presence.user_id,
-              online_at: presence.online_at
-            }
+              online_at: presence.online_at,
+            },
           }));
         }
       })
@@ -209,7 +216,7 @@ export default function RootLayout() {
         console.log("User leaving:", key, leftPresences);
 
         let userId = key;
-        
+
         if (leftPresences && leftPresences.length > 0) {
           const leftPresence = leftPresences[0];
           if (leftPresence?.user_id) {
@@ -232,7 +239,7 @@ export default function RootLayout() {
 
         removeUserFromOnline(userId);
       })
-      .subscribe(async (status) => {
+      .subscribe(async status => {
         console.log("Global presence subscription status:", status);
         if (status === "SUBSCRIBED" && isMountedRef.current) {
           try {
@@ -240,18 +247,22 @@ export default function RootLayout() {
               user_id: user.id,
               online_at: new Date().toISOString(),
             });
-            console.log("User tracked in global presence:", user.id, trackResult);
+            console.log(
+              "User tracked in global presence:",
+              user.id,
+              trackResult
+            );
           } catch (err) {
             console.error("Error tracking global presence:", err);
           }
         }
       });
 
-      channelRef.current = channel;
+    channelRef.current = channel;
 
-      return () => { 
-        cleanupPresence();
-      };
+    return () => {
+      cleanupPresence();
+    };
   }, [user?.id]);
 
   useEffect(() => {
@@ -269,9 +280,9 @@ export default function RootLayout() {
       <SubjectContextProvider>
         <AuthContext.Provider value={{ user, setUser }}>
           <RealtimeContext.Provider
-            value={{ 
-              isOnline: Boolean(Object.keys(onlineUsers).length), 
-              onlineUsers 
+            value={{
+              isOnline: Boolean(Object.keys(onlineUsers).length),
+              onlineUsers,
             }}
           >
             <SafeAreaProvider>
@@ -280,8 +291,8 @@ export default function RootLayout() {
                   headerShown: false,
                 }}
               >
-                <Stack.Screen name="(tabs)" />
-                <Stack.Screen name="(auth)" />
+                <Stack.Screen name='(tabs)' />
+                <Stack.Screen name='(auth)' />
               </Stack>
             </SafeAreaProvider>
           </RealtimeContext.Provider>

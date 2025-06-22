@@ -12,7 +12,7 @@ type props = {
 const UserIcon = ({ avatarUrl, size, border = 0 }: props) => {
   return (
     <View
-      className={`flex items-center justify-center bg-primary-700 rounded-full p-[${border}] `}
+      className={`flex items-center justify-center bg-primary-700 rounded-full p-[${border}]`}
     >
       {avatarUrl ? (
         <Image

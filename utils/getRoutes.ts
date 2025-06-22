@@ -244,6 +244,29 @@ export const getReviewsByStudentId = async (studentId: string) => {
     throw error;
   }
 };
+
+export const getAvgRatingAndReviewCount = async (tutorId: string) => {
+  try {
+    const { data, error } = await supabase.rpc(
+      "get_avg_rating_and_review_count",
+      {
+        tutorid: tutorId,
+      }
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    if (data) {
+      return data[0];
+    }
+  } catch (error) {
+    console.error("Error getting avg rating and review count", error);
+    throw error;
+  }
+};
+
 export const getReviewsByTutorId = async (tutorId: string) => {
   try {
     const { data, error } = await supabase

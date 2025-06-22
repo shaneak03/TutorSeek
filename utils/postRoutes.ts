@@ -5,7 +5,6 @@ import {
   ChatData,
   ChatMessage,
   ChatWithParticipants,
-  Review,
   StudentProfile,
   TutorProfile,
   UserProfile,
@@ -85,6 +84,31 @@ export const updateUserProfile = async (profile: UserProfile) => {
     return data;
   } catch (error) {
     console.error("Error updating user profile:", error);
+    throw error;
+  }
+};
+
+export const updateRatingReview = async (
+  avgRating: number,
+  reviewCount: number,
+  tutorId: string
+) => {
+  try {
+    const { data, error } = await supabase
+      .from("tutors")
+      .update({
+        rating_count: avgRating,
+        review_count: reviewCount,
+      })
+      .eq("id", tutorId);
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error updating rating and review count", error);
     throw error;
   }
 };
@@ -175,15 +199,20 @@ export const updateStudentProfile = async (profile: StudentProfile) => {
   }
 };
 
-export const postReview = async (review: Review) => {
+export const postReview = async (
+  student_id: string,
+  tutor_id: string,
+  rating: number,
+  description: string
+) => {
   try {
-    const { data, error } = await supabase.from("reviews").insert(review);
+    const { error } = await supabase
+      .from("reviews")
+      .insert({ student_id, tutor_id, rating, description });
 
     if (error) {
       throw error;
     }
-
-    return data;
   } catch (error) {
     console.error("Error posting review:", error);
     throw error;

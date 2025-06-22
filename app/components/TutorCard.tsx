@@ -35,14 +35,19 @@ const TutorCard = ({ tutor }: { tutor: tutorCardData }) => {
           </View>
           <View>
             <View className='flex-row items-center gap-2'>
-              <CustomText className='font-poppins-semibold'>5.0</CustomText>
+              <CustomText className='font-poppins-semibold'>
+                {tutor.rating_count ? tutor.rating_count.toFixed(2) : "0.00"}
+              </CustomText>
               <AntDesign
                 name='star'
                 size={12}
                 color={themeColors["primary-700"]}
               />
             </View>
-            <CustomText>20 reviews</CustomText>
+            <CustomText>
+              {tutor.review_count ? tutor.review_count : "0"}{" "}
+              {tutor.review_count === 1 ? "review" : "reviews"}
+            </CustomText>
           </View>
         </View>
       </View>

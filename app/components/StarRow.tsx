@@ -9,9 +9,6 @@ type props = {
   onClickStar?: any;
 };
 
-//TODO: finish up modal for reviews page and fix up the dates for the tutor cards
-//also the stars are slightly too big and add a final (see all revviews card at the end) WHY THE FUCK DID YOU COPY OVER THE WHOLE THING -- just need the star row not the title
-
 export default function StarRow({
   size,
   rating,
