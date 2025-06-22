@@ -126,7 +126,7 @@ const Register = () => {
   //           setUser(profile);
   //         }
   //         // Navigate to the main app
-  //         router.push("/(tabs)");
+  //         router.push("/(tabs)/(home)");
   //       } else {
   //         throw new Error('no ID token present!')
   //       }

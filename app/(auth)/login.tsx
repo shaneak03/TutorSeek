@@ -1,7 +1,6 @@
-// import { getUserById } from "@/utils/getRoutes";
+import { getUserById } from "@/utils/getRoutes";
 import { supabase } from "@/utils/supabase";
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { getUserById } from "@/utils/getRoutes";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
@@ -133,7 +132,7 @@ const Login = () => {
   //         setUser(profile);
   //       }
   //       // Navigate to the main app
-  //       router.push("/(tabs)");
+  //       router.push("/(tabs)/(home)");
   //     } else {
   //       throw new Error('no ID token present!')
   //     }
