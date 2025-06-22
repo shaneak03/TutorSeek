@@ -42,7 +42,7 @@ const Login = () => {
       setEmail("");
       setPassword("");
     } else {
-      router.push("/(tabs)");
+      router.push("/(tabs)/(home)");
       if (data.session) {
         const profile = await getUserById(data.session?.user.id);
         setUser(profile);
