@@ -1,3 +1,4 @@
+import { AuthContext } from "@/app/_layout";
 import CustomText from "@/app/components/CustomText";
 import FullPageModal from "@/app/components/FullPageModal";
 import LargeSolidButton from "@/app/components/LargeSolidButton";
@@ -6,18 +7,21 @@ import { ReviewData } from "@/app/components/ReviewCard";
 import ReviewList from "@/app/components/ReviewList";
 import TutorCard, { tutorCardData } from "@/app/components/TutorCard";
 import {
+  findChatBetweenUsers,
   getReviewsByTutorId,
   getSubjectsByTutorId,
   getTutor,
 } from "@/utils/getRoutes";
 import { FontAwesome } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useContext, useEffect, useState } from "react";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import themeColors from "../../../themeColors";
 
 const viewTutor = () => {
+  const router = useRouter();
+  const { user } = useContext(AuthContext);
   const params = useLocalSearchParams();
   const tutorId = params?.id as string;
   const [tutor, setTutor] = useState<tutorCardData>();
@@ -53,8 +57,43 @@ const viewTutor = () => {
     setIsShowAllReviews(true);
   };
 
-  const onContactTutor = () => {
-    //TODO: THANKS SHANE
+  const onContactTutor = async () => {
+    const existingChat = await findChatBetweenUsers(
+      tutorId, 
+      user.id
+    );
+
+    if (existingChat) {
+      console.log("Found existing chat")
+      router.navigate({
+        pathname: `/chat/${existingChat.id}`,
+        params: {
+          otherUser: JSON.stringify({
+            id: tutorId,
+            first_name: tutor?.first_name,
+            last_name: tutor?.last_name,
+            profile_icon_url: tutor?.profile_icon_url,
+            role: "tutor",
+            last_online_at: tutor?.last_online_at || new Date().toISOString()
+          })
+        }
+      });
+    } else {
+      console.log("No existing chat found")
+      router.navigate({
+        pathname: "/chat/new",
+        params: {
+          otherUser: JSON.stringify({
+            id: tutorId,
+            first_name: tutor?.first_name,
+            last_name: tutor?.last_name,
+            profile_icon_url: tutor?.profile_icon_url,
+            role: "tutor",
+            last_online_at: tutor?.last_online_at
+          })
+        }
+      });
+    }
   };
 
   if (!tutor) return;
@@ -135,9 +174,11 @@ const viewTutor = () => {
             </View>
           </View>
         </ScrollView>
-        <View className='p-4 border-t-hairline border-neutral-300'>
-          <LargeSolidButton buttonText='Contact me' onPress={onContactTutor} />
-        </View>
+        {user.role == "student" 
+          ? (<View className='p-4 border-t-hairline border-neutral-300'>
+              <LargeSolidButton buttonText='Contact me' onPress={onContactTutor} />
+            </View>)
+          : null}
       </SafeAreaView>
     </>
   );

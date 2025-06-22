@@ -45,7 +45,7 @@ const ChatScreen = () => {
 
   const router = useRouter();
   const params = useLocalSearchParams();
-  const chatId = Number(params.id);
+  const chatId = params.id === "new" ? null : Number(params.id);
   const otherUser = JSON.parse(params.otherUser as string);
   const isOtherUserOnline = Boolean(onlineUsers[otherUser.id]);
 
@@ -179,7 +179,7 @@ const ChatScreen = () => {
   );
 
   const markChatAsRead = useCallback(async () => {
-    if (!staticUserId) return;
+    if (!staticUserId || !staticChatId) return;
     try {
       await markMessagesAsRead(staticChatId, staticUserId);
 
@@ -208,9 +208,13 @@ const ChatScreen = () => {
       channelRef.current.unsubscribe();
       supabase.removeChannel(channelRef.current);
     }
+    // Use temporary channel name for new chats
+    const channelName = staticChatId 
+      ? `chat-${staticChatId}`
+      : `new-chat-${staticUserId}-${staticOtherUser.id}`;
 
     const channel = supabase
-      .channel(`chat-messages-${staticChatId}`)
+      .channel(channelName)
       .on("broadcast", { event: "new_message" }, payload => {
         if (!isComponentMountedRef.current) return;
 
@@ -256,6 +260,7 @@ const ChatScreen = () => {
   // Fetch messages with pagination
   const fetchMessages = useCallback(
     async (page: number = 1, append: boolean = false) => {
+      if (!staticChatId) return;
       try {
         if (!append) {
           setLoading(true);
@@ -404,16 +409,25 @@ const ChatScreen = () => {
         staticOtherUser.role
       );
 
-      const { message: newMessage } = await postChatMessage(
-        {
-          sender_id: currentUserId,
-          recipient_id: staticOtherUser.id,
-          content: messageContent,
-        },
-        senderRole,
-        tutorId,
-        studentId
-      );
+      const { message: newMessage, chat: newChat, wasNewChat } = await postChatMessage(
+      {
+        sender_id: user.id,
+        recipient_id: staticOtherUser.id,
+        content: messageContent,
+      },
+      senderRole,
+      tutorId,
+      studentId
+    );
+
+      if (wasNewChat) {
+        router.setParams({
+          id: String(newChat.id),
+          otherUser: JSON.stringify(staticOtherUser)
+        });
+        
+        setupChatChannel();
+      }
 
       // Replace optimistic message with real message
       setMessages(prev =>
@@ -422,6 +436,7 @@ const ChatScreen = () => {
             ? {
                 ...newMessage,
                 sender: optimisticMessage!.sender,
+                chat_id: newChat.id
               }
             : msg
         )
@@ -449,7 +464,7 @@ const ChatScreen = () => {
     } finally {
       setSending(false);
     }
-  }, [messageText, user, sending, staticOtherUser.id, staticChatId]);
+  }, [messageText, user, sending, staticOtherUser.id, staticChatId, router]);
   // Render item for FlatList
   const renderItem: ListRenderItem<MessageItem> = useCallback(
     ({ item }) => {
@@ -497,11 +512,11 @@ const ChatScreen = () => {
                 Refreshing...
               </CustomText>
             </View>
-          ) : (
+          ) : staticChatId  ? (
             <CustomText className='text-primary-700 text-sm'>
               Press to refresh
             </CustomText>
-          )}
+          ) : null }
         </TouchableOpacity>
         {loadingMore && (
           <View className='py-2 items-center'>
@@ -519,16 +534,16 @@ const ChatScreen = () => {
 
   // List empty component
   const ListEmptyComponent = useCallback(() => {
-    if (loading) {
+    if (loading && staticChatId) {
       return (
-        <View className='flex-1 justify-center items-center py-20'>
+        <View className='flex-1 justify-center items-center py-20' style={{ transform: [{ scaleX: -1 }, { scaleY: -1 }] }}>
           <CustomText className='text-gray-500'>Loading messages...</CustomText>
         </View>
       );
     }
 
     return (
-      <View className='flex-1 justify-center items-center py-20'>
+      <View className='flex-1 justify-center items-center py-20' style={{ transform: [{ scaleX: -1 }, { scaleY: -1 }] }}>
         <CustomText className='text-gray-500 text-center'>
           No messages yet. Start the conversation!
         </CustomText>
@@ -541,8 +556,10 @@ const ChatScreen = () => {
     isComponentMountedRef.current = true;
 
     const initialize = async () => {
-      await fetchMessages();
-      await markChatAsRead();
+      if (staticChatId) {
+        await fetchMessages();
+        await markChatAsRead();
+      }
       setupChatChannel();
     };
 
@@ -555,7 +572,7 @@ const ChatScreen = () => {
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [fetchMessages, markChatAsRead, setupChatChannel]);
+  }, [fetchMessages, markChatAsRead, setupChatChannel, staticChatId]);
 
   const displayName = `${staticOtherUser.first_name} ${staticOtherUser.last_name}`;
 

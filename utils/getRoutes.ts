@@ -59,7 +59,8 @@ export const getTutor = async (tutorId: string) => {
       users (
         first_name,
         last_name,
-        profile_icon_url
+        profile_icon_url,
+        last_online_at
       )`
     )
     .eq("id", tutorId)
@@ -77,6 +78,7 @@ export const getTutor = async (tutorId: string) => {
     first_name: data?.users?.first_name,
     last_name: data?.users.last_name,
     profile_icon_url: data?.users.profile_icon_url,
+    last_online_at: data?.users.last_online_at
   };
   return flatData as tutorCardData;
 };

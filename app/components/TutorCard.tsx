@@ -14,6 +14,7 @@ export type tutorCardData = {
   rating_count: number;
   review_count: number;
   is_published: boolean;
+  last_online_at?: string;
 };
 
 const TutorCard = ({ tutor }: { tutor: tutorCardData }) => {

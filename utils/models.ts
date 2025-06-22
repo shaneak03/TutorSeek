@@ -62,7 +62,7 @@ export interface ChatMessage {
   sender_id: string;
   recipient_id: string;
   content: string;
-  chat_id: number;
+  chat_id: number | null;
   read: boolean;
 }
 
