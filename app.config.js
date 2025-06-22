@@ -5,36 +5,96 @@ export default {
     name: "TutorSeek",
     slug: "TutorSeek",
     version: "1.0.0",
-    userInterfaceStyle: "automatic",
+    orientation: "portrait",
+    icon: "./assets/images/TutorSeek-logo.png",
     scheme: "tutorseek",
-    owner: "shaneak03",
-    icon: "./assets/images/TutorSeek-logo.png", // General icon (used for iOS too)
+    userInterfaceStyle: "automatic",
+    newArchEnabled: true,
+
     ios: {
       icon: "./assets/images/TutorSeek-logo.png",
-      supportsTablet: true
+      supportsTablet: true,
+      bundleIdentifier: "com.shaneak03.TutorSeek",
+      infoPlist: {
+        CFBundleURLTypes: [
+          {
+            CFBundleURLSchemes: ["tutorseek"]
+          }
+        ],
+        LSApplicationQueriesSchemes: ["googlechrome", "googlechromes"]
+      }
     },
+
     android: {
-      package: "com.shaneak03.TutorSeek",
       adaptiveIcon: {
         foregroundImage: "./assets/images/TutorSeek-logo.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 1
+      package: "com.shaneak03.TutorSeek",
+      versionCode: 1,
+      intentFilters: [
+        {
+          action: "VIEW",
+          data: [
+            {
+              scheme: "tutorseek",
+              host: "auth",
+              pathPrefix: "/callback"
+            }
+          ],
+          category: ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
+
     web: {
+      bundler: "metro",
+      output: "static",
       favicon: "./assets/images/TutorSeek-logo.png"
     },
+
+    plugins: [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          image: "./assets/images/TutorSeek-logo.png",
+          imageWidth: 200,
+          resizeMode: "contain",
+          backgroundColor: "#ffffff"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          ios: {
+            useFrameworks: "static"
+          }
+        }
+      ],
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          iosUrlScheme: "com.googleusercontent.apps.176743680156-re5uumu2bi6bhucnrk6r1ndcpro0l908"
+        }
+      ],
+      "expo-web-browser"
+    ],
+
+    experiments: {
+      typedRoutes: true
+    },
+
     extra: {
-      // These values come from your .env file or from environment variables set in Expo dashboard or eas.json
-      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
-      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+      router: {
+        origin: false
+      },
       eas: {
         projectId: "a758d76d-ba56-49b4-b7d9-786b02ad94f4"
-      }
-    },
-    plugins: [
-      "expo-router"
-    ]
+      },
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
+    }
   }
 };
