@@ -9,7 +9,7 @@ jest.mock('expo-router', () => ({
     useRouter: jest.fn(),
 }));
 
-describe('<ChatCard />', () => {
+describe('ChatCard', () => {
     const mockRouterPush = jest.fn();
 
     beforeEach(() => {
@@ -60,18 +60,18 @@ describe('<ChatCard />', () => {
     };
 
     test('renders correctly with unread messages and last message content', () => {
-    const { getByText } = render(
-        <ChatCard chat={baseChat} currentUserId="user1" />
-    );
+        const { getByText } = render(
+            <ChatCard chat={baseChat} currentUserId="user1" />
+        );
 
-    // Should display the other user name
-    getByText('Jane Doe');
+        // Should display the other user name
+        getByText('Jane Doe');
 
-    // Should display last message content
-    getByText('Hello there!');
+        // Should display last message content
+        getByText('Hello there!');
 
-    // Should display unread count badge
-    getByText('5');
+        // Should display unread count badge
+        getByText('5');
     });
 
     test('Renders "No messages yet" if no last message', () => {
