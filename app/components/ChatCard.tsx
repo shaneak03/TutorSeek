@@ -71,6 +71,7 @@ export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
   return (
     <TouchableOpacity
       onPress={handlePress}
+      accessibilityRole="button"
       className='px-4 py-3 flex-row items-center gap-3 border-b-hairline border-neutral-300 active:bg-gray-50'
       activeOpacity={0.8}
     >
