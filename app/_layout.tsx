@@ -58,7 +58,6 @@ export default function RootLayout() {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-
         if (session?.user && isMountedRef.current) {
           const userProfile = await getUserById(session.user.id);
           setUser(userProfile);

@@ -11,6 +11,29 @@ import {
 } from "./models";
 import { supabase } from "./supabase";
 
+export const createTimeTable = async (tutorId: string) => {
+  try {
+    const { count, error: countError } = await supabase
+      .from("timeslots")
+      .select("*", { count: "exact", head: true });
+    if (countError) {
+      throw countError;
+    }
+    let slots = [];
+    for (let d = 0; d < 7; d++) {
+      for (let t_id = 1; t_id <= (count ?? 0); t_id++) {
+        slots.push({ tutor_id: tutorId, day: d, timeslot_id: t_id });
+      }
+    }
+    const { error: insertError } = await supabase
+      .from("teaching_slots")
+      .insert(slots);
+    if (insertError) throw new Error(insertError.message);
+  } catch (error) {
+    console.log("Error creating timetable" + error);
+  }
+};
+
 export const updateLastSeen = async (userId: string) => {
   try {
     const { error } = await supabase

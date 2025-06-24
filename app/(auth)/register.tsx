@@ -1,6 +1,7 @@
 // import { getUserById } from "@/utils/getRoutes";
 import { supabase } from "@/utils/supabase";
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { createTimeTable } from "@/utils/postRoutes";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
@@ -38,7 +39,6 @@ const Register = () => {
     }
 
     const role = isTutor ? "tutor" : "student";
-
     const userData = data.session?.user;
 
     //create user
@@ -52,6 +52,7 @@ const Register = () => {
         .from("tutors")
         .insert([{ id: userData?.id }]);
       if (tutorError) console.log(tutorError);
+      await createTimeTable(userData?.id ?? "");
     } else {
       const { error: studentError } = await supabase
         .from("students")
@@ -66,7 +67,7 @@ const Register = () => {
     clearPwInputs();
   };
 
-  const handleGoogleAuth = async () => {}
+  const handleGoogleAuth = async () => {};
 
   // // Google OAuth Handler
   // GoogleSignin.configure({
@@ -119,7 +120,7 @@ const Register = () => {
   //               if (studentError) console.log(studentError);
   //           }
   //         }
-  
+
   //         // Update Auth Context
   //         if (data.session) {
   //           const profile = await getUserById(data.session?.user.id);
@@ -130,7 +131,7 @@ const Register = () => {
   //       } else {
   //         throw new Error('no ID token present!')
   //       }
-  
+
   //     } catch (error) {
   //       console.error("Google Sign-In error:", error);
   //       setErrorMessage("Google Sign-In failed. Please try again.");
