@@ -142,7 +142,7 @@ export const getPageOfTutors = async (
   }
 };
 
-export const getUserById = async (userId: string): Promise<UserProfile> => {
+export const getUserById = async (userId: string): Promise<UserProfile | null> => {
   try {
     const { data, error } = await supabase
       .from("users")
@@ -151,13 +151,16 @@ export const getUserById = async (userId: string): Promise<UserProfile> => {
       .single();
 
     if (error) {
-      throw error;
+      if ((error as any).code === "PGRST116") {
+        return null;
+      }
+      throw error; 
     }
 
     return data as UserProfile;
   } catch (error) {
     console.error("Error getting user by ID:", error);
-    throw error;
+    return null;
   }
 };
 

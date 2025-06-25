@@ -40,8 +40,8 @@ const Chat = () => {
         getUserById(user.id),
         getChatsByUserId(user.id),
       ]);
-
-      setUserData(userResult);
+      
+      if (userResult) {setUserData(userResult);}
       setUserChat(chatResult);
       console.log("User Data:", userResult);
       console.log("User Chat:", chatResult);

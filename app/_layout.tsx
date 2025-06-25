@@ -87,7 +87,7 @@ export default function RootLayout() {
 
         if (session?.user) {
           const userProfile = await getUserById(session.user.id);
-          console.log("Fetched new user profile:", userProfile.id);
+          console.log("Fetched new user profile:", userProfile?.id);
           setUser(userProfile);
         } else {
           console.log("No session, setting user to null");
