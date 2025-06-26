@@ -1,5 +1,5 @@
 import { AntDesign } from "@expo/vector-icons";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import themeColors from "../themeColors";
 
 type props = {
@@ -18,17 +18,21 @@ export default function StarRow({
   return (
     <View className={"flex-row items-center gap-1 justify-" + { position }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <AntDesign
+        <Pressable
           key={i}
-          name='star'
-          size={size}
-          color={
-            rating >= i
-              ? themeColors["primary-700"]
-              : themeColors["neutral-300"]
-          }
+          testID={`star-${i}`}
           onPress={() => onClickStar && onClickStar(i)}
-        />
+        >
+          <AntDesign
+            name='star'
+            size={size}
+            color={
+              rating >= i
+                ? themeColors["primary-700"]
+                : themeColors["neutral-300"]
+            }
+          />
+        </Pressable>
       ))}
     </View>
   );
