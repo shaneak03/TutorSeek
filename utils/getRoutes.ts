@@ -35,6 +35,8 @@ export const getTutors = async (filters: filterOptions) => {
     return [];
   }
 
+  if (!data) return [];
+
   const dedupedTutors = Array.from(
     new Map(data.map(tutor => [tutor.tutor_id, tutor])).values()
   );
