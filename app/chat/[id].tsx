@@ -41,7 +41,7 @@ interface MessageItem {
 
 const ChatScreen = () => {
   const { user } = useContext(AuthContext);
-  const { onlineUsers } = useContext(RealtimeContext);
+  const { onlineUsers, globalChatChannel } = useContext(RealtimeContext);
 
   const router = useRouter();
   const params = useLocalSearchParams();
@@ -193,6 +193,18 @@ const ChatScreen = () => {
             user_id: staticUserId,
             read_at: new Date().toISOString(),
           },
+        });
+      }
+
+      if (globalChatChannel) {
+        await globalChatChannel.send({
+          type: "broadcast",
+          event: "messages_read",
+          payload: {
+            chat_id: staticChatId,
+            user_id: staticUserId,
+            read_at: new Date().toISOString(),
+          }
         });
       }
     } catch (error) {
@@ -448,6 +460,14 @@ const ChatScreen = () => {
           type: "broadcast",
           event: "new_message",
           payload: newMessage,
+        });
+      }
+
+      if (globalChatChannel) {
+        await globalChatChannel.send({
+          type: "broadcast",
+          event: "new_message",
+          payload: newMessage
         });
       }
     } catch (error) {

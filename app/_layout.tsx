@@ -8,6 +8,7 @@ import {
   Poppins_700Bold,
   useFonts,
 } from "@expo-google-fonts/poppins";
+import { RealtimeChannel } from "@supabase/supabase-js";
 import { Stack } from "expo-router";
 import React, { createContext, useEffect, useRef, useState } from "react";
 import { AppState, StatusBar } from "react-native";
@@ -21,6 +22,7 @@ export const AuthContext = createContext<any>(null);
 export const RealtimeContext = createContext<RealtimeContextType>({
   isOnline: false,
   onlineUsers: {},
+  globalChatChannel: null
 });
 
 export default function RootLayout() {
@@ -28,6 +30,7 @@ export default function RootLayout() {
   const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: OnlineUser }>(
     {}
   );
+  const [globalChatChannel, setGlobalChatChannel] = useState<RealtimeChannel | null>(null)
   const channelRef = useRef<any>(null);
   const isMountedRef = useRef(true);
 
@@ -49,6 +52,17 @@ export default function RootLayout() {
       supabase.removeChannel(channelRef.current);
       channelRef.current = null;
       console.log("Cleaned up presence channel");
+    }
+
+    if (globalChatChannel) {
+      try {
+        globalChatChannel.unsubscribe();
+        supabase.removeChannel(globalChatChannel);
+        setGlobalChatChannel(null);
+        console.log("Cleaned up global chat channel");
+      } catch (err) {
+        console.error("Error cleaning up global chat channel:", err);
+      }
     }
   };
 
@@ -258,6 +272,21 @@ export default function RootLayout() {
       });
 
     channelRef.current = channel;
+    
+    const chatChannel = supabase.channel('chat-global', {
+      config: {
+        broadcast: { self: false }
+      }
+    })
+    .on('broadcast', { event: 'new_message' }, (payload) => {
+      console.log('New message received in global channel:', payload);
+    })
+    .on('broadcast', { event: 'messages_read' }, (payload) => {
+      console.log('Messages read event in global channel:', payload);
+    })
+    .subscribe();
+
+    setGlobalChatChannel(chatChannel);
 
     return () => {
       cleanupPresence();
@@ -282,6 +311,7 @@ export default function RootLayout() {
             value={{
               isOnline: Boolean(Object.keys(onlineUsers).length),
               onlineUsers,
+              globalChatChannel
             }}
           >
             <SafeAreaProvider>

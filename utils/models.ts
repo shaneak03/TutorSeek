@@ -1,3 +1,5 @@
+import { RealtimeChannel } from "@supabase/supabase-js";
+
 export interface TutorProfile {
   id: string;
   bio: string;
@@ -106,4 +108,5 @@ export interface OnlineUser {
 export interface RealtimeContextType {
   isOnline: boolean;
   onlineUsers: { [key: string]: OnlineUser };
+  globalChatChannel: RealtimeChannel | null
 }

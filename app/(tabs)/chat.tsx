@@ -3,7 +3,7 @@ import CustomText from "@/app/components/CustomText";
 import LoginModal from "@/app/components/LoginModal";
 import { getChatsByUserId, getUserById } from "@/utils/getRoutes";
 import { ChatWithParticipants, UserProfile } from "@/utils/models";
-import { supabase } from "@/utils/supabase";
+import { useFocusEffect } from "@react-navigation/native";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import React, {
   useCallback,
@@ -14,10 +14,11 @@ import React, {
 } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthContext } from "../_layout";
+import { AuthContext, RealtimeContext } from "../_layout";
 
 const Chat = () => {
   const { user } = useContext(AuthContext);
+  const { globalChatChannel } = useContext(RealtimeContext)
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
     first_name: "",
@@ -62,41 +63,32 @@ const Chat = () => {
     fetchData();
   }, [fetchData]);
 
+  useFocusEffect(
+    useCallback(() => {
+      fetchData(); 
+    }, [fetchData])
+  );
+
   useEffect(() => {
-    if (!user?.id) return;
-
-    // Clean up existing
-    if (channelRef.current) {
-      channelRef.current.unsubscribe();
-      supabase.removeChannel(channelRef.current);
-    }
-
-    const channel = supabase
-      .channel("chat-global")
-      .on("broadcast", { event: "new_message" }, payload => {
+    if (!globalChatChannel || !user?.id) return;
+    
+    const subscription = globalChatChannel
+      .on("broadcast", { event: "new_message" }, (payload) => {
         const message = payload.payload;
         if (message.sender_id !== user.id) {
           console.log("Received new message broadcast:", message);
           fetchData();
         }
       })
-      .on("broadcast", { event: "messages_read" }, async payload => {
+      .on("broadcast", { event: "messages_read" }, async (payload) => {
         console.log("Received read broadcast:", payload);
         await fetchData();
-      })
-      .subscribe(status => {
-        console.log("Chat list realtime status:", status);
       });
 
-    channelRef.current = channel;
-
     return () => {
-      if (channelRef.current) {
-        channelRef.current.unsubscribe();
-        supabase.removeChannel(channelRef.current);
-      }
+      subscription?.unsubscribe();
     };
-  }, [user?.id, fetchData]);
+  }, [globalChatChannel, user?.id, fetchData]);
 
   if (!user) return <LoginModal />;
   else
