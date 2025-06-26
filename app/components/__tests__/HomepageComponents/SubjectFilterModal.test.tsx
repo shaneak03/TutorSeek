@@ -1,7 +1,23 @@
-import { fireEvent, render } from "@testing-library/react-native";
+import { act, fireEvent, render } from "@testing-library/react-native";
 import React from "react";
 import { filterOptions } from "../../HomeTopNav";
 import SubjectFilterModal from "../../SubjectFilterModal";
+
+jest.mock("@expo/vector-icons", () => {
+  return {
+    AntDesign: "AntDesign",
+    Entypo: "Entypo",
+  };
+});
+
+beforeAll(() => {
+  jest.spyOn(console, "error").mockImplementation(msg => {
+    if (msg.includes("not wrapped in act")) {
+      return;
+    }
+    console.error(msg);
+  });
+});
 
 const mockSubjects = [
   { id: 1, name: "Math" },
@@ -42,7 +58,7 @@ describe("SubjectFilterModal", () => {
     expect(getByText("Science")).toBeTruthy();
   });
 
-  it("calls setFilters and setIsVisible on subject press", () => {
+  it("calls setFilters and setIsVisible on subject press", async () => {
     const { getByText } = render(
       <SubjectFilterModal
         subjects={mockSubjects}
@@ -53,7 +69,9 @@ describe("SubjectFilterModal", () => {
       />
     );
 
-    fireEvent.press(getByText("Science"));
+    await act(async () => {
+      fireEvent.press(getByText("Science"));
+    });
 
     expect(mockSetFilters).toHaveBeenCalledWith({
       ...initialFilters,
