@@ -1,4 +1,3 @@
-// __tests__/supabaseApi.test.ts
 import { filterOptions } from "@/app/components/HomeTopNav";
 import {
   findChatBetweenUsers,
@@ -48,7 +47,14 @@ jest.mock("@/utils/supabase", () => ({
   },
 }));
 
-describe("Supabase API Functions", () => {
+describe("Supabase API Get Functions", () => {
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, 'log').mockImplementation(() => {});
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+  
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -484,7 +490,7 @@ describe("Supabase API Functions", () => {
           tutor_id: 'tutor1',
           student_id: 'student1',
           rating: 5,
-          description: 'Great student',
+          description: 'Great Tutor',
           students: {
             users: {
               first_name: 'Student',
