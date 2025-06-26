@@ -116,6 +116,7 @@ export default function ProfileIcon({
         onPress={handleImagePicker}
         className='relative'
         disabled={!isEditing}
+        accessibilityRole='button'
       >
         <UserIcon avatarUrl={avatarUrl} size={168} border={3} />
         {isEditing && (

@@ -54,6 +54,7 @@ const TutorSubjectList = ({
                 className='rounded-full p-2'
                 underlayColor={themeColors["primary-700"]}
                 onPress={() => onDeleteSubject(s.id)}
+                accessibilityRole='button'
               >
                 <AntDesign
                   name='delete'
