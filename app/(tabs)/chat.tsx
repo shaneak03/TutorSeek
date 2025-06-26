@@ -4,13 +4,11 @@ import LoginModal from "@/app/components/LoginModal";
 import { getChatsByUserId, getUserById } from "@/utils/getRoutes";
 import { ChatWithParticipants, UserProfile } from "@/utils/models";
 import { useFocusEffect } from "@react-navigation/native";
-import { RealtimeChannel } from "@supabase/supabase-js";
 import React, {
   useCallback,
   useContext,
   useEffect,
-  useRef,
-  useState,
+  useState
 } from "react";
 import { RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -31,7 +29,6 @@ const Chat = () => {
   const [userChat, setUserChat] = useState<ChatWithParticipants[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const channelRef = useRef<RealtimeChannel | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!user?.id) return;
