@@ -126,46 +126,46 @@ export default function RootLayout() {
 
       if (nextAppState === "background" || nextAppState === "inactive") {
         try {
-          await cleanupPresence();
-          console.log("User went offline due to app going to background");
+          console.log("App going to background, untracking presence");
+          await channelRef.current.untrack();
         } catch (error) {
-          console.error("Error handling app state change:", error);
+          console.error("Error untracking on background:", error);
         }
       } else if (nextAppState === "active") {
         try {
+          console.log("App coming to foreground, tracking presence");
           await channelRef.current.track({
             user_id: user.id,
             online_at: new Date().toISOString(),
           });
-          console.log("User came online due to app coming to foreground");
+          
+          setTimeout(() => {
+            if (channelRef.current) {
+              const presenceState = channelRef.current.presenceState();
+              const newState: { [id: string]: OnlineUser } = {};
+              Object.entries(presenceState).forEach(([key, presences]) => {
+                const presence = (presences as any[])[0];
+                if (presence?.user_id) {
+                  newState[key] = {
+                    user_id: presence.user_id,
+                    online_at: presence.online_at || new Date().toISOString(),
+                  };
+                }
+              });
+              setOnlineUsers(newState);
+              console.log("Refreshed online users on app resume:", Object.keys(newState));
+            }
+          }, 100);
+          
         } catch (error) {
           console.error("Error retracking presence:", error);
         }
       }
     };
 
-    const subscription = AppState.addEventListener(
-      "change",
-      handleAppStateChange
-    );
-
-    return () => {
-      subscription?.remove();
-    };
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    return () => subscription?.remove();
   }, [user?.id]);
-
-  const removeUserFromOnline = (userId: string) => {
-    setOnlineUsers(prev => {
-      const newState = { ...prev };
-      Object.keys(newState).forEach(key => {
-        if (newState[key].user_id === userId) {
-          delete newState[key];
-        }
-      });
-      console.log(`Removed user ${userId} from online users`);
-      return newState;
-    });
-  };
 
   useEffect(() => {
     if (!user?.id || !isMountedRef.current) {
@@ -182,16 +182,19 @@ export default function RootLayout() {
       .channel("presence-global", {
         config: {
           broadcast: { self: false },
-          presence: { key: user.id.toString() },
+          presence: { key: user.id },
         },
       })
       .on("presence", { event: "sync" }, () => {
         const newState: { [id: string]: OnlineUser } = {};
 
-        Object.values(channel.presenceState()).forEach(presences => {
+        const presenceState = channel.presenceState();
+        console.log("Current presence state:", presenceState);
+
+        Object.entries(presenceState).forEach(([key, presences]) => {
           const presence = (presences as any[])[0];
           if (presence?.user_id) {
-            newState[presence.user_id] = {
+            newState[key] = {
               user_id: presence.user_id,
               online_at: presence.online_at || new Date().toISOString(),
             };
@@ -228,29 +231,26 @@ export default function RootLayout() {
 
         console.log("User leaving:", key, leftPresences);
 
-        let userId = key;
+        const leavingUserId = key;
 
-        if (leftPresences && leftPresences.length > 0) {
-          const leftPresence = leftPresences[0];
-          if (leftPresence?.user_id) {
-            userId = leftPresence.user_id;
-          }
-        }
-
-        if (userId === user.id) {
-          console.log("Ignoring leave event for self:", userId);
+        if (leavingUserId === user.id) {
+          console.log("Ignoring leave event for self:", leavingUserId);
           return;
         }
 
-        console.log("Processing leave for other user:", userId);
+        console.log("Processing leave for user:", leavingUserId);
 
         try {
-          await updateLastSeen(userId);
-        } catch (e) {
-          console.error("Failed to update last seen on leave:", e);
+          await updateLastSeen(leavingUserId);
+        } catch (error) {
+          console.error("Failed to update last seen on leave:", error);
         }
-
-        removeUserFromOnline(userId);
+        setOnlineUsers(prev => {
+          const newState = { ...prev };
+          delete newState[leavingUserId];
+          console.log(`Removed user ${leavingUserId} from online users`);
+          return newState;
+        });
       })
       .subscribe(async status => {
         console.log("Global presence subscription status:", status);
