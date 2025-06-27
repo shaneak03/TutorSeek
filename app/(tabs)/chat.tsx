@@ -69,22 +69,24 @@ const Chat = () => {
   useEffect(() => {
     if (!globalChatChannel || !user?.id) return;
     
-    const subscription = globalChatChannel
+    console.log("Setting up realtime listeners...");
+    console.log("Channel state:", globalChatChannel.state);
+    
+    globalChatChannel
       .on("broadcast", { event: "new_message" }, (payload) => {
+        console.log("Received new_message broadcast:", payload);
         const message = payload.payload;
-        if (message.sender_id !== user.id) {
-          console.log("Received new message broadcast:", message);
+        
+        if (message && message.sender_id !== user.id) {
+          console.log("Refreshing chat data...");
           fetchData();
         }
       })
-      .on("broadcast", { event: "messages_read" }, async (payload) => {
-        console.log("Received read broadcast:", payload);
-        await fetchData();
+      .on("broadcast", { event: "messages_read" }, (payload) => {
+        console.log("Received messages_read broadcast:", payload);
+        fetchData();
       });
-
-    return () => {
-      subscription?.unsubscribe();
-    };
+    
   }, [globalChatChannel, user?.id, fetchData]);
 
   if (!user) return <LoginModal />;
