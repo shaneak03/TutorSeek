@@ -625,8 +625,8 @@ const ChatScreen = () => {
               <UserIcon
                 avatarUrl={
                   staticOtherUser.profile_icon_url
-                    ? { uri: staticOtherUser.profile_icon_url }
-                    : require("@/assets/images/profile_icon.jpg")
+                    ? staticOtherUser.profile_icon_url
+                    : ""
                 }
                 size={48}
               />
