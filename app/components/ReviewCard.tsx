@@ -1,10 +1,10 @@
 import { Review } from "@/utils/models";
 import dayjs from "dayjs";
-import { Image } from "expo-image";
 import { View } from "react-native";
 import CustomText from "./CustomText";
 
 import StarRow from "./StarRow";
+import UserIcon from "./UserIcon";
 
 export type ReviewData = Review & {
   first_name: string;
@@ -27,14 +27,13 @@ const ReviewCard = ({ review, rounded = false }: props) => {
   return (
     <View className={rounded ? roundContainer : boxContainer}>
       <View className='flex-row gap-2'>
-        <Image
-          source={
+        <UserIcon
+          avatarUrl={
             review.profile_icon_url
               ? review.profile_icon_url
-              : require("../../assets/images/profile_icon.jpg")
+              : ""
           }
-          style={{ width: 36, height: 36, borderRadius: 100 }}
-          contentFit='cover'
+          size={36}
         />
         <View>
           <View className='flex-row gap-2 items-center'>
