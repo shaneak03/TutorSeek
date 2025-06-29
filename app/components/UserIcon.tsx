@@ -6,14 +6,11 @@ import themeColors from "../themeColors";
 type props = {
   avatarUrl: string;
   size: number;
-  border?: number;
 };
 
-const UserIcon = ({ avatarUrl, size, border = 0 }: props) => {
+const UserIcon = ({ avatarUrl, size }: props) => {
   return (
-    <View
-      className={`flex items-center justify-center bg-primary-700 rounded-full p-[${border}]`}
-    >
+    <View className={`flex items-center justify-center rounded-full`}>
       {avatarUrl ? (
         <Image
           source={avatarUrl}

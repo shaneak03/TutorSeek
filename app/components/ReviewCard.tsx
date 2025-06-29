@@ -28,11 +28,7 @@ const ReviewCard = ({ review, rounded = false }: props) => {
     <View className={rounded ? roundContainer : boxContainer}>
       <View className='flex-row gap-2'>
         <UserIcon
-          avatarUrl={
-            review.profile_icon_url
-              ? review.profile_icon_url
-              : ""
-          }
+          avatarUrl={review.profile_icon_url ? review.profile_icon_url : ""}
           size={36}
         />
         <View>

@@ -17,7 +17,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import themeColors from "../../../themeColors";
+import themeColors from "../themeColors";
 
 const viewTutor = () => {
   const router = useRouter();
@@ -58,18 +58,20 @@ const viewTutor = () => {
   };
 
   const onContactTutor = async () => {
+    if (!user) return;
     const existingChat = await findChatBetweenUsers(tutorId, user.id);
 
     if (!user.first_name) {
-      Alert.alert("Error", "Please add your name under profile first!")
-      return
+      Alert.alert("Error", "Please add your name under profile first!");
+      return;
     }
 
     if (existingChat) {
       console.log("Found existing chat");
       router.navigate({
-        pathname: `/chat/${existingChat.id}`,
+        pathname: `/chat/[id]`,
         params: {
+          id: existingChat.id,
           otherUser: JSON.stringify({
             id: tutorId,
             first_name: tutor?.first_name,
@@ -83,8 +85,9 @@ const viewTutor = () => {
     } else {
       console.log("No existing chat found");
       router.navigate({
-        pathname: "/chat/new",
+        pathname: "/chat/[id]",
         params: {
+          id: "new",
           otherUser: JSON.stringify({
             id: tutorId,
             first_name: tutor?.first_name,
@@ -176,7 +179,7 @@ const viewTutor = () => {
             </View>
           </View>
         </ScrollView>
-        {user.role == "student" ? (
+        {user?.role == "student" ? (
           <View className='p-4 border-t-hairline border-neutral-300'>
             <LargeSolidButton
               buttonText='Contact me'

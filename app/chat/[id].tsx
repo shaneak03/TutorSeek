@@ -341,7 +341,7 @@ const ChatScreen = () => {
 
   const navToUser = () => {
     if (otherUser.role === "student") return;
-    router.navigate(`/(tabs)/(home)/viewTutor/${otherUser?.id}`);
+    router.push(`/viewTutor/${otherUser?.id}`);
   };
 
   const handleSend = useCallback(async () => {

@@ -116,6 +116,7 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
+    console.log("saving");
     try {
       await updateUserProfile(userData);
       if (userData.profile_icon_url !== avatarUrl) {
@@ -154,8 +155,8 @@ const Profile = () => {
         await deleteTutorSubjects(subjectsToDelete, userData.id);
         await addTutorSubjects(subjectsToAdd, userData.id);
         await fetchProfileData(userData);
-        setIsEditing(false);
       }
+      setIsEditing(false);
     } catch (error) {
       console.log(error);
       await fetchProfileData(userData);

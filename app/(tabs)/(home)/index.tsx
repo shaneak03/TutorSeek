@@ -42,7 +42,7 @@ const Index = () => {
   };
 
   const onClickTutor = (tutorId: string) => {
-    router.push(`/(tabs)/(home)/viewTutor/${tutorId}`);
+    router.push(`/viewTutor/${tutorId}`);
   };
 
   if (!user) return <LoginModal />;
