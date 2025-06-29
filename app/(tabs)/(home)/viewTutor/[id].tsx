@@ -15,7 +15,7 @@ import {
 import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import themeColors from "../../../themeColors";
 
@@ -59,6 +59,11 @@ const viewTutor = () => {
 
   const onContactTutor = async () => {
     const existingChat = await findChatBetweenUsers(tutorId, user.id);
+
+    if (!user.first_name) {
+      Alert.alert("Error", "Please add your name under profile first!")
+      return
+    }
 
     if (existingChat) {
       console.log("Found existing chat");
