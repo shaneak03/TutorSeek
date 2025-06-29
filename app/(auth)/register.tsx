@@ -1,7 +1,7 @@
-// import { getUserById } from "@/utils/getRoutes";
+import { getUserById } from "@/utils/getRoutes";
+import { createTimeTable } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { createTimeTable } from "@/utils/postRoutes";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
@@ -61,7 +61,12 @@ const Register = () => {
     }
 
     // Update Auth Context
-    setUser(userData);
+    if (!userData?.id) {
+      setUser(null)
+    } else {
+      const user = await getUserById(userData.id)
+      setUser(user);
+    }
 
     router.push("/(tabs)/(profile)");
     clearPwInputs();
