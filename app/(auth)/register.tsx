@@ -63,7 +63,7 @@ const Register = () => {
     // Update Auth Context
     setUser(userData);
 
-    router.push("/(tabs)/(home)");
+    router.push("/(tabs)/(profile)");
     clearPwInputs();
   };
 
