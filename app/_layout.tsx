@@ -17,12 +17,15 @@ import SubjectContextProvider from "./contexts/subjectContext";
 import "./global.css";
 import themeColors from "./themeColors";
 
-export const AuthContext = createContext<any>(null);
+export const AuthContext = createContext<{
+  user: UserProfile | null;
+  setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+}>({ user: null, setUser: () => {} });
 
 export const RealtimeContext = createContext<RealtimeContextType>({
   isOnline: false,
   onlineUsers: {},
-  globalChatChannel: null
+  globalChatChannel: null,
 });
 
 export default function RootLayout() {
@@ -30,7 +33,8 @@ export default function RootLayout() {
   const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: OnlineUser }>(
     {}
   );
-  const [globalChatChannel, setGlobalChatChannel] = useState<RealtimeChannel | null>(null)
+  const [globalChatChannel, setGlobalChatChannel] =
+    useState<RealtimeChannel | null>(null);
   const channelRef = useRef<any>(null);
   const isMountedRef = useRef(true);
 
@@ -138,7 +142,7 @@ export default function RootLayout() {
             user_id: user.id,
             online_at: new Date().toISOString(),
           });
-          
+
           setTimeout(() => {
             if (channelRef.current) {
               const presenceState = channelRef.current.presenceState();
@@ -153,17 +157,22 @@ export default function RootLayout() {
                 }
               });
               setOnlineUsers(newState);
-              console.log("Refreshed online users on app resume:", Object.keys(newState));
+              console.log(
+                "Refreshed online users on app resume:",
+                Object.keys(newState)
+              );
             }
           }, 100);
-          
         } catch (error) {
           console.error("Error retracking presence:", error);
         }
       }
     };
 
-    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
     return () => subscription?.remove();
   }, [user?.id]);
 
@@ -272,19 +281,20 @@ export default function RootLayout() {
       });
 
     channelRef.current = channel;
-    
-    const chatChannel = supabase.channel('chat-global', {
-      config: {
-        broadcast: { self: false }
-      }
-    })
-    .on('broadcast', { event: 'new_message' }, (payload) => {
-      console.log('New message received in global channel:', payload);
-    })
-    .on('broadcast', { event: 'messages_read' }, (payload) => {
-      console.log('Messages read event in global channel:', payload);
-    })
-    .subscribe();
+
+    const chatChannel = supabase
+      .channel("chat-global", {
+        config: {
+          broadcast: { self: false },
+        },
+      })
+      .on("broadcast", { event: "new_message" }, payload => {
+        console.log("New message received in global channel:", payload);
+      })
+      .on("broadcast", { event: "messages_read" }, payload => {
+        console.log("Messages read event in global channel:", payload);
+      })
+      .subscribe();
 
     setGlobalChatChannel(chatChannel);
 
@@ -311,7 +321,7 @@ export default function RootLayout() {
             value={{
               isOnline: Boolean(Object.keys(onlineUsers).length),
               onlineUsers,
-              globalChatChannel
+              globalChatChannel,
             }}
           >
             <SafeAreaProvider>

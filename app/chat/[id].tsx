@@ -204,7 +204,7 @@ const ChatScreen = () => {
             chat_id: staticChatId,
             user_id: staticUserId,
             read_at: new Date().toISOString(),
-          }
+          },
         });
       }
     } catch (error) {
@@ -221,7 +221,7 @@ const ChatScreen = () => {
       supabase.removeChannel(channelRef.current);
     }
     // Use temporary channel name for new chats
-    const channelName = staticChatId 
+    const channelName = staticChatId
       ? `chat-${staticChatId}`
       : `new-chat-${staticUserId}-${staticOtherUser.id}`;
 
@@ -421,23 +421,27 @@ const ChatScreen = () => {
         staticOtherUser.role
       );
 
-      const { message: newMessage, chat: newChat, wasNewChat } = await postChatMessage(
-      {
-        sender_id: user.id,
-        recipient_id: staticOtherUser.id,
-        content: messageContent,
-      },
-      senderRole,
-      tutorId,
-      studentId
-    );
+      const {
+        message: newMessage,
+        chat: newChat,
+        wasNewChat,
+      } = await postChatMessage(
+        {
+          sender_id: user.id,
+          recipient_id: staticOtherUser.id,
+          content: messageContent,
+        },
+        senderRole,
+        tutorId,
+        studentId
+      );
 
       if (wasNewChat) {
         router.setParams({
           id: String(newChat.id),
-          otherUser: JSON.stringify(staticOtherUser)
+          otherUser: JSON.stringify(staticOtherUser),
         });
-        
+
         setupChatChannel();
       }
 
@@ -448,7 +452,7 @@ const ChatScreen = () => {
             ? {
                 ...newMessage,
                 sender: optimisticMessage!.sender,
-                chat_id: newChat.id
+                chat_id: newChat.id,
               }
             : msg
         )
@@ -467,7 +471,7 @@ const ChatScreen = () => {
         await globalChatChannel.send({
           type: "broadcast",
           event: "new_message",
-          payload: newMessage
+          payload: newMessage,
         });
       }
     } catch (error) {
@@ -532,11 +536,11 @@ const ChatScreen = () => {
                 Refreshing...
               </CustomText>
             </View>
-          ) : staticChatId  ? (
+          ) : staticChatId ? (
             <CustomText className='text-primary-700 text-sm'>
               Press to refresh
             </CustomText>
-          ) : null }
+          ) : null}
         </TouchableOpacity>
         {loadingMore && (
           <View className='py-2 items-center'>
@@ -556,14 +560,20 @@ const ChatScreen = () => {
   const ListEmptyComponent = useCallback(() => {
     if (loading && staticChatId) {
       return (
-        <View className='flex-1 justify-center items-center py-20' style={{ transform: [{ scaleX: -1 }, { scaleY: -1 }] }}>
+        <View
+          className='flex-1 justify-center items-center py-20'
+          style={{ transform: [{ scaleX: -1 }, { scaleY: -1 }] }}
+        >
           <CustomText className='text-gray-500'>Loading messages...</CustomText>
         </View>
       );
     }
 
     return (
-      <View className='flex-1 justify-center items-center py-20' style={{ transform: [{ scaleX: -1 }, { scaleY: -1 }] }}>
+      <View
+        className='flex-1 justify-center items-center py-20'
+        style={{ transform: [{ scaleX: -1 }, { scaleY: -1 }] }}
+      >
         <CustomText className='text-gray-500 text-center'>
           No messages yet. Start the conversation!
         </CustomText>
@@ -644,13 +654,15 @@ const ChatScreen = () => {
                       )}`}
                 </CustomText>
               </View>
-              <Pressable onPress={() => setIsShowReviewModal(true)}>
-                <Image
-                  source={require("../../assets/images/review.png")}
-                  style={{ width: 24, height: 24 }}
-                  contentFit='cover'
-                />
-              </Pressable>
+              {user.role === "student" && (
+                <Pressable onPress={() => setIsShowReviewModal(true)}>
+                  <Image
+                    source={require("../../assets/images/review.png")}
+                    style={{ width: 24, height: 24 }}
+                    contentFit='cover'
+                  />
+                </Pressable>
+              )}
             </View>
           </View>
         </View>
