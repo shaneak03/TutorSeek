@@ -5,11 +5,11 @@ import {
   ChatData,
   ChatMessage,
   ChatWithParticipants,
-  StudentProfile,
-  TutorProfile,
   UserProfile,
 } from "./models";
 import { supabase } from "./supabase";
+
+/// Timetable ///
 
 export const createTimeTable = async (tutorId: string) => {
   try {
@@ -34,64 +34,7 @@ export const createTimeTable = async (tutorId: string) => {
   }
 };
 
-export const updateLastSeen = async (userId: string) => {
-  try {
-    const { error } = await supabase
-      .from("users")
-      .update({ last_online_at: new Date().toISOString() })
-      .eq("id", userId);
-
-    if (error) throw error;
-    console.log(`Updated last_online_at for user ${userId}`);
-  } catch (err) {
-    console.error("Failed to update last_online_at:", err);
-  }
-};
-
-export const postUserProfile = async (profile: UserProfile) => {
-  try {
-    const { data, error } = await supabase.from("users").insert(profile);
-
-    if (error) {
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error posting user profile:", error);
-    throw error;
-  }
-};
-
-export const postTutorProfile = async (profile: TutorProfile) => {
-  try {
-    const { data, error } = await supabase.from("tutors").insert(profile);
-
-    if (error) {
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error posting tutor profile:", error);
-    throw error;
-  }
-};
-
-export const postStudentProfile = async (profile: StudentProfile) => {
-  try {
-    const { data, error } = await supabase.from("students").insert(profile);
-
-    if (error) {
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error posting student profile:", error);
-    throw error;
-  }
-};
+/// Profile ///
 
 export const updateUserProfile = async (profile: UserProfile) => {
   try {
@@ -107,31 +50,6 @@ export const updateUserProfile = async (profile: UserProfile) => {
     return data;
   } catch (error) {
     console.error("Error updating user profile:", error);
-    throw error;
-  }
-};
-
-export const updateRatingReview = async (
-  avgRating: number,
-  reviewCount: number,
-  tutorId: string
-) => {
-  try {
-    const { data, error } = await supabase
-      .from("tutors")
-      .update({
-        rating_count: avgRating,
-        review_count: reviewCount,
-      })
-      .eq("id", tutorId);
-
-    if (error) {
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error updating rating and review count", error);
     throw error;
   }
 };
@@ -158,6 +76,8 @@ export const updateTutorProfile = async (profile: TutorProfileData) => {
     throw error;
   }
 };
+
+/// Tutor subjects ///
 
 export const addTutorSubjects = async (
   subjects: {
@@ -204,12 +124,21 @@ export const deleteTutorSubjects = async (ids: number[], tutorId: string) => {
   }
 };
 
-export const updateStudentProfile = async (profile: StudentProfile) => {
+/// Reviews ///
+
+export const updateRatingReview = async (
+  avgRating: number,
+  reviewCount: number,
+  tutorId: string
+) => {
   try {
     const { data, error } = await supabase
-      .from("students")
-      .update(profile)
-      .eq("id", profile.id);
+      .from("tutors")
+      .update({
+        rating_count: avgRating,
+        review_count: reviewCount,
+      })
+      .eq("id", tutorId);
 
     if (error) {
       throw error;
@@ -217,7 +146,7 @@ export const updateStudentProfile = async (profile: StudentProfile) => {
 
     return data;
   } catch (error) {
-    console.error("Error updating student profile:", error);
+    console.error("Error updating rating and review count", error);
     throw error;
   }
 };
@@ -242,25 +171,19 @@ export const postReview = async (
   }
 };
 
-export const postTutorSubject = async (
-  tutor_id: string,
-  subject_id: number,
-  level_id: number
-) => {
-  {
-    try {
-      const { data, error } = await supabase
-        .from("tutor_subjects")
-        .insert({ tutor_id, subject_id, level_id });
+/// Chat page ///
 
-      if (error) {
-        throw error;
-      }
-      return data;
-    } catch (error) {
-      console.error("Error posting tutor subject:", error);
-      throw error;
-    }
+export const updateLastSeen = async (userId: string) => {
+  try {
+    const { error } = await supabase
+      .from("users")
+      .update({ last_online_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    if (error) throw error;
+    console.log(`Updated last_online_at for user ${userId}`);
+  } catch (err) {
+    console.error("Failed to update last_online_at:", err);
   }
 };
 

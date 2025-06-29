@@ -3,13 +3,13 @@ import { filterOptions } from "../app/components/HomeTopNav";
 import {
   ChatMessage,
   ChatWithParticipants,
-  Level,
-  StudentProfile,
   Subject,
   TutorProfile,
   UserProfile,
 } from "./models";
 import { supabase } from "./supabase";
+
+/// Tutors ///
 
 export const getTutors = async (filters: filterOptions) => {
   let query = supabase
@@ -80,28 +80,9 @@ export const getTutor = async (tutorId: string) => {
     first_name: data?.users?.first_name,
     last_name: data?.users.last_name,
     profile_icon_url: data?.users.profile_icon_url,
-    last_online_at: data?.users.last_online_at
+    last_online_at: data?.users.last_online_at,
   };
   return flatData as tutorCardData;
-};
-
-export const getSubjectsByTutorId = async (tutor_id: string) => {
-  try {
-    const { data, error } = await supabase
-      .from("tutor_subjects_flatten")
-      .select("subject, level, id")
-      .eq("tutor_id", tutor_id)
-      .order("level");
-
-    if (error) {
-      throw error;
-    }
-
-    return data;
-  } catch (error) {
-    console.error("Error getting tutor subjects:", error);
-    throw error;
-  }
 };
 
 export const getTutorById = async (tutorId: string): Promise<TutorProfile> => {
@@ -123,28 +104,9 @@ export const getTutorById = async (tutorId: string): Promise<TutorProfile> => {
   }
 };
 
-export const getPageOfTutors = async (
-  page: number,
-  pageSize: number
-): Promise<TutorProfile[]> => {
-  try {
-    const { data, error } = await supabase
-      .from("tutors")
-      .select("*")
-      .range((page - 1) * pageSize, page * pageSize - 1);
-
-    if (error) {
-      throw error;
-    }
-
-    return data as TutorProfile[];
-  } catch (error) {
-    console.error("Error getting page of tutors:", error);
-    throw error;
-  }
-};
-
-export const getUserById = async (userId: string): Promise<UserProfile | null> => {
+export const getUserById = async (
+  userId: string
+): Promise<UserProfile | null> => {
   try {
     const { data, error } = await supabase
       .from("users")
@@ -156,7 +118,7 @@ export const getUserById = async (userId: string): Promise<UserProfile | null> =
       if ((error as any).code === "PGRST116") {
         return null;
       }
-      throw error; 
+      throw error;
     }
 
     return data as UserProfile;
@@ -166,38 +128,23 @@ export const getUserById = async (userId: string): Promise<UserProfile | null> =
   }
 };
 
-export const getStudentById = async (
-  studentId: string
-): Promise<StudentProfile> => {
+/// Subjects ///
+
+export const getSubjectsByTutorId = async (tutor_id: string) => {
   try {
     const { data, error } = await supabase
-      .from("students")
-      .select("*")
-      .eq("id", studentId)
-      .single();
+      .from("tutor_subjects_flatten")
+      .select("subject, level, id")
+      .eq("tutor_id", tutor_id)
+      .order("level");
 
     if (error) {
       throw error;
     }
 
-    return data as StudentProfile;
+    return data;
   } catch (error) {
-    console.error("Error getting student by ID:", error);
-    throw error;
-  }
-};
-
-export const getLevels = async (): Promise<Level[]> => {
-  try {
-    const { data, error } = await supabase.from("levels").select("*");
-
-    if (error) {
-      throw error;
-    }
-
-    return data as Level[];
-  } catch (error) {
-    console.error("Error getting levels:", error);
+    console.error("Error getting tutor subjects:", error);
     throw error;
   }
 };
@@ -220,37 +167,7 @@ export const getSubjects = async (): Promise<Subject[]> => {
   }
 };
 
-export const getReviewsByStudentId = async (studentId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from("reviews")
-      .select(
-        `*, 
-        students (
-          users (
-            first_name,
-            last_name,
-            profile_icon_url
-          )
-        )`
-      )
-      .eq("student_id", studentId);
-
-    if (error) {
-      throw error;
-    }
-
-    return data.map(r => ({
-      ...r,
-      profile_icon_url: r.students.users.profile_icon_url,
-      first_name: r.students.users.first_name,
-      last_name: r.students.users.last_name,
-    }));
-  } catch (error) {
-    console.error("Error getting tutor reviews", error);
-    throw error;
-  }
-};
+/// Reveiws ///
 
 export const getAvgRatingAndReviewCount = async (tutorId: string) => {
   try {
@@ -306,43 +223,39 @@ export const getReviewsByTutorId = async (tutorId: string) => {
   }
 };
 
-export const getSubjectById = async (subjectId: string): Promise<Subject> => {
+export const getReviewsByStudentId = async (studentId: string) => {
   try {
     const { data, error } = await supabase
-      .from("subjects")
-      .select("*")
-      .eq("id", subjectId)
-      .single();
+      .from("reviews")
+      .select(
+        `*, 
+        students (
+          users (
+            first_name,
+            last_name,
+            profile_icon_url
+          )
+        )`
+      )
+      .eq("student_id", studentId);
 
     if (error) {
       throw error;
     }
 
-    return data as Subject;
+    return data.map(r => ({
+      ...r,
+      profile_icon_url: r.students.users.profile_icon_url,
+      first_name: r.students.users.first_name,
+      last_name: r.students.users.last_name,
+    }));
   } catch (error) {
-    console.error("Error getting subject by id", error);
+    console.error("Error getting tutor reviews", error);
     throw error;
   }
 };
 
-export const getLevelById = async (levelId: string): Promise<Level> => {
-  try {
-    const { data, error } = await supabase
-      .from("levels")
-      .select("*")
-      .eq("id", levelId)
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    return data as Level;
-  } catch (error) {
-    console.error("Error getting level by id", error);
-    throw error;
-  }
-};
+/// Chat page ///
 
 export const getChatsByUserId = async (
   userId: string
