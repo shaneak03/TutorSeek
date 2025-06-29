@@ -58,13 +58,10 @@ const viewTutor = () => {
   };
 
   const onContactTutor = async () => {
-    const existingChat = await findChatBetweenUsers(
-      tutorId, 
-      user.id
-    );
+    const existingChat = await findChatBetweenUsers(tutorId, user.id);
 
     if (existingChat) {
-      console.log("Found existing chat")
+      console.log("Found existing chat");
       router.navigate({
         pathname: `/chat/${existingChat.id}`,
         params: {
@@ -74,12 +71,12 @@ const viewTutor = () => {
             last_name: tutor?.last_name,
             profile_icon_url: tutor?.profile_icon_url,
             role: "tutor",
-            last_online_at: tutor?.last_online_at || new Date().toISOString()
-          })
-        }
+            last_online_at: tutor?.last_online_at || new Date().toISOString(),
+          }),
+        },
       });
     } else {
-      console.log("No existing chat found")
+      console.log("No existing chat found");
       router.navigate({
         pathname: "/chat/new",
         params: {
@@ -89,9 +86,9 @@ const viewTutor = () => {
             last_name: tutor?.last_name,
             profile_icon_url: tutor?.profile_icon_url,
             role: "tutor",
-            last_online_at: tutor?.last_online_at
-          })
-        }
+            last_online_at: tutor?.last_online_at,
+          }),
+        },
       });
     }
   };
@@ -174,11 +171,14 @@ const viewTutor = () => {
             </View>
           </View>
         </ScrollView>
-        {user.role == "student" 
-          ? (<View className='p-4 border-t-hairline border-neutral-300'>
-              <LargeSolidButton buttonText='Contact me' onPress={onContactTutor} />
-            </View>)
-          : null}
+        {user.role == "student" ? (
+          <View className='p-4 border-t-hairline border-neutral-300'>
+            <LargeSolidButton
+              buttonText='Contact me'
+              onPress={onContactTutor}
+            />
+          </View>
+        ) : null}
       </SafeAreaView>
     </>
   );

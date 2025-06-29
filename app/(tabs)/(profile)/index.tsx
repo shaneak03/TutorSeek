@@ -118,30 +118,43 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      setIsEditing(false);
-      updateUserProfile(userData);
+      await updateUserProfile(userData);
       if (userData.profile_icon_url !== avatarUrl) {
-        updateProfileIcon(userData.id, avatarUrl);
+        await updateProfileIcon(userData.id, avatarUrl);
       }
-      if (userData.role === "tutor") {
+      if (userData?.role === "tutor") {
         //required tutor fields to be published
         if (userData.first_name !== "" && tutorData.hourly_rate !== 0) {
           tutorData.is_published = true;
         } else {
           tutorData.is_published = false;
         }
-        updateTutorProfile(tutorData);
-        const mappedSubsToAdd = subsToAdd.map(s => ({
-          id: s.id,
-          level: levelNameToId[s.level],
-          subject: subjNameToIdMap[s.subject],
-        }));
+        await updateTutorProfile(tutorData);
+        const seen = new Set();
+        const mappedSubsToAdd = subsToAdd
+          .map(s => ({
+            id: s.id,
+            level: levelNameToId[s.level],
+            subject: subjNameToIdMap[s.subject],
+          }))
+          .filter(item => {
+            const key = `${item.subject}|${item.level}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
 
-        addTutorSubjects(mappedSubsToAdd, userData.id);
-        deleteTutorSubjects(subsToDel, userData.id);
+        await addTutorSubjects(mappedSubsToAdd, userData.id);
+        await deleteTutorSubjects(subsToDel, userData.id);
+        setIsEditing(false);
+        setSubsToAdd([]);
+        setSubsToDel([]);
       }
     } catch (error) {
       console.log(error);
+      setIsEditing(false);
+      setSubsToAdd([]);
+      setSubsToDel([]);
     }
   };
 
@@ -194,6 +207,7 @@ const Profile = () => {
                 tutorData={tutorData}
                 setTutorData={setTutorData}
                 isEditing={isEditing}
+                subsToAdd={subsToAdd}
                 setSubsToAdd={setSubsToAdd}
                 setSubsToDel={setSubsToDel}
               />

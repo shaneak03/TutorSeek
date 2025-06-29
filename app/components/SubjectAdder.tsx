@@ -10,6 +10,7 @@ import LargeSolidButton from "./LargeSolidButton";
 type props = {
   isShowAddSubModal: boolean;
   setIsShowAddSubModal: React.Dispatch<React.SetStateAction<boolean>>;
+  subsToAdd: Subject[];
   setSubsToAdd: React.Dispatch<React.SetStateAction<Subject[]>>;
   tutorData: TutorProfileData;
   setTutorData: React.Dispatch<React.SetStateAction<TutorProfileData>>;
@@ -39,6 +40,7 @@ export const levelNameToId: Record<string, number> = {
 const SubjectAdder = ({
   isShowAddSubModal,
   setIsShowAddSubModal,
+  subsToAdd,
   setSubsToAdd,
   tutorData,
   setTutorData,
@@ -58,7 +60,7 @@ const SubjectAdder = ({
       return console.log("already added");
     }
     setTutorData(data => {
-      const latestId = data?.subjects[data.subjects.length - 1]?.id ?? 0;
+      const latestId = data?.subjects[data?.subjects.length - 1]?.id ?? 0;
       const newSubject = {
         subject: selectedSub,
         level: selectedLevel,
@@ -66,7 +68,9 @@ const SubjectAdder = ({
       };
       return {
         ...data,
-        subjects: [...data.subjects, newSubject],
+        subjects: [...data.subjects, newSubject].sort(
+          (a, b) => levelNameToId[b.level] - levelNameToId[a.level]
+        ),
       };
     });
     //id does not matter for this

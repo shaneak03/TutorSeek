@@ -63,7 +63,7 @@ export default function HomeTopNav({ filters, setFilters, tutors }: props) {
             <CustomText className='font-poppins-bold'>
               {filters.subject === 0
                 ? "All subjects"
-                : subjects[filters.subject - 1].name}
+                : subjects[filters.subject - 1]?.name}
             </CustomText>
             <Entypo
               name='chevron-down'
