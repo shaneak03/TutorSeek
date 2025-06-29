@@ -55,8 +55,7 @@ const Profile = () => {
     is_published: false,
     subjects: [],
   });
-  const [subsToDel, setSubsToDel] = useState<number[]>([]);
-  const [subsToAdd, setSubsToAdd] = useState<Subject[]>([]);
+  const [serverTutorSubjs, setServerTutorSubjs] = useState<Subject[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
   const { subjNameToIdMap } = useContext(SubjectContext);
@@ -66,6 +65,7 @@ const Profile = () => {
     if (!currentUser) return;
     try {
       // Fetch user data
+      console.log("fetching profile");
       const userResult = await getUserById(currentUser.id);
       if (userResult) {
         setUserData(userResult);
@@ -81,6 +81,7 @@ const Profile = () => {
               ...tutorResult,
               subjects: tutorSubjects,
             }));
+            setServerTutorSubjs(tutorSubjects);
           }
         }
       }
@@ -100,8 +101,6 @@ const Profile = () => {
   useEffect(() => {
     if (isFocused) {
       setIsEditing(false);
-      setSubsToAdd([]);
-      setSubsToDel([]);
     }
   }, [isFocused]);
 
@@ -130,31 +129,37 @@ const Profile = () => {
           tutorData.is_published = false;
         }
         await updateTutorProfile(tutorData);
-        const seen = new Set();
-        const mappedSubsToAdd = subsToAdd
+
+        const serverSubjectSet = new Set();
+        serverTutorSubjs.forEach(s =>
+          serverSubjectSet.add(`${s.subject}#${s.level}`)
+        );
+        const displaySubjectSet = new Set();
+        tutorData.subjects.forEach(s =>
+          displaySubjectSet.add(`${s.subject}#${s.level}`)
+        );
+
+        const subjectsToAdd = tutorData.subjects
+          .filter(s => !serverSubjectSet.has(`${s.subject}#${s.level}`))
           .map(s => ({
             id: s.id,
             level: levelNameToId[s.level],
             subject: subjNameToIdMap[s.subject],
-          }))
-          .filter(item => {
-            const key = `${item.subject}|${item.level}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          });
+          }));
 
-        await addTutorSubjects(mappedSubsToAdd, userData.id);
-        await deleteTutorSubjects(subsToDel, userData.id);
+        const subjectsToDelete = serverTutorSubjs
+          .filter(s => !displaySubjectSet.has(`${s.subject}#${s.level}`))
+          .map(s => s.id);
+
+        await deleteTutorSubjects(subjectsToDelete, userData.id);
+        await addTutorSubjects(subjectsToAdd, userData.id);
+        await fetchProfileData(userData);
         setIsEditing(false);
-        setSubsToAdd([]);
-        setSubsToDel([]);
       }
     } catch (error) {
       console.log(error);
+      await fetchProfileData(userData);
       setIsEditing(false);
-      setSubsToAdd([]);
-      setSubsToDel([]);
     }
   };
 
@@ -178,7 +183,11 @@ const Profile = () => {
             contentContainerClassName={"items-center gap-4 " + bottomPadding}
             showsVerticalScrollIndicator={false}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                enabled={!isEditing}
+              />
             }
           >
             <CustomText className='font-poppins-bold text-xl'>
@@ -207,9 +216,6 @@ const Profile = () => {
                 tutorData={tutorData}
                 setTutorData={setTutorData}
                 isEditing={isEditing}
-                subsToAdd={subsToAdd}
-                setSubsToAdd={setSubsToAdd}
-                setSubsToDel={setSubsToDel}
               />
             )}
 

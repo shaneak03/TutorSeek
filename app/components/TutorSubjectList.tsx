@@ -8,14 +8,12 @@ import CustomText from "./CustomText";
 type props = {
   tutorData: TutorProfileData;
   setTutorData: React.Dispatch<React.SetStateAction<TutorProfileData>>;
-  setSubsToDel: React.Dispatch<React.SetStateAction<number[]>>;
   isEditing?: boolean;
 };
 
 const TutorSubjectList = ({
   tutorData,
   setTutorData,
-  setSubsToDel,
   isEditing = false,
 }: props) => {
   const onDeleteSubject = (tutorSubjectId: number) => {
@@ -23,7 +21,6 @@ const TutorSubjectList = ({
       ...data,
       subjects: data.subjects.filter(s => s.id != tutorSubjectId),
     }));
-    setSubsToDel(arr => [...arr, tutorSubjectId]);
   };
 
   return (
@@ -36,7 +33,7 @@ const TutorSubjectList = ({
       {tutorData.subjects.length !== 0 &&
         tutorData.subjects.map(s => (
           <View
-            key={s.id}
+            key={`${s.subject}#${s.level}`}
             className='flex-row justify-between items-center px-4 py-1'
           >
             <View className='flex-row gap-2 items-center'>

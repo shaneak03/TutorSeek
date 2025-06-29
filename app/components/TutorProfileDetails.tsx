@@ -13,18 +13,12 @@ type props = {
   tutorData: TutorProfileData;
   setTutorData: React.Dispatch<React.SetStateAction<TutorProfileData>>;
   isEditing: boolean;
-  subsToAdd: Subject[];
-  setSubsToAdd: React.Dispatch<React.SetStateAction<Subject[]>>;
-  setSubsToDel: React.Dispatch<React.SetStateAction<number[]>>;
 };
 
 export default function TutorProfileDetails({
   tutorData,
   setTutorData,
   isEditing,
-  subsToAdd,
-  setSubsToAdd,
-  setSubsToDel,
 }: props) {
   const [isShowAddSubModal, setIsShowAddSubModal] = useState(false);
   return (
@@ -32,8 +26,6 @@ export default function TutorProfileDetails({
       <SubjectAdder
         isShowAddSubModal={isShowAddSubModal}
         setIsShowAddSubModal={setIsShowAddSubModal}
-        subsToAdd={subsToAdd}
-        setSubsToAdd={setSubsToAdd}
         tutorData={tutorData}
         setTutorData={setTutorData}
       />
@@ -78,7 +70,6 @@ export default function TutorProfileDetails({
           tutorData={tutorData}
           setTutorData={setTutorData}
           isEditing={isEditing}
-          setSubsToDel={setSubsToDel}
         />
       </View>
     </>
