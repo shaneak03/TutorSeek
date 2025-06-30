@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 export default {
   expo: {
+    owner: "tutorseek",
     name: "TutorSeek",
     slug: "TutorSeek",
     version: "1.0.0",
@@ -91,7 +92,8 @@ export default {
         origin: false
       },
       eas: {
-        projectId: "a758d76d-ba56-49b4-b7d9-786b02ad94f4"
+        // projectId: "a758d76d-ba56-49b4-b7d9-786b02ad94f4"
+        projectId: "6e950af5-0914-48fb-b766-e497aff3f542"
       },
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
