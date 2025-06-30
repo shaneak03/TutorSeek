@@ -1,9 +1,9 @@
-import LargeSolidButton from "@/app/components/LargeSolidButton";
 import ProfileNav from "@/app/components/ProfileNav";
 import ProfileReviews from "@/app/components/ProfileReviews";
 import { levelNameToId } from "@/app/components/SubjectAdder";
 import TutorProfileDetails from "@/app/components/TutorProfileDetails";
 import { SubjectContext } from "@/app/contexts/subjectContext";
+import themeColors from "@/app/themeColors";
 import {
   getSubjectsByTutorId,
   getTutorById,
@@ -17,10 +17,18 @@ import {
   updateUserProfile,
 } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
+import Feather from "@expo/vector-icons/Feather";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { RefreshControl, ScrollView, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../../_layout";
 import CoreProfileDetails from "../../components/CoreProfileDetails";
@@ -179,59 +187,73 @@ const Profile = () => {
         {isReviews ? (
           <ProfileReviews role={userData.role} id={userData.id} />
         ) : (
-          <ScrollView
-            className='flex-1 pt-4 px-8'
-            contentContainerClassName={"items-center gap-4 " + bottomPadding}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                enabled={!isEditing}
-              />
-            }
+          <KeyboardAvoidingView
+            className='flex-1'
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
           >
-            <CustomText className='font-poppins-bold text-xl'>
-              {userData?.role === "tutor" ? "Tutor" : "Student"}
-            </CustomText>
-            <ProfileIcon
-              avatarUrl={avatarUrl}
-              setAvatarUrl={setAvatarUrl}
-              isEditing={isEditing}
-            />
-
-            <CustomText
-              onPress={() => setIsEditing(true)}
-              className='underline text-primary-700'
+            <ScrollView
+              className='flex-1 pt-4 px-8'
+              contentContainerClassName={"items-center gap-4 " + bottomPadding}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  enabled={!isEditing}
+                />
+              }
             >
-              Edit profile
-            </CustomText>
-
-            <CoreProfileDetails
-              profileData={userData}
-              setProfileData={setUserData}
-              isEditing={isEditing}
-            />
-            {userData.role === "tutor" && (
-              <TutorProfileDetails
-                tutorData={tutorData}
-                setTutorData={setTutorData}
+              <CustomText className='font-poppins-bold text-xl'>
+                {userData?.role === "tutor" ? "Tutor" : "Student"}
+              </CustomText>
+              <ProfileIcon
+                avatarUrl={avatarUrl}
+                setAvatarUrl={setAvatarUrl}
                 isEditing={isEditing}
               />
-            )}
 
-            <CustomText
-              onPress={handleLogout}
-              className='underline text-center text-neutral-300'
-            >
-              Sign out
-            </CustomText>
-          </ScrollView>
-        )}
-        {isEditing && (
-          <View className='flex-row justify-center w-full absolute bottom-0 pb-4 z-10 px-8'>
-            <LargeSolidButton buttonText='Save' onPress={handleSave} />
-          </View>
+              <CustomText
+                onPress={() => setIsEditing(true)}
+                className='underline text-primary-700'
+              >
+                Edit profile
+              </CustomText>
+
+              <CoreProfileDetails
+                profileData={userData}
+                setProfileData={setUserData}
+                isEditing={isEditing}
+              />
+              {userData.role === "tutor" && (
+                <TutorProfileDetails
+                  tutorData={tutorData}
+                  setTutorData={setTutorData}
+                  isEditing={isEditing}
+                />
+              )}
+
+              <CustomText
+                onPress={handleLogout}
+                className='underline text-center text-neutral-300'
+              >
+                Sign out
+              </CustomText>
+            </ScrollView>
+            {isEditing && (
+              <View className='flex-row justify-end w-full absolute bottom-0 pb-4 z-10 px-8'>
+                <Pressable
+                  onPress={handleSave}
+                  className='bg-primary-700 rounded-full p-4'
+                >
+                  <Feather
+                    name='check'
+                    size={20}
+                    color={themeColors["neutral-100"]}
+                  />
+                </Pressable>
+              </View>
+            )}
+          </KeyboardAvoidingView>
         )}
       </SafeAreaView>
     );

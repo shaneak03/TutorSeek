@@ -37,7 +37,7 @@ const LastCard = ({ onPress }: { onPress: any }) => {
       activeOpacity={0.7}
       onPress={onPress}
       className='flex justify-center items-center
-  w-[280px] h-[160px] p-4 rounded-3xl shadow-xs bg-indigo-100'
+  w-[260px] h-[140px] p-4 rounded-3xl shadow-xs bg-indigo-100'
     >
       <CustomText className='font-poppins-semibold text-primary-700'>
         Show all reviews

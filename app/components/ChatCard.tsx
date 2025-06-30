@@ -1,7 +1,8 @@
 import { ChatWithParticipants } from "@/utils/models";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useContext } from "react";
 import { TouchableOpacity, View } from "react-native";
+import { RealtimeContext } from "../_layout";
 import CustomText from "./CustomText";
 import UserIcon from "./UserIcon";
 
@@ -11,12 +12,14 @@ interface ChatCardProps {
 }
 
 export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
+  const { onlineUsers } = useContext(RealtimeContext);
   const router = useRouter();
 
   const handlePress = () => {
     router.push({
-      pathname: `/chat/${chat.id}`,
+      pathname: "/chat/[id]",
       params: {
+        id: chat.id,
         otherUser: JSON.stringify({
           id: otherUser.id,
           first_name: otherUser.first_name,
@@ -28,9 +31,9 @@ export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
       },
     });
   };
-
   const isCurrentUserTutor = chat.tutor_id === currentUserId;
   const otherUser = isCurrentUserTutor ? chat.student : chat.tutor;
+  const isOtherUserOnline = Boolean(onlineUsers[otherUser.id]);
   const unreadCount = chat.unread_count || 0;
 
   // Format the time from last message or chat update
@@ -71,12 +74,15 @@ export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
   return (
     <TouchableOpacity
       onPress={handlePress}
-      accessibilityRole="button"
+      accessibilityRole='button'
       className='px-4 py-3 flex-row items-center gap-3 border-b-hairline border-neutral-300 active:bg-gray-50'
       activeOpacity={0.8}
     >
-      <View className='relative'>
+      <View className='flex justify-end items-end'>
         <UserIcon avatarUrl={otherUser.profile_icon_url} size={64} />
+        {isOtherUserOnline && (
+          <View className='absolute bg-primary-700 rounded-full w-[16] h-[16] p-1'></View>
+        )}
       </View>
       <View className='flex-1 flex-row justify-between items-center'>
         <View className='flex-1 pr-2'>
