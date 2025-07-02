@@ -48,14 +48,14 @@ const Index = () => {
   if (!user) return <LoginModal />;
   else
     return (
-      <SafeAreaView className=' bg-neutral-100'>
+      <SafeAreaView className='flex-1 bg-neutral-100'>
         <FilterOptions
           filters={filters}
           setFilters={setFilters}
           tutors={tutors}
         />
         <ScrollView
-          className='h-full'
+          className='flex-1'
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }

@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Subject, TutorProfileData } from "../(tabs)/(profile)";
+import { TutorProfileData } from "../(tabs)/(profile)";
 import { SubjectContext } from "../contexts/subjectContext";
 import CustomText from "./CustomText";
 import FullPageModal from "./FullPageModal";
@@ -35,18 +35,41 @@ export const levelNameToId: Record<string, number> = {
   "A-level": 3,
 };
 
+const invalidCombiSet = new Set([
+  "1-1",
+  "3-1",
+  "5-1",
+  "6-1",
+  "7-1",
+  "8-1",
+  "10-1",
+  "5-2",
+  "7-2",
+  "4-3",
+  "11-3",
+]);
+
 const SubjectAdder = ({
   isShowAddSubModal,
   setIsShowAddSubModal,
   tutorData,
   setTutorData,
 }: props) => {
-  const { subjects } = useContext(SubjectContext);
+  const { subjects, subjNameToIdMap } = useContext(SubjectContext);
   const [selectedSub, setSelectedSub] = useState("");
   const [selectedLevel, setSeletecLevel] = useState("");
 
   const onAddSubject = () => {
     if (selectedSub === "" || selectedLevel === "") return;
+    let subjLevelIdCombiStr =
+      subjNameToIdMap[selectedSub] + "-" + levelNameToId[selectedLevel];
+    if (invalidCombiSet.has(subjLevelIdCombiStr)) {
+      return Alert.alert(
+        "Invalid pair",
+        "The chosen subject-level combination is invalid. Please select another pair."
+      );
+    }
+
     if (
       tutorData.subjects.some(
         s => s.subject === selectedSub && s.level === selectedLevel

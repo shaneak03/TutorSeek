@@ -329,7 +329,9 @@ export default function RootLayout() {
                 screenOptions={{
                   headerShown: false,
                 }}
-              />
+              >
+                <Stack.Screen name='(tabs)' />
+              </Stack>
             </SafeAreaProvider>
           </RealtimeContext.Provider>
         </AuthContext.Provider>
