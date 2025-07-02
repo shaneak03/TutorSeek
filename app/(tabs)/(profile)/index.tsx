@@ -127,6 +127,7 @@ const Profile = () => {
     console.log("saving");
     try {
       await updateUserProfile(userData);
+      setUser(userData);
       if (userData.profile_icon_url !== avatarUrl) {
         await updateProfileIcon(userData.id, avatarUrl);
       }
