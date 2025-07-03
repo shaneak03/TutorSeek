@@ -9,6 +9,10 @@ jest.mock('expo-router', () => ({
     useRouter: jest.fn(),
 }));
 
+jest.mock('@/app/_layout', () => ({
+  RealtimeContext: require('react').createContext({ onlineUsers: {} }),
+}));
+
 describe('ChatCard', () => {
     const mockRouterPush = jest.fn();
 

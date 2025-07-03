@@ -17,9 +17,9 @@ export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
 
   const handlePress = () => {
     router.push({
-      pathname: "/chat/[id]",
+      // @ts-ignore
+      pathname: `/chat/${chat.id}`,
       params: {
-        id: chat.id,
         otherUser: JSON.stringify({
           id: otherUser.id,
           first_name: otherUser.first_name,
