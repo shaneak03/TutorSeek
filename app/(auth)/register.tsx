@@ -76,12 +76,12 @@ const Register = () => {
 
   // // Google OAuth Handler
   // GoogleSignin.configure({
-  //   scopes: ['https://www.googleapis.com/auth/drive.readonly'],
   //   webClientId: '176743680156-f39d2bdbik845r85rdnoqpaurkri8r94.apps.googleusercontent.com'
   // })
 
   // const handleGoogleAuth = async () => {
   //     try {
+  //       await GoogleSignin.signOut();
   //       await GoogleSignin.hasPlayServices();
   //       const userInfo = await GoogleSignin.signIn();
   //       if (!userInfo.data) {
