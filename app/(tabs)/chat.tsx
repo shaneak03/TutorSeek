@@ -16,7 +16,7 @@ import { AuthContext, RealtimeContext } from "../_layout";
 
 const Chat = () => {
   const { user } = useContext(AuthContext);
-  const { globalChatChannel } = useContext(RealtimeContext)
+  const { onlineUsers, globalChatChannel } = useContext(RealtimeContext)
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
     first_name: "",
@@ -120,9 +120,20 @@ const Chat = () => {
               </CustomText>
             </View>
           ) : (
-            userChat.map(chat => (
-              <ChatCard key={chat.id} chat={chat} currentUserId={user.id} />
-            ))
+            userChat.map(chat => {
+              const isCurrentUserTutor = chat.tutor_id === user.id;
+              const otherUser = isCurrentUserTutor ? chat.student : chat.tutor;
+              const isOtherUserOnline = Boolean(onlineUsers?.[otherUser.id]);
+
+              return (
+                <ChatCard
+                  key={chat.id}
+                  chat={chat}
+                  currentUserId={user.id}
+                  isOnline={isOtherUserOnline} 
+                />
+              );
+            })
           )}
         </ScrollView>
       </SafeAreaView>

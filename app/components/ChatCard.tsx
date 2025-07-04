@@ -1,18 +1,17 @@
 import { ChatWithParticipants } from "@/utils/models";
 import { useRouter } from "expo-router";
-import React, { useContext } from "react";
+import React from "react";
 import { TouchableOpacity, View } from "react-native";
-import { RealtimeContext } from "../_layout";
 import CustomText from "./CustomText";
 import UserIcon from "./UserIcon";
 
 interface ChatCardProps {
   chat: ChatWithParticipants;
   currentUserId: string;
+  isOnline: boolean;
 }
 
-export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
-  const { onlineUsers } = useContext(RealtimeContext);
+export default function ChatCard({ chat, currentUserId, isOnline }: ChatCardProps) {
   const router = useRouter();
 
   const handlePress = () => {
@@ -33,7 +32,6 @@ export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
   };
   const isCurrentUserTutor = chat.tutor_id === currentUserId;
   const otherUser = isCurrentUserTutor ? chat.student : chat.tutor;
-  const isOtherUserOnline = Boolean(onlineUsers[otherUser.id]);
   const unreadCount = chat.unread_count || 0;
 
   // Format the time from last message or chat update
@@ -80,7 +78,7 @@ export default function ChatCard({ chat, currentUserId }: ChatCardProps) {
     >
       <View className='flex justify-end items-end'>
         <UserIcon avatarUrl={otherUser.profile_icon_url} size={64} />
-        {isOtherUserOnline && (
+        {isOnline && (
           <View className='absolute bg-primary-700 rounded-full w-[16] h-[16] p-1'></View>
         )}
       </View>
