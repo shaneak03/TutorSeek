@@ -27,3 +27,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
   },
 });
+
+export const PUSH_FUNCTION_URL = "https://<your-project>.functions.supabase.co/sendPushNotification";

@@ -4,7 +4,7 @@ import MessageBubble from "@/app/components/MessageBubble";
 import { getChatMessagesByChatIdAndPages } from "@/utils/getRoutes";
 import { ChatMessageWithSender, UserProfile } from "@/utils/models";
 import { markMessagesAsRead, postChatMessage } from "@/utils/postRoutes";
-import { supabase } from "@/utils/supabase";
+import { PUSH_FUNCTION_URL, supabase } from "@/utils/supabase";
 import { Ionicons } from "@expo/vector-icons";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { Image } from "expo-image";
@@ -37,6 +37,30 @@ interface MessageItem {
   type: "message" | "date-separator";
   message?: ChatMessageWithSender;
   dateText?: string;
+}
+
+async function sendPushNotification(userId: string, title: string, body: string, data?: any) {
+  try {
+    const response = await fetch(PUSH_FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        userId,
+        title,
+        body,
+        data,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to send push notification:", errorData);
+    } else {
+      console.log("Push notification sent successfully");
+    }
+  } catch (error) {
+    console.error("Error sending push notification:", error);
+  }
 }
 
 const ChatScreen = () => {
@@ -474,6 +498,14 @@ const ChatScreen = () => {
           payload: newMessage,
         });
       }
+
+      await sendPushNotification(
+        staticOtherUser.id,
+        "New message",
+        `${user.first_name} sent you a message`,
+        { chatId: newChat.id, messageId: newMessage.id, senderId: user.id }
+      );
+
     } catch (error) {
       console.error("Error sending message:", error);
       Alert.alert("Error", "Failed to send message");

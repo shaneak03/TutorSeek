@@ -19,14 +19,7 @@ export default function ChatCard({ chat, currentUserId, isOnline }: ChatCardProp
       // @ts-ignore
       pathname: `/chat/${chat.id}`,
       params: {
-        otherUser: JSON.stringify({
-          id: otherUser.id,
-          first_name: otherUser.first_name,
-          last_name: otherUser.last_name,
-          profile_icon_url: otherUser.profile_icon_url,
-          role: isCurrentUserTutor ? "student" : "tutor",
-          last_online_at: otherUser.last_online_at,
-        }),
+        otherUser: JSON.stringify(otherUser),
       },
     });
   };
