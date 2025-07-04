@@ -45,7 +45,7 @@ export type TutorProfileData = TutorProfile & {
 const Profile = () => {
   const router = useRouter();
   const isFocused = useIsFocused();
-  const { user, setUser } = useContext(AuthContext);
+  const { authUser, user, setUser } = useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
@@ -175,7 +175,16 @@ const Profile = () => {
 
   const bottomPadding = isEditing ? "pb-28" : "pb-9";
 
-  if (!user) return <LoginModal />;
+  if (!authUser) return <LoginModal />;
+
+  if (!user) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-neutral-100">
+        <CustomText>Loading your profile...</CustomText>
+      </SafeAreaView>
+    );
+  }
+  
   else
     return (
       <SafeAreaView className='flex-1 bg-neutral-100' edges={["top"]}>

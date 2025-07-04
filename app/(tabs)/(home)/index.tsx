@@ -1,3 +1,4 @@
+import CustomText from "@/app/components/CustomText";
 import { getTutors } from "@/utils/getRoutes";
 import { useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
@@ -9,7 +10,7 @@ import LoginModal from "../../components/LoginModal";
 import TutorCard, { tutorCardData } from "../../components/TutorCard";
 
 const Index = () => {
-  const { user } = useContext(AuthContext);
+  const { authUser, user } = useContext(AuthContext);
   const router = useRouter();
   const [tutors, setTutors] = useState<tutorCardData[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -45,7 +46,16 @@ const Index = () => {
     router.push(`/viewTutor/${tutorId}`);
   };
 
-  if (!user) return <LoginModal />;
+  if (!authUser) return <LoginModal />;
+  
+  if (!user) {
+    return (
+      <SafeAreaView className="flex-1 justify-center items-center bg-neutral-100">
+        <CustomText>Loading your profile...</CustomText>
+      </SafeAreaView>
+    );
+  }
+
   else
     return (
       <SafeAreaView className='flex-1 bg-neutral-100'>

@@ -15,7 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext, RealtimeContext } from "../_layout";
 
 const Chat = () => {
-  const { user } = useContext(AuthContext);
+  const { authUser, user } = useContext(AuthContext);
   const { onlineUsers, globalChatChannel } = useContext(RealtimeContext)
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
@@ -31,12 +31,12 @@ const Chat = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = useCallback(async () => {
-    if (!user?.id) return;
+    if (!authUser?.id) return;
 
     try {
       const [userResult, chatResult] = await Promise.all([
-        getUserById(user.id),
-        getChatsByUserId(user.id),
+        getUserById(authUser.id),
+        getChatsByUserId(authUser.id),
       ]);
       
       if (userResult) {setUserData(userResult);}
@@ -48,7 +48,7 @@ const Chat = () => {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [authUser?.id]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -89,7 +89,16 @@ const Chat = () => {
     
   }, [globalChatChannel, user?.id, fetchData]);
 
-  if (!user) return <LoginModal />;
+  if (!authUser) return <LoginModal />;
+
+  if (!user) {
+  return (
+    <SafeAreaView className="flex-1 justify-center items-center bg-neutral-100">
+      <CustomText>Loading your profile...</CustomText>
+    </SafeAreaView>
+  );
+}
+  
   else
     return (
       <SafeAreaView className=' bg-neutral-100'>

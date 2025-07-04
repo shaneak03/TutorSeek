@@ -8,7 +8,7 @@ import {
   Poppins_700Bold,
   useFonts,
 } from "@expo-google-fonts/poppins";
-import { RealtimeChannel } from "@supabase/supabase-js";
+import { RealtimeChannel, User } from "@supabase/supabase-js";
 import { Stack } from "expo-router";
 import React, { createContext, useEffect, useRef, useState } from "react";
 import { AppState, StatusBar } from "react-native";
@@ -18,9 +18,11 @@ import "./global.css";
 import themeColors from "./themeColors";
 
 export const AuthContext = createContext<{
+  authUser: User | null;
   user: UserProfile | null;
+  setAuthUser: React.Dispatch<React.SetStateAction<User | null>>;
   setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
-}>({ user: null, setUser: () => {} });
+}>({ authUser: null, user: null, setAuthUser: () => {}, setUser: () => {} });
 
 export const RealtimeContext = createContext<RealtimeContextType>({
   isOnline: false,
@@ -29,6 +31,7 @@ export const RealtimeContext = createContext<RealtimeContextType>({
 });
 
 export default function RootLayout() {
+  const [authUser, setAuthUser] = useState<User | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: OnlineUser }>(
     {}
@@ -78,13 +81,16 @@ export default function RootLayout() {
         } = await supabase.auth.getSession();
         if (session?.user && isMountedRef.current) {
           const userProfile = await getUserById(session.user.id);
+          setAuthUser(session.user);
           setUser(userProfile);
         } else {
+          setAuthUser(null);
           setUser(null);
         }
       } catch (error) {
         console.error("Error getting session:", error);
         if (isMountedRef.current) {
+          setAuthUser(null);
           setUser(null);
         }
       }
@@ -104,16 +110,19 @@ export default function RootLayout() {
         await cleanupPresence();
 
         if (session?.user) {
+          setAuthUser(session.user);
           const userProfile = await getUserById(session.user.id);
           console.log("Fetched new user profile:", userProfile?.id);
           setUser(userProfile);
         } else {
           console.log("No session, setting user to null");
+          setAuthUser(null);
           setUser(null);
           setOnlineUsers({});
         }
       } catch (error) {
         console.error("Error handling auth state change:", error);
+        setAuthUser(null);
         setUser(null);
         setOnlineUsers({});
       }
@@ -316,7 +325,7 @@ export default function RootLayout() {
         barStyle={"dark-content"}
       />
       <SubjectContextProvider>
-        <AuthContext.Provider value={{ user, setUser }}>
+        <AuthContext.Provider value={{ authUser, user, setAuthUser, setUser }}>
           <RealtimeContext.Provider
             value={{
               isOnline: Boolean(Object.keys(onlineUsers).length),
