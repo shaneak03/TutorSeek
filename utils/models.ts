@@ -20,7 +20,6 @@ export interface UserProfile {
   email: string;
   profile_icon_url: string;
   last_online_at?: string;
-  expo_push_token?: string;
   // profileDetails: TutorProfile | StudentProfile
 }
 
