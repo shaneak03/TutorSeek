@@ -9,7 +9,9 @@ import {
   useFonts,
 } from "@expo-google-fonts/poppins";
 import { RealtimeChannel, User } from "@supabase/supabase-js";
-import { Stack } from "expo-router";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+import { router, Stack } from "expo-router";
 import React, { createContext, useEffect, useRef, useState } from "react";
 import { AppState, StatusBar } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -29,6 +31,26 @@ export const RealtimeContext = createContext<RealtimeContextType>({
   onlineUsers: {},
   globalChatChannel: null,
 });
+
+async function registerForPushNotificationsAsync() {
+  if (!Device.isDevice) return null;
+
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  if (finalStatus !== 'granted') {
+    console.warn('Push notification permissions not granted!!!');
+    return null;
+  }
+
+  const tokenData = await Notifications.getExpoPushTokenAsync();
+  return tokenData.data;
+}
 
 export default function RootLayout() {
   const [authUser, setAuthUser] = useState<User | null>(null);
@@ -316,6 +338,56 @@ export default function RootLayout() {
     return () => {
       isMountedRef.current = false;
     };
+  }, []);
+
+  // For Push Notifications
+  useEffect(() => {
+    async function setupNotifications() {
+      if (!authUser?.id) return;
+
+      const token = await registerForPushNotificationsAsync();
+      if (!token) return;
+
+      const { error } = await supabase
+        .from('push_tokens')
+        .upsert(
+          {
+            user_id: authUser.id,
+            token,
+            device_name: Device.modelName || 'Unknown Device',
+          },
+          {
+            onConflict: 'user_id,token',
+          }
+        );
+
+      if (error) {
+        console.error("Failed to upsert push token:", error);
+      } else {
+        console.log("Push token saved!");
+      }
+    }
+
+    setupNotifications();
+  }, [authUser?.id]);
+
+  // Handle notifications listener
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data as { chatId?: string; messageId?: string, senderId?: string }
+      if (data?.chatId && data?.senderId) {
+        const otherUser = getUserById(data.senderId);
+        router.push({
+          // @ts-ignore
+          pathname: `/chat/${data.chatId}`,
+          params: {
+            otherUser: JSON.stringify(otherUser),
+          },
+        });
+      }
+    });
+
+    return () => subscription.remove();
   }, []);
 
   return (
