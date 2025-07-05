@@ -41,9 +41,15 @@ interface MessageItem {
 
 async function sendPushNotification(userId: string, title: string, body: string, data?: any) {
   try {
+    const session = await supabase.auth.getSession();
+    const token = session.data.session?.access_token;
+
     const response = await fetch(PUSH_FUNCTION_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` 
+      },
       body: JSON.stringify({
         userId,
         title,
