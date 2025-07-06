@@ -46,7 +46,8 @@ export default {
           ],
           category: ["BROWSABLE", "DEFAULT"]
         }
-      ]
+      ],
+      googleServicesFile: "./google-services.json",
     },
 
     web: {

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "963355628821",
+    "project_id": "tutorseek-4f461",
+    "storage_bucket": "tutorseek-4f461.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:963355628821:android:e6ac5fa2190431bf61051c",
+        "android_client_info": {
+          "package_name": "com.shaneak03.TutorSeek"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "963355628821-om916fdj5t893or8lov57tk6cluep89t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbqpZXsCC8s4Q_YuKqKXxxs3jZmovSdJs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "963355628821-om916fdj5t893or8lov57tk6cluep89t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

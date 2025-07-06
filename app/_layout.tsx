@@ -9,6 +9,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/poppins";
 import { RealtimeChannel, User } from "@supabase/supabase-js";
+import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { router, Stack } from "expo-router";
@@ -48,9 +49,25 @@ async function registerForPushNotificationsAsync() {
     return null;
   }
 
-  const tokenData = await Notifications.getExpoPushTokenAsync();
+  const tokenData = await Notifications.getExpoPushTokenAsync({
+    projectId: Constants.expoConfig?.extra?.eas.projectId
+  });
+  
+  console.log('Push token:', tokenData.data);
+  console.log('App context:', __DEV__ ? 'Development' : 'Production');
+  
   return tokenData.data;
 }
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true, 
+    shouldShowList: true
+  }),
+});
 
 export default function RootLayout() {
   const [authUser, setAuthUser] = useState<User | null>(null);
