@@ -32,6 +32,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostReviewModal from "../components/PostReviewModal";
 import UserIcon from "../components/UserIcon";
+import themeColors from "../themeColors";
 
 interface MessageItem {
   id: string;
@@ -709,7 +710,7 @@ const ChatScreen = () => {
                   value={messageText}
                   onChangeText={setMessageText}
                   placeholder='Type a message'
-                  placeholderTextColor='gray-400'
+                  placeholderTextColor={themeColors["neutral-300"]}
                   multiline
                   maxLength={1000}
                   className='font-poppins-regular text-base text-gray-900 max-h-24'

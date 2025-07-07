@@ -16,6 +16,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import themeColors from "../themeColors";
 
 const viewTutor = () => {
@@ -51,10 +52,6 @@ const viewTutor = () => {
 
     fetchDetails();
   }, [tutorId]);
-
-  const showReviewsModal = () => {
-    setIsShowAllReviews(true);
-  };
 
   const onContactTutor = async () => {
     if (!user) return;
@@ -114,7 +111,10 @@ const viewTutor = () => {
         />
         <ReviewList reviews={reviews} />
       </FullPageModal>
-      <View className='flex-1 bg-neutral-100'>
+      <SafeAreaView
+        className='flex-1 bg-neutral-100'
+        edges={["bottom", "left", "right"]}
+      >
         <ScrollView showsVerticalScrollIndicator={false}>
           <TutorCard tutor={tutor} />
           <View className='flex p-4 gap-2 border-b-hairline border-neutral-300'>
@@ -186,7 +186,7 @@ const viewTutor = () => {
             />
           </View>
         ) : null}
-      </View>
+      </SafeAreaView>
     </>
   );
 };

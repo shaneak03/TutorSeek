@@ -62,9 +62,9 @@ const Register = () => {
 
     // Update Auth Context
     if (!userData?.id) {
-      setUser(null)
+      setUser(null);
     } else {
-      const user = await getUserById(userData.id)
+      const user = await getUserById(userData.id);
       setUser(user);
     }
 
@@ -161,12 +161,7 @@ const Register = () => {
   };
 
   return (
-    <SafeAreaView className='flex-1 justify-center items-center gap-4 px-8 bg-neutral-100'>
-      <Image
-        source={require("../../assets/images/auth-image.svg")}
-        style={{ width: 240, height: 180 }}
-        contentFit='cover'
-      />
+    <SafeAreaView className='flex-1 items-center gap-4 pt-12 p-8 bg-neutral-100'>
       <View className='w-full flex-row items-center gap-2'>
         <CustomText className='font-poppins-bold text-2xl'>
           <Text>Register as </Text>
@@ -209,6 +204,7 @@ const Register = () => {
       {errorMessage && (
         <CustomText className='text-red-500'>{errorMessage}</CustomText>
       )}
+
       <LargeSolidButton
         buttonText={"Register"}
         onPress={handleRegister}
@@ -231,7 +227,7 @@ const Register = () => {
           contentFit='cover'
         />
       </TouchableHighlight>
-      <CustomText className='text-sm'>
+      <CustomText className='text-sm mt-auto'>
         <Text>Already have an account? </Text>
         <Text className='text-primary-700' onPress={navToLogin}>
           Sign in

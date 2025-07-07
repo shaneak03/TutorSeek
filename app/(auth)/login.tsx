@@ -13,7 +13,6 @@ import LargeSolidButton from "../components/LargeSolidButton";
 import RoundTextInput from "../components/RoundedTextInput";
 import themeColors from "../themeColors";
 
-
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,9 +69,9 @@ const Login = () => {
 
   const handleForgetPw = async () => {
     router.push("/forgotPassword");
-  };  
-  
-  const handleGoogleAuth = async () => {}
+  };
+
+  const handleGoogleAuth = async () => {};
 
   // // Google OAuth handler
   // GoogleSignin.configure({
@@ -142,19 +141,13 @@ const Login = () => {
   //     setErrorMessage("Google Sign-In failed. Please try again.");
   //   }
   // }
-  
 
   const navToRegister = () => {
     router.push("/register");
   };
 
   return (
-    <SafeAreaView className='flex-1 justify-center items-center gap-4 px-8 bg-neutral-100'>
-      <Image
-        source={require("../../assets/images/auth-image.svg")}
-        style={{ width: 250, height: 200 }}
-        contentFit='cover'
-      />
+    <SafeAreaView className='flex-1 bg-neutral-100 items-center gap-4 pt-12 p-8'>
       <View className='w-full flex-row items-center gap-2'>
         <CustomText className='font-poppins-bold text-2xl'>
           <Text> Login as </Text>
@@ -216,10 +209,10 @@ const Login = () => {
         />
       </TouchableHighlight>
 
-      <Pressable onPress={navToRegister}>
-        <CustomText className="text-sm">
+      <Pressable onPress={navToRegister} className='mt-auto'>
+        <CustomText className='text-sm'>
           <Text>Don&apos;t have an account? </Text>
-          <Text className="text-primary-700">Register</Text>
+          <Text className='text-primary-700'>Register</Text>
         </CustomText>
       </Pressable>
     </SafeAreaView>
