@@ -14,7 +14,7 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { router, Stack } from "expo-router";
 import React, { createContext, useEffect, useRef, useState } from "react";
-import { AppState, StatusBar } from "react-native";
+import { ActivityIndicator, AppState, StatusBar, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import SubjectContextProvider from "./contexts/subjectContext";
 import "./global.css";
@@ -39,23 +39,23 @@ async function registerForPushNotificationsAsync() {
   const { status: existingStatus } = await Notifications.getPermissionsAsync();
   let finalStatus = existingStatus;
 
-  if (existingStatus !== 'granted') {
+  if (existingStatus !== "granted") {
     const { status } = await Notifications.requestPermissionsAsync();
     finalStatus = status;
   }
 
-  if (finalStatus !== 'granted') {
-    console.warn('Push notification permissions not granted!!!');
+  if (finalStatus !== "granted") {
+    console.warn("Push notification permissions not granted!!!");
     return null;
   }
 
   const tokenData = await Notifications.getExpoPushTokenAsync({
-    projectId: Constants.expoConfig?.extra?.eas.projectId
+    projectId: Constants.expoConfig?.extra?.eas.projectId,
   });
-  
-  console.log('Push token:', tokenData.data);
-  console.log('App context:', __DEV__ ? 'Development' : 'Production');
-  
+
+  console.log("Push token:", tokenData.data);
+  console.log("App context:", __DEV__ ? "Development" : "Production");
+
   return tokenData.data;
 }
 
@@ -64,8 +64,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: false,
     shouldSetBadge: false,
-    shouldShowBanner: true, 
-    shouldShowList: true
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -89,6 +89,7 @@ async function createNotificationChannels() {
 createNotificationChannels();
 
 export default function RootLayout() {
+  const [loadingUser, setLoadingUser] = useState(false);
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<{ [key: string]: OnlineUser }>(
@@ -100,7 +101,7 @@ export default function RootLayout() {
   const isMountedRef = useRef(true);
 
   // Load fonts
-  useFonts({
+  const [fontLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_600SemiBold,
     Poppins_700Bold,
@@ -134,22 +135,27 @@ export default function RootLayout() {
   useEffect(() => {
     const getSession = async () => {
       try {
+        setLoadingUser(true);
         const {
           data: { session },
         } = await supabase.auth.getSession();
         if (session?.user && isMountedRef.current) {
-          const userProfile = await getUserById(session.user.id);
           setAuthUser(session.user);
+          const userProfile = await getUserById(session.user.id);
           setUser(userProfile);
         } else {
           setAuthUser(null);
           setUser(null);
+          setOnlineUsers({});
         }
+        setLoadingUser(false);
       } catch (error) {
         console.error("Error getting session:", error);
         if (isMountedRef.current) {
           setAuthUser(null);
           setUser(null);
+          setOnlineUsers({});
+          setLoadingUser(false);
         }
       }
     };
@@ -165,6 +171,7 @@ export default function RootLayout() {
       console.log("Auth state change event:", event, session?.user?.id);
 
       try {
+        setLoadingUser(true);
         await cleanupPresence();
 
         if (session?.user) {
@@ -178,11 +185,13 @@ export default function RootLayout() {
           setUser(null);
           setOnlineUsers({});
         }
+        setLoadingUser(false);
       } catch (error) {
         console.error("Error handling auth state change:", error);
         setAuthUser(null);
         setUser(null);
         setOnlineUsers({});
+        setLoadingUser(false);
       }
     });
 
@@ -384,19 +393,17 @@ export default function RootLayout() {
       const token = await registerForPushNotificationsAsync();
       if (!token) return;
 
-      const { error } = await supabase
-        .from('push_tokens')
-        .upsert(
-          {
-            user_id: authUser.id,
-            token,
-            device_name: Device.modelName || 'Unknown Device',
-            is_active: true,
-          },
-          {
-            onConflict: 'user_id,token',
-          }
-        );
+      const { error } = await supabase.from("push_tokens").upsert(
+        {
+          user_id: authUser.id,
+          token,
+          device_name: Device.modelName || "Unknown Device",
+          is_active: true,
+        },
+        {
+          onConflict: "user_id,token",
+        }
+      );
 
       if (error) {
         console.error("Failed to upsert push token:", error);
@@ -410,27 +417,40 @@ export default function RootLayout() {
 
   // Handle notifications listener
   useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(async (response)=> {
-      const data = response.notification.request.content.data as { chatId?: string; messageId?: string, senderId?: string }
-      if (data?.chatId && data?.senderId) {
-        try {
-          const otherUser = await getUserById(data.senderId); 
-          router.push({
-            // @ts-ignore
-            pathname: `/chat/${data.chatId}`,
-            params: {
-              otherUser: JSON.stringify(otherUser),
-            },
-          });
-        } catch (error) {
-          console.error("Failed to fetch otherUser data:", error);
-          router.push("/(tabs)/chat")
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      async response => {
+        const data = response.notification.request.content.data as {
+          chatId?: string;
+          messageId?: string;
+          senderId?: string;
+        };
+        if (data?.chatId && data?.senderId) {
+          try {
+            const otherUser = await getUserById(data.senderId);
+            router.push({
+              // @ts-ignore
+              pathname: `/chat/${data.chatId}`,
+              params: {
+                otherUser: JSON.stringify(otherUser),
+              },
+            });
+          } catch (error) {
+            console.error("Failed to fetch otherUser data:", error);
+            router.push("/(tabs)/chat");
+          }
         }
       }
-    });
+    );
 
     return () => subscription.remove();
   }, []);
+
+  if (!fontLoaded || loadingUser)
+    return (
+      <View className='flex-1 bg-neutral-100 justify-center items-center'>
+        <ActivityIndicator size='large' color={themeColors["primary-700"]} />
+      </View>
+    );
 
   return (
     <>

@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React from "react";
+import React, { useContext } from "react";
 import { TouchableOpacity } from "react-native";
+import { AuthContext } from "../_layout";
+import LoginModal from "../components/LoginModal";
 import themeColors from "../themeColors";
 
 const MyCustomTabButton = ({ children, onPress }: any) => {
@@ -16,6 +18,9 @@ const MyCustomTabButton = ({ children, onPress }: any) => {
 };
 
 const _layout = () => {
+  const { authUser } = useContext(AuthContext);
+  if (!authUser) return <LoginModal />;
+
   return (
     <Tabs
       screenOptions={{

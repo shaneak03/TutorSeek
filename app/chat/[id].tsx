@@ -485,9 +485,8 @@ const ChatScreen = () => {
           chatId: newChat.id,
           messageId: newMessage.id,
           senderId: user.id,
-        },
+        }
       );
-
     } catch (error) {
       console.error("Error sending message:", error);
       Alert.alert("Error", "Failed to send message");
@@ -620,14 +619,6 @@ const ChatScreen = () => {
 
   const displayName = `${staticOtherUser.first_name} ${staticOtherUser.last_name}`;
 
-  if (!user) {
-    return (
-      <SafeAreaView className='flex-1 bg-neutral-100 justify-center items-center'>
-        <CustomText className='text-gray-500'>Loading...</CustomText>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <>
       <PostReviewModal
@@ -668,7 +659,7 @@ const ChatScreen = () => {
                       )}`}
                 </CustomText>
               </View>
-              {user.role === "student" && (
+              {user?.role === "student" && (
                 <Pressable onPress={() => setIsShowReviewModal(true)}>
                   <Image
                     source={require("../../assets/images/review.png")}

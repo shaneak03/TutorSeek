@@ -2,7 +2,6 @@ import { getAvgRatingAndReviewCount } from "@/utils/getRoutes";
 import { postReview, updateRatingReview } from "@/utils/postRoutes";
 import { useContext, useState } from "react";
 import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
 import CustomText from "./CustomText";
 import FullPageModal from "./FullPageModal";
@@ -23,7 +22,7 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
 
   const publishReview = async () => {
     try {
-      await postReview(user.id, tutorId, rating, desc);
+      await postReview(user?.id ?? "", tutorId, rating, desc);
       const res = await getAvgRatingAndReviewCount(tutorId);
       console.log(res);
       if (res)
@@ -50,7 +49,7 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
 
   return (
     <FullPageModal title='' isVisible={isVisible} setIsVisible={setIsVisible}>
-      <SafeAreaView className='flex-1 justify-center items-center p-8 gap-8'>
+      <View className='flex-1 justify-center items-center p-8 gap-8'>
         <View>
           <CustomText className='font-poppins-semibold text-xl mb-4 text-center'>
             Leave a review
@@ -66,7 +65,7 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
           style={{ minHeight: 150, textAlignVertical: "top" }}
         />
         <LargeSolidButton buttonText='Publish review' onPress={publishReview} />
-      </SafeAreaView>
+      </View>
     </FullPageModal>
   );
 };

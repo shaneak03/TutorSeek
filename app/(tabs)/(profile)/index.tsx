@@ -33,7 +33,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../../_layout";
 import CoreProfileDetails from "../../components/CoreProfileDetails";
 import CustomText from "../../components/CustomText";
-import LoginModal from "../../components/LoginModal";
 import ProfileIcon, { updateProfileIcon } from "../../components/ProfileIcon";
 
 export type Subject = { subject: string; level: string; id: number };
@@ -126,7 +125,6 @@ const Profile = () => {
       console.log("Push token marked as inactive");
     }
     await supabase.auth.signOut();
-    setUser(null);
     router.push("/login");
   };
 
@@ -182,98 +180,91 @@ const Profile = () => {
 
   const bottomPadding = isEditing ? "pb-28" : "pb-9";
 
-  if (!authUser) return <LoginModal />;
-
-  if (!user) {
-    return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-neutral-100">
-        <CustomText>Loading your profile...</CustomText>
-      </SafeAreaView>
-    );
-  }
-  
-  else
-    return (
-      <SafeAreaView className='flex-1 bg-neutral-100' edges={["top"]}>
+  return (
+    <SafeAreaView
+      className='flex-1 bg-neutral-100 '
+      edges={["top", "right", "left"]}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
         <ProfileNav
           isReviews={isReviews}
           setIsReviews={setIsReviews}
           setIsEditing={setIsEditing}
         />
-
+        {isEditing && !isReviews && (
+          <View
+            className='flex-row justify-end w-full absolute bottom-0 pb-4 z-10 px-8'
+            pointerEvents='box-none'
+          >
+            <Pressable
+              onPress={handleSave}
+              className='bg-primary-700 rounded-full p-4'
+            >
+              <Feather
+                name='check'
+                size={20}
+                color={themeColors["neutral-100"]}
+              />
+            </Pressable>
+          </View>
+        )}
         {isReviews ? (
           <ProfileReviews role={userData.role} id={userData.id} />
         ) : (
-          <KeyboardAvoidingView
-            className='flex-1'
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
+          <ScrollView
+            className='pt-4 px-8'
+            contentContainerClassName={"items-center gap-4 " + bottomPadding}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                enabled={!isEditing}
+              />
+            }
           >
-            <ScrollView
-              className='flex-1 pt-4 px-8'
-              contentContainerClassName={"items-center gap-4 " + bottomPadding}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  enabled={!isEditing}
-                />
-              }
+            <CustomText className='font-poppins-bold text-xl'>
+              {userData?.role === "tutor" ? "Tutor" : "Student"}
+            </CustomText>
+            <ProfileIcon
+              avatarUrl={avatarUrl}
+              setAvatarUrl={setAvatarUrl}
+              isEditing={isEditing}
+            />
+
+            <CustomText
+              onPress={() => setIsEditing(true)}
+              className='underline text-primary-700'
             >
-              <CustomText className='font-poppins-bold text-xl'>
-                {userData?.role === "tutor" ? "Tutor" : "Student"}
-              </CustomText>
-              <ProfileIcon
-                avatarUrl={avatarUrl}
-                setAvatarUrl={setAvatarUrl}
+              Edit profile
+            </CustomText>
+
+            <CoreProfileDetails
+              profileData={userData}
+              setProfileData={setUserData}
+              isEditing={isEditing}
+            />
+            {userData.role === "tutor" && (
+              <TutorProfileDetails
+                tutorData={tutorData}
+                setTutorData={setTutorData}
                 isEditing={isEditing}
               />
-
-              <CustomText
-                onPress={() => setIsEditing(true)}
-                className='underline text-primary-700'
-              >
-                Edit profile
-              </CustomText>
-
-              <CoreProfileDetails
-                profileData={userData}
-                setProfileData={setUserData}
-                isEditing={isEditing}
-              />
-              {userData.role === "tutor" && (
-                <TutorProfileDetails
-                  tutorData={tutorData}
-                  setTutorData={setTutorData}
-                  isEditing={isEditing}
-                />
-              )}
-
-              <CustomText
-                onPress={handleLogout}
-                className='underline text-center text-neutral-300'
-              >
-                Sign out
-              </CustomText>
-            </ScrollView>
-            {isEditing && (
-              <View className='flex-row justify-end w-full absolute bottom-0 pb-4 z-10 px-8'>
-                <Pressable
-                  onPress={handleSave}
-                  className='bg-primary-700 rounded-full p-4'
-                >
-                  <Feather
-                    name='check'
-                    size={20}
-                    color={themeColors["neutral-100"]}
-                  />
-                </Pressable>
-              </View>
             )}
-          </KeyboardAvoidingView>
+            <CustomText
+              onPress={handleLogout}
+              className='underline text-center text-neutral-300'
+            >
+              Sign out
+            </CustomText>
+          </ScrollView>
         )}
-      </SafeAreaView>
-    );
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
 };
 
 export default Profile;
