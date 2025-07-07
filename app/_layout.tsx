@@ -69,6 +69,25 @@ Notifications.setNotificationHandler({
   }),
 });
 
+async function createNotificationChannels() {
+  await Notifications.setNotificationChannelAsync("messages", {
+    name: "Messages",
+    importance: Notifications.AndroidImportance.HIGH,
+  });
+
+  await Notifications.setNotificationChannelAsync("reviews", {
+    name: "Reviews",
+    importance: Notifications.AndroidImportance.HIGH,
+  });
+
+  await Notifications.setNotificationChannelAsync("default", {
+    name: "Default",
+    importance: Notifications.AndroidImportance.DEFAULT,
+  });
+}
+
+createNotificationChannels();
+
 export default function RootLayout() {
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -372,6 +391,7 @@ export default function RootLayout() {
             user_id: authUser.id,
             token,
             device_name: Device.modelName || 'Unknown Device',
+            is_active: true,
           },
           {
             onConflict: 'user_id,token',
@@ -390,17 +410,22 @@ export default function RootLayout() {
 
   // Handle notifications listener
   useEffect(() => {
-    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(async (response)=> {
       const data = response.notification.request.content.data as { chatId?: string; messageId?: string, senderId?: string }
       if (data?.chatId && data?.senderId) {
-        const otherUser = getUserById(data.senderId);
-        router.push({
-          // @ts-ignore
-          pathname: `/chat/${data.chatId}`,
-          params: {
-            otherUser: JSON.stringify(otherUser),
-          },
-        });
+        try {
+          const otherUser = await getUserById(data.senderId); 
+          router.push({
+            // @ts-ignore
+            pathname: `/chat/${data.chatId}`,
+            params: {
+              otherUser: JSON.stringify(otherUser),
+            },
+          });
+        } catch (error) {
+          console.error("Failed to fetch otherUser data:", error);
+          router.push("/(tabs)/chat")
+        }
       }
     });
 

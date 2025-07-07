@@ -118,9 +118,16 @@ const Profile = () => {
   }, [user, fetchProfileData, isFocused, isReviews]);
 
   const handleLogout = async () => {
-    router.push("/login");
+    if (authUser?.id) {
+      await supabase
+        .from("push_tokens")
+        .update({ is_active: false })
+        .eq("user_id", authUser.id);
+      console.log("Push token marked as inactive");
+    }
     await supabase.auth.signOut();
     setUser(null);
+    router.push("/login");
   };
 
   const handleSave = async () => {
