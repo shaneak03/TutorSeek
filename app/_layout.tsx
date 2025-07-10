@@ -420,7 +420,6 @@ export default function RootLayout() {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       async response => {
         const notif = response.notification.request.content.data as Notification;
-        const msgType = notif?.type;
         if (notif.type === "message") {
           const data = notif.data
           try {
@@ -437,14 +436,7 @@ export default function RootLayout() {
             router.push("/(tabs)/chat");
           }
         } else if (notif.type === "review") {
-          const data = notif.data;
-          try {
-            // @ts-ignore
-            router.push(`/viewTutor/${data.tutorId}/reviews`);
-          } catch (error) {
-            console.error("Failed to fetch otherUser data:", error);
-            router.push("/(tabs)/(home)");
-          }
+          router.push("/(tabs)/(profile)");
         }
       }
     );
