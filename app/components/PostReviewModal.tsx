@@ -1,5 +1,6 @@
 import { getAvgRatingAndReviewCount } from "@/utils/getRoutes";
 import { postReview, updateRatingReview } from "@/utils/postRoutes";
+import { sendPushNotification } from "@/utils/pushNotification";
 import { useContext, useState } from "react";
 import { View } from "react-native";
 import { AuthContext } from "../_layout";
@@ -23,6 +24,19 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
   const publishReview = async () => {
     try {
       await postReview(user?.id ?? "", tutorId, rating, desc);
+      await sendPushNotification(
+        tutorId,
+        "New review posted!",
+        `${user?.first_name} ${user?.last_name} has posted a new review on your profile`,
+        "review",
+        user?.profile_icon_url,
+        {
+          tutorId: tutorId,
+          senderId: user?.id ?? "",
+          review: desc,
+          rating: rating,
+        }
+      )
       const res = await getAvgRatingAndReviewCount(tutorId);
       console.log(res);
       if (res)

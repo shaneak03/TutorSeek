@@ -110,3 +110,26 @@ export interface RealtimeContextType {
   onlineUsers: { [key: string]: OnlineUser };
   globalChatChannel: RealtimeChannel | null
 }
+
+export interface MsgNotificationData {
+  chatId: string;
+  messageId: string;
+  senderId: string;
+}
+
+export interface ReviewNotificationData {
+  tutorId: string;
+  senderId: string;
+  review: string;
+  rating: number;
+}
+
+export type Notification =
+  | {
+      type: "message";
+      data: MsgNotificationData;
+    }
+  | {
+      type: "review";
+      data: ReviewNotificationData;
+    };

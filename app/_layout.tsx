@@ -1,5 +1,5 @@
 import { getUserById } from "@/utils/getRoutes";
-import { OnlineUser, RealtimeContextType, UserProfile } from "@/utils/models";
+import { Notification, OnlineUser, RealtimeContextType, UserProfile } from "@/utils/models";
 import { updateLastSeen } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
 import {
@@ -419,24 +419,31 @@ export default function RootLayout() {
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       async response => {
-        const data = response.notification.request.content.data as {
-          chatId?: string;
-          messageId?: string;
-          senderId?: string;
-        };
-        if (data?.chatId && data?.senderId) {
+        const notif = response.notification.request.content.data as Notification;
+        const msgType = notif?.type;
+        if (notif.type === "message") {
+          const data = notif.data
           try {
-            const otherUser = await getUserById(data.senderId);
-            router.push({
-              // @ts-ignore
-              pathname: `/chat/${data.chatId}`,
-              params: {
-                otherUser: JSON.stringify(otherUser),
-              },
-            });
+              const otherUser = await getUserById(data.senderId);
+              router.push({
+                // @ts-ignore
+                pathname: `/chat/${data.chatId}`,
+                params: {
+                  otherUser: JSON.stringify(otherUser),
+                },
+              });
           } catch (error) {
             console.error("Failed to fetch otherUser data:", error);
             router.push("/(tabs)/chat");
+          }
+        } else if (notif.type === "review") {
+          const data = notif.data;
+          try {
+            // @ts-ignore
+            router.push(`/viewTutor/${data.tutorId}/reviews`);
+          } catch (error) {
+            console.error("Failed to fetch otherUser data:", error);
+            router.push("/(tabs)/(home)");
           }
         }
       }
