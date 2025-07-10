@@ -482,6 +482,7 @@ const ChatScreen = () => {
         `${user.first_name} ${user.last_name}`,
         messageContent,
         "message",
+        user.profile_icon_url,
         {
           chatId: newChat.id,
           messageId: newMessage.id,

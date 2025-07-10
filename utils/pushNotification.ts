@@ -5,6 +5,7 @@ export async function sendPushNotification(
     title: string, 
     body: string, 
     notifType: "message" | "review",
+    sender_profile_icon_url?: string,
     data?: any, 
 
 ) {
@@ -16,6 +17,7 @@ export async function sendPushNotification(
         title,
         body,
         notifType,
+        sender_profile_icon_url,
         data
     }
 
