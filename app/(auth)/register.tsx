@@ -64,7 +64,14 @@ const Register = () => {
       const { error: userError } = await supabase
         .from("users")
         .insert([{ id: userData?.id, role, email: userData?.email }]);
-      if (userError) return console.error("Error creating user profile:", userError);
+      if (userError) {
+        if (userError.code === "23503") {
+          setErrorMessage("This email is already registered. Please log in.");
+        } else {
+          setErrorMessage("Error creating user profile. Please try again.");
+        }
+        return console.error("Error creating user profile:", userError);
+      }
 
       if (isTutor) {
         const { error: tutorError } = await supabase
