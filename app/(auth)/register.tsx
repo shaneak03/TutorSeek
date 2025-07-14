@@ -1,15 +1,16 @@
 import { getUserById } from "@/utils/getRoutes";
 import { createTimeTable } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
+import { AuthContext } from "../_layout";
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
 import { Text, TouchableHighlight, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthContext } from "../_layout";
 import CustomDropdown from "../components/CustomDropdown";
 import CustomText from "../components/CustomText";
+import EmailVerificationModal from "../components/EmailVerificationModal";
 import LargeSolidButton from "../components/LargeSolidButton";
 import RoundTextInput from "../components/RoundedTextInput";
 import themeColors from "../themeColors";
@@ -20,56 +21,83 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isTutor, setIsTutor] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { setUser } = useContext(AuthContext);
+  const [savedEmail, setSavedEmail] = useState("");
+  const [verificationPending, setVerificationPending] = useState(false);
   const router = useRouter();
+
+  const { setUser } = useContext(AuthContext);
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
       return setErrorMessage("Passwords do not match");
     }
 
-    let { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
 
-    if (error) {
-      setErrorMessage(error.message);
-      return console.log(error.message);
+      console.log("Supabase signUp response:", data);
+
+      if (error) {
+        setErrorMessage(error.message);
+        return console.error("Error during registration:", error.message);
+      }
+
+      setSavedEmail(email);
+
+      if (data.user?.user_metadata?.email_verified === false) {
+        console.log("Email not verified, setting verificationPending to true");
+        setVerificationPending(true);
+        return;
+      } else {
+        console.log(
+          "Email already verified, email_verified:",
+          data.user?.user_metadata?.email_verified
+        );
+      }
+
+      const role = isTutor ? "tutor" : "student";
+      const userData = data.user;
+
+      const { error: userError } = await supabase
+        .from("users")
+        .insert([{ id: userData?.id, role, email: userData?.email }]);
+      if (userError) {
+        if (userError.code === "23503") {
+          setErrorMessage("This email is already registered. Please log in.");
+        } else {
+          setErrorMessage("Error creating user profile. Please try again.");
+        }
+        return console.error("Error creating user profile:", userError);
+      }
+
+      if (isTutor) {
+        const { error: tutorError } = await supabase
+          .from("tutors")
+          .insert([{ id: userData?.id }]);
+        if (tutorError) console.error("Error creating tutor profile:", tutorError);
+        await createTimeTable(userData?.id ?? "");
+      } else {
+        const { error: studentError } = await supabase
+          .from("students")
+          .insert([{ id: userData?.id }]);
+        if (studentError) console.error("Error creating student profile:", studentError);
+      }
+
+      if (!userData?.id) {
+        setUser(null);
+      } else {
+        const user = await getUserById(userData.id);
+        setUser(user);
+      }
+
+      clearPwInputs();
+    } catch (error) {
+      console.error("Error during registration:", error);
+      setErrorMessage("An error occurred during registration. Please try again.");
     }
-
-    const role = isTutor ? "tutor" : "student";
-    const userData = data.session?.user;
-
-    //create user
-    const { error: userError } = await supabase
-      .from("users")
-      .insert([{ id: userData?.id, role, email: userData?.email }]);
-    if (userError) return console.log(userError);
-
-    if (isTutor) {
-      const { error: tutorError } = await supabase
-        .from("tutors")
-        .insert([{ id: userData?.id }]);
-      if (tutorError) console.log(tutorError);
-      await createTimeTable(userData?.id ?? "");
-    } else {
-      const { error: studentError } = await supabase
-        .from("students")
-        .insert([{ id: userData?.id }]);
-      if (studentError) console.log(studentError);
-    }
-
-    // Update Auth Context
-    if (!userData?.id) {
-      setUser(null);
-    } else {
-      const user = await getUserById(userData.id);
-      setUser(user);
-    }
-
-    router.push("/(tabs)/(profile)");
-    clearPwInputs();
   };
 
   const handleGoogleAuth = async () => {};
@@ -109,7 +137,7 @@ const Register = () => {
   //           const role = isTutor ? "tutor" : "student";
   //           const { error: userError } = await supabase
   //             .from("users")
-  //             .insert([{ id: user.id, role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
+  //             .insert([{ id: user.id, role: user.role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
   //           if (userError) {
   //             console.error("Error inserting user profile:", userError);
   //           }
@@ -233,6 +261,14 @@ const Register = () => {
           Sign in
         </Text>
       </CustomText>
+      <EmailVerificationModal
+        visible={verificationPending}
+        onClose={() => {
+          setVerificationPending(false);
+          router.push("/login");
+        }}
+        email={savedEmail} // Pass the saved email to the modal
+      />
     </SafeAreaView>
   );
 };

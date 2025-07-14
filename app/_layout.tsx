@@ -19,7 +19,7 @@ import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { router, Stack } from "expo-router";
-import React, { createContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, AppState, StatusBar, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -32,7 +32,16 @@ export const AuthContext = createContext<{
   user: UserProfile | null;
   setAuthUser: React.Dispatch<React.SetStateAction<User | null>>;
   setUser: React.Dispatch<React.SetStateAction<UserProfile | null>>;
-}>({ authUser: null, user: null, setAuthUser: () => {}, setUser: () => {} });
+  verificationPending: boolean;
+  setVerificationPending: (value: boolean) => void;
+}>({
+  authUser: null,
+  user: null,
+  setAuthUser: () => {},
+  setUser: () => {},
+  verificationPending: false,
+  setVerificationPending: () => {},
+});
 
 export const RealtimeContext = createContext<RealtimeContextType>({
   isOnline: false,
@@ -104,6 +113,7 @@ export default function RootLayout() {
   );
   const [globalChatChannel, setGlobalChatChannel] =
     useState<RealtimeChannel | null>(null);
+  const [verificationPending, setVerificationPending] = useState(false);
   const channelRef = useRef<any>(null);
   const isMountedRef = useRef(true);
 
@@ -114,30 +124,15 @@ export default function RootLayout() {
     Poppins_700Bold,
   });
 
-  const cleanupPresence = async () => {
+  const cleanupPresence = useCallback(async () => {
     if (channelRef.current && user?.id) {
       try {
         await channelRef.current.untrack();
       } catch (err) {
-        console.error("Error untracking during cleanup:", err);
-      }
-      channelRef.current.unsubscribe();
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
-      console.log("Cleaned up presence channel");
-    }
-
-    if (globalChatChannel) {
-      try {
-        globalChatChannel.unsubscribe();
-        supabase.removeChannel(globalChatChannel);
-        setGlobalChatChannel(null);
-        console.log("Cleaned up global chat channel");
-      } catch (err) {
-        console.error("Error cleaning up global chat channel:", err);
+        console.error("Error untracking presence:", err);
       }
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     const getSession = async () => {
@@ -383,8 +378,12 @@ export default function RootLayout() {
 
     return () => {
       cleanupPresence();
+      if (globalChatChannel) {
+        globalChatChannel.unsubscribe();
+        console.log("Unsubscribed from global chat channel");
+      }
     };
-  }, [user?.id]);
+  }, [user?.id, cleanupPresence]);
 
   useEffect(() => {
     return () => {
@@ -452,6 +451,14 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, []);
 
+  useEffect(() => {
+    if (verificationPending) {
+      console.log("Verification pending, showing modal");
+    } else {
+      console.log("Verification complete or not required");
+    }
+  }, [verificationPending]);
+
   if (!fontLoaded || loadingUser)
     return (
       <View className='flex-1 bg-neutral-100 justify-center items-center'>
@@ -466,7 +473,7 @@ export default function RootLayout() {
         barStyle={"dark-content"}
       />
       <SubjectContextProvider>
-        <AuthContext.Provider value={{ authUser, user, setAuthUser, setUser }}>
+        <AuthContext.Provider value={{ authUser, user, setAuthUser, setUser, verificationPending, setVerificationPending }}>
           <RealtimeContext.Provider
             value={{
               isOnline: Boolean(Object.keys(onlineUsers).length),

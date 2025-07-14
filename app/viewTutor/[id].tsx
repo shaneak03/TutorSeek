@@ -13,13 +13,14 @@ import {
   getTutor,
 } from "@/utils/getRoutes";
 import { FontAwesome } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState, } from "react";
 import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import themeColors from "../themeColors";
 
-const viewTutor = () => {
+const ViewTutor = () => {
   const router = useRouter();
   const { user } = useContext(AuthContext);
   const params = useLocalSearchParams();
@@ -52,6 +53,22 @@ const viewTutor = () => {
 
     fetchDetails();
   }, [tutorId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchReviews = async () => {
+        try {
+          const reviewsRes = await getReviewsByTutorId(tutorId); 
+          setReviews(reviewsRes); 
+          console.log("Fetched updated reviews:", reviewsRes);
+        } catch (error) {
+          console.error("Failed to fetch reviews:", error);
+        }
+      };
+
+      fetchReviews();
+    }, [tutorId]) 
+  );
 
   const onContactTutor = async () => {
     if (!user) return;
@@ -191,4 +208,4 @@ const viewTutor = () => {
   );
 };
 
-export default viewTutor;
+export default ViewTutor;
