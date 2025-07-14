@@ -28,6 +28,9 @@ export const getTutors = async (filters: filterOptions) => {
   if (filters.rating > 1) {
     query = query.gte("rating_count", filters.rating);
   }
+  if (filters.location !== "") {
+    query = query.eq("location", filters.location);
+  }
 
   const { data, error } = await query;
   if (error) {

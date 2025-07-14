@@ -182,7 +182,7 @@ const Profile = () => {
 
   return (
     <SafeAreaView
-      className='flex-1 bg-neutral-100 '
+      className='flex-1 bg-neutral-100 relative'
       edges={["top", "right", "left"]}
     >
       <KeyboardAvoidingView

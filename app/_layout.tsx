@@ -1,7 +1,13 @@
 import { getUserById } from "@/utils/getRoutes";
-import { Notification, OnlineUser, RealtimeContextType, UserProfile } from "@/utils/models";
+import {
+  Notification,
+  OnlineUser,
+  RealtimeContextType,
+  UserProfile,
+} from "@/utils/models";
 import { updateLastSeen } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
+import toastConfig from "@/utils/toastConfig";
 import {
   Poppins_400Regular,
   Poppins_600SemiBold,
@@ -16,6 +22,7 @@ import { router, Stack } from "expo-router";
 import React, { createContext, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, AppState, StatusBar, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import SubjectContextProvider from "./contexts/subjectContext";
 import "./global.css";
 import themeColors from "./themeColors";
@@ -419,18 +426,19 @@ export default function RootLayout() {
   useEffect(() => {
     const subscription = Notifications.addNotificationResponseReceivedListener(
       async response => {
-        const notif = response.notification.request.content.data as Notification;
+        const notif = response.notification.request.content
+          .data as Notification;
         if (notif.type === "message") {
-          const data = notif.data
+          const data = notif.data;
           try {
-              const otherUser = await getUserById(data.senderId);
-              router.push({
-                // @ts-ignore
-                pathname: `/chat/${data.chatId}`,
-                params: {
-                  otherUser: JSON.stringify(otherUser),
-                },
-              });
+            const otherUser = await getUserById(data.senderId);
+            router.push({
+              // @ts-ignore
+              pathname: `/chat/${data.chatId}`,
+              params: {
+                otherUser: JSON.stringify(otherUser),
+              },
+            });
           } catch (error) {
             console.error("Failed to fetch otherUser data:", error);
             router.push("/(tabs)/chat");
@@ -478,6 +486,7 @@ export default function RootLayout() {
           </RealtimeContext.Provider>
         </AuthContext.Provider>
       </SubjectContextProvider>
+      <Toast config={toastConfig} visibilityTime={2500} />
     </>
   );
 }

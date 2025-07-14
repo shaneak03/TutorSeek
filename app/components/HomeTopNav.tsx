@@ -17,6 +17,7 @@ export type filterOptions = {
   rating: number;
   minPrice: number;
   maxPrice: number;
+  location: string;
   sortBy: "rating_desc" | "rating_asc" | "price_desc" | "price_asc";
 };
 

@@ -18,19 +18,24 @@ const Index = () => {
     rating: 1,
     minPrice: 0,
     maxPrice: 200,
+    location: "",
     sortBy: "rating_desc",
   });
 
+  //update location filter when user changes location setting
   useEffect(() => {
-    if (!user) return;
+    if (!user || filters.location === "") return;
+    setFilters(filters => ({ ...filters, location: user.location }));
+  }, [user]);
 
+  useEffect(() => {
     const fetchTutorData = async () => {
       const result = await getTutors(filters);
       if (result) setTutors(result);
     };
 
     fetchTutorData();
-  }, [user, filters]);
+  }, [filters]);
 
   const onRefresh = async () => {
     setRefreshing(true);

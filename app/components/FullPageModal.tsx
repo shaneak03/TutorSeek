@@ -1,6 +1,8 @@
+import toastConfig from "@/utils/toastConfig";
 import { AntDesign } from "@expo/vector-icons";
 import { Modal, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 
@@ -32,6 +34,7 @@ const FullPageModal = ({ isVisible, setIsVisible, title, children }: props) => {
         </View>
         {children}
       </SafeAreaView>
+      <Toast config={toastConfig} visibilityTime={2500} />
     </Modal>
   );
 };

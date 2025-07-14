@@ -3,6 +3,7 @@ import { Feather } from "@expo/vector-icons";
 import { View } from "react-native";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
+import LocationPicker from "./LocationPicker";
 import RoundTextInput from "./RoundedTextInput";
 
 type props = {
@@ -14,7 +15,6 @@ type props = {
 export default function CoreProfileDetails({
   profileData,
   setProfileData,
-
   isEditing,
 }: props) {
   return (
@@ -61,12 +61,9 @@ export default function CoreProfileDetails({
       </View>
       <View className='w-full'>
         <CustomText className='font-poppins-semibold mb-2'>Location</CustomText>
-        <RoundTextInput
-          value={profileData.location}
-          onChangeText={text =>
-            setProfileData(data => ({ ...data, location: text }))
-          }
-          placeholder='Enter your location'
+        <LocationPicker
+          profileData={profileData}
+          setProfileData={setProfileData}
           isEditing={isEditing}
         />
       </View>

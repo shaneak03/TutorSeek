@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import "dotenv/config";
 
 export default {
   expo: {
@@ -17,19 +17,28 @@ export default {
       supportsTablet: true,
       bundleIdentifier: "com.shaneak03.TutorSeek",
       infoPlist: {
+        NSLocationWhenInUseUsageDescription: "This app uses your location",
+        NSLocationAlwaysAndWhenInUseUsageDescription:
+          "This app uses your location",
         CFBundleURLTypes: [
           {
-            CFBundleURLSchemes: ["tutorseek"]
-          }
+            CFBundleURLSchemes: ["tutorseek"],
+          },
         ],
-        LSApplicationQueriesSchemes: ["googlechrome", "googlechromes"]
-      }
+        LSApplicationQueriesSchemes: ["googlechrome", "googlechromes"],
+      },
     },
 
     android: {
+      permissions: [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+      ],
       adaptiveIcon: {
         foregroundImage: "./assets/images/TutorSeek-logo.png",
-        backgroundColor: "#ffffff"
+        backgroundColor: "#ffffff",
       },
       edgeToEdgeEnabled: true,
       package: "com.shaneak03.TutorSeek",
@@ -41,11 +50,11 @@ export default {
             {
               scheme: "tutorseek",
               host: "auth",
-              pathPrefix: "/callback"
-            }
+              pathPrefix: "/callback",
+            },
           ],
-          category: ["BROWSABLE", "DEFAULT"]
-        }
+          category: ["BROWSABLE", "DEFAULT"],
+        },
       ],
       googleServicesFile: "./google-services.json",
     },
@@ -53,7 +62,7 @@ export default {
     web: {
       bundler: "metro",
       output: "static",
-      favicon: "./assets/images/TutorSeek-logo.png"
+      favicon: "./assets/images/TutorSeek-logo.png",
     },
 
     plugins: [
@@ -64,40 +73,47 @@ export default {
           image: "./assets/images/TutorSeek-logo.png",
           imageWidth: 200,
           resizeMode: "contain",
-          backgroundColor: "#ffffff"
-        }
+          backgroundColor: "#ffffff",
+        },
       ],
       [
         "expo-build-properties",
         {
           ios: {
-            useFrameworks: "static"
-          }
-        }
+            useFrameworks: "static",
+          },
+        },
       ],
       [
         "@react-native-google-signin/google-signin",
         {
-          iosUrlScheme: "com.googleusercontent.apps.176743680156-re5uumu2bi6bhucnrk6r1ndcpro0l908"
-        }
+          iosUrlScheme:
+            "com.googleusercontent.apps.176743680156-re5uumu2bi6bhucnrk6r1ndcpro0l908",
+        },
       ],
-      "expo-web-browser"
+      [
+        "expo-location",
+        {
+          isAndroidForegroundServiceEnabled: "Allow foreground location access",
+        },
+      ],
+      "expo-web-browser",
     ],
 
     experiments: {
-      typedRoutes: true
+      typedRoutes: true,
     },
 
     extra: {
       router: {
-        origin: false
+        origin: false,
       },
       eas: {
         // projectId: "a758d76d-ba56-49b4-b7d9-786b02ad94f4"
-        projectId: "6e950af5-0914-48fb-b766-e497aff3f542"
+        projectId: "6e950af5-0914-48fb-b766-e497aff3f542",
       },
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
-      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY
-    }
-  }
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+    },
+  },
 };

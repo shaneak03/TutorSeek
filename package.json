@@ -46,6 +46,7 @@
     "expo-image-picker": "~16.1.4",
     "expo-linear-gradient": "~14.1.5",
     "expo-linking": "~7.1.5",
+    "expo-location": "~18.1.6",
     "expo-notifications": "~0.31.3",
     "expo-router": "~5.1.1",
     "expo-splash-screen": "~0.30.9",
@@ -66,14 +67,16 @@
     "react-native-gesture-handler": "~2.24.0",
     "react-native-radio-buttons-group": "^3.1.0",
     "react-native-reanimated": "~3.17.4",
+    "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-svg": "15.11.2",
+    "react-native-toast-message": "^2.3.3",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
+    "sg-areas": "^1.0.2",
     "tailwind-merge": "^3.3.0",
-    "tailwindcss": "^3.4.17",
-    "react-native-safe-area-context": "5.4.0"
+    "tailwindcss": "^3.4.17"
   },
   "expo": {
     "doctor": {
