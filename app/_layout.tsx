@@ -5,7 +5,7 @@ import {
   RealtimeContextType,
   UserProfile,
 } from "@/utils/models";
-import { updateLastSeen } from "@/utils/postRoutes";
+import { createTimeTable, updateLastSeen } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
 import toastConfig from "@/utils/toastConfig";
 import {
@@ -17,9 +17,16 @@ import {
 import { RealtimeChannel, User } from "@supabase/supabase-js";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
+import * as Linking from "expo-linking";
 import * as Notifications from "expo-notifications";
-import { router, Stack } from "expo-router";
-import React, { createContext, useCallback, useEffect, useRef, useState } from "react";
+import { Stack, useRouter } from "expo-router";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { ActivityIndicator, AppState, StatusBar, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -105,6 +112,7 @@ async function createNotificationChannels() {
 createNotificationChannels();
 
 export default function RootLayout() {
+  const router = useRouter();
   const [loadingUser, setLoadingUser] = useState(false);
   const [authUser, setAuthUser] = useState<User | null>(null);
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -116,6 +124,7 @@ export default function RootLayout() {
   const [verificationPending, setVerificationPending] = useState(false);
   const channelRef = useRef<any>(null);
   const isMountedRef = useRef(true);
+  const isVerifyingUserRef = useRef(false);
 
   // Load fonts
   const [fontLoaded] = useFonts({
@@ -169,25 +178,27 @@ export default function RootLayout() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!isMountedRef.current) return;
+      console.log("verifying user:" + isVerifyingUserRef.current);
+      if (isVerifyingUserRef.current) return;
 
       console.log("Auth state change event:", event, session?.user?.id);
 
       try {
-        setLoadingUser(true);
         await cleanupPresence();
 
         if (session?.user) {
+          setLoadingUser(true);
           setAuthUser(session.user);
-          const userProfile = await getUserById(session.user.id);
-          console.log("Fetched new user profile:", userProfile?.id);
-          setUser(userProfile);
+          const userProfileData = await getUserById(session.user.id);
+          console.log("Fetched new user profile:", userProfileData?.id);
+          setUser(userProfileData);
+          setLoadingUser(false);
         } else {
           console.log("No session, setting user to null");
           setAuthUser(null);
           setUser(null);
           setOnlineUsers({});
         }
-        setLoadingUser(false);
       } catch (error) {
         console.error("Error handling auth state change:", error);
         setAuthUser(null);
@@ -199,6 +210,83 @@ export default function RootLayout() {
 
     return () => {
       subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleDeepLink = async ({ url }: { url: string }) => {
+      try {
+        console.log("RECEIVED URL");
+        isVerifyingUserRef.current = true;
+        const hash = url.split("#")[1];
+        const params = new URLSearchParams(hash);
+        const access_token = params.get("access_token") ?? "";
+        const refresh_token = params.get("refresh_token") ?? "";
+        const type = params.get("type") ?? "";
+
+        if (type !== "signup") {
+          return console.log("Not verfication url");
+        }
+
+        const { data, error } = await supabase.auth.setSession({
+          access_token,
+          refresh_token,
+        });
+        if (error) throw new Error(error.message);
+        const userData = data.user;
+
+        if (!userData) {
+          throw new Error("Failed to set session from url params");
+        }
+
+        const role = userData?.user_metadata?.role;
+
+        const { error: userError } = await supabase
+          .from("users")
+          .insert([{ id: userData?.id, role, email: userData?.email }]);
+
+        if (userError) {
+          throw new Error("Error creating user profile:" + userError.message);
+        }
+
+        if (role === "tutor") {
+          const { error: tutorError } = await supabase
+            .from("tutors")
+            .insert([{ id: userData?.id }]);
+          if (tutorError)
+            throw new Error("Error creating tutor profile:" + tutorError);
+          await createTimeTable(userData?.id ?? "");
+        } else {
+          const { error: studentError } = await supabase
+            .from("students")
+            .insert([{ id: userData?.id }]);
+          if (studentError)
+            throw new Error("Error creating student profile:" + studentError);
+        }
+        const user = await getUserById(userData.id);
+        setUser(user);
+        setAuthUser(userData);
+        router.push("/(tabs)/(profile)");
+        isVerifyingUserRef.current = false;
+      } catch (error) {
+        console.log(error);
+        isVerifyingUserRef.current = false;
+      }
+    };
+
+    const listener = Linking.addEventListener("url", handleDeepLink);
+
+    // Handle app opened from closed state
+    const handleFromAppOpen = async () => {
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        await handleDeepLink({ url: initialUrl });
+      }
+    };
+    handleFromAppOpen();
+
+    return () => {
+      listener.remove();
     };
   }, []);
 
@@ -451,14 +539,6 @@ export default function RootLayout() {
     return () => subscription.remove();
   }, []);
 
-  useEffect(() => {
-    if (verificationPending) {
-      console.log("Verification pending, showing modal");
-    } else {
-      console.log("Verification complete or not required");
-    }
-  }, [verificationPending]);
-
   if (!fontLoaded || loadingUser)
     return (
       <View className='flex-1 bg-neutral-100 justify-center items-center'>
@@ -473,7 +553,16 @@ export default function RootLayout() {
         barStyle={"dark-content"}
       />
       <SubjectContextProvider>
-        <AuthContext.Provider value={{ authUser, user, setAuthUser, setUser, verificationPending, setVerificationPending }}>
+        <AuthContext.Provider
+          value={{
+            authUser,
+            user,
+            setAuthUser,
+            setUser,
+            verificationPending,
+            setVerificationPending,
+          }}
+        >
           <RealtimeContext.Provider
             value={{
               isOnline: Boolean(Object.keys(onlineUsers).length),

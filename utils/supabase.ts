@@ -4,11 +4,16 @@ import Constants from "expo-constants";
 import "react-native-url-polyfill/auto";
 
 // First, check if extra exists
-const extra = Constants.expoConfig && Constants.expoConfig.extra ? Constants.expoConfig.extra : {};
+const extra =
+  Constants.expoConfig && Constants.expoConfig.extra
+    ? Constants.expoConfig.extra
+    : {};
 
 // Then get the variables or default to empty string
-const supabaseUrl = typeof extra.supabaseUrl === "string" ? extra.supabaseUrl : "";
-const supabaseAnonKey = typeof extra.supabaseAnonKey === "string" ? extra.supabaseAnonKey : "";
+const supabaseUrl =
+  typeof extra.supabaseUrl === "string" ? extra.supabaseUrl : "";
+const supabaseAnonKey =
+  typeof extra.supabaseAnonKey === "string" ? extra.supabaseAnonKey : "";
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Supabase environment variables are missing");
@@ -28,4 +33,5 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 });
 
-export const PUSH_FUNCTION_URL = "https://zukkncfcptuqrqzxqkhm.supabase.co/functions/v1/pushNotification";
+export const PUSH_FUNCTION_URL =
+  "https://zukkncfcptuqrqzxqkhm.supabase.co/functions/v1/pushNotification";

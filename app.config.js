@@ -9,6 +9,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/images/TutorSeek-logo.png",
     scheme: "tutorseek",
+    deepLinking: true,
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
 

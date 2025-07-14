@@ -107,28 +107,19 @@ export const getTutorById = async (tutorId: string): Promise<TutorProfile> => {
   }
 };
 
-export const getUserById = async (
-  userId: string
-): Promise<UserProfile | null> => {
-  try {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("id", userId)
-      .single();
+export const getUserById = async (userId: string) => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .single();
 
-    if (error) {
-      if ((error as any).code === "PGRST116") {
-        return null;
-      }
-      throw error;
-    }
-
-    return data as UserProfile;
-  } catch (error) {
-    console.error("Error getting user by ID:", error);
-    return null;
+  if (error) {
+    console.log("Error getting user");
+    throw new Error("Error getting user by ID:" + error.message);
   }
+
+  return data as UserProfile;
 };
 
 /// Subjects ///
