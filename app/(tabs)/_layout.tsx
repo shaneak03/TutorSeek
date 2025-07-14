@@ -17,7 +17,7 @@ const MyCustomTabButton = ({ children, onPress }: any) => {
   );
 };
 
-const _layout = () => {
+const Layout = () => {
   const { authUser } = useContext(AuthContext);
   if (!authUser) return <LoginModal />;
 
@@ -69,4 +69,4 @@ const _layout = () => {
   );
 };
 
-export default _layout;
+export default Layout;

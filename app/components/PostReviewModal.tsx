@@ -36,7 +36,7 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
           review: desc,
           rating: rating,
         }
-      )
+      );
       const res = await getAvgRatingAndReviewCount(tutorId);
       console.log(res);
       if (res)
