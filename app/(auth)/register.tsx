@@ -34,6 +34,24 @@ const Register = () => {
     }
 
     try {
+      const { data: existingUser, error: checkError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", email)
+        .single();
+
+      if (checkError && checkError.code !== "PGRST116") { // PGRST116 means no rows found, which is expected if the user doesn't exist
+        setErrorMessage(
+          "An error occurred while checking the email. Please try again."
+        );
+        return console.error("Error checking email existence:", checkError);
+      }
+
+      if (existingUser) {
+        setErrorMessage("This email is already registered. Please log in.");
+        return;
+      }
+
       setIsSigningUp(true);
       const { error } = await supabase.auth.signUp({
         email,
