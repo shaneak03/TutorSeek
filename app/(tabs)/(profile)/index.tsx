@@ -44,7 +44,7 @@ export type TutorProfileData = TutorProfile & {
 const Profile = () => {
   const router = useRouter();
   const isFocused = useIsFocused();
-  const { authUser, user, setUser } = useContext(AuthContext);
+  const { authUser, setAuthUser, user, setUser } = useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
@@ -125,6 +125,8 @@ const Profile = () => {
       console.log("Push token marked as inactive");
     }
     await supabase.auth.signOut();
+    setUser(null);
+    setAuthUser(null);
     router.push("/login");
   };
 
