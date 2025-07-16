@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
-import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { TutorProfileData } from "../(tabs)/(profile)";
 import { SubjectContext } from "../contexts/subjectContext";
 import CustomText from "./CustomText";
@@ -64,21 +65,24 @@ const SubjectAdder = ({
     let subjLevelIdCombiStr =
       subjNameToIdMap[selectedSub] + "-" + levelNameToId[selectedLevel];
     if (invalidCombiSet.has(subjLevelIdCombiStr)) {
-      return Alert.alert(
-        "Invalid pair",
-        "The chosen subject-level combination is invalid. Please select another pair."
-      );
+      Toast.show({
+        type: "error",
+        text1: "Invalid pair",
+        text2:
+          "The chosen subject-level combination is invalid. Please select another pair.",
+      });
+      return;
     }
 
     if (
       tutorData.subjects.some(
-        s => s.subject === selectedSub && s.level === selectedLevel
+        (s) => s.subject === selectedSub && s.level === selectedLevel
       )
     ) {
       setIsShowAddSubModal(false);
       return console.log("already added");
     }
-    setTutorData(data => {
+    setTutorData((data) => {
       const latestId = data?.subjects[data?.subjects.length - 1]?.id ?? 0;
       const newSubject = {
         subject: selectedSub,
@@ -102,13 +106,13 @@ const SubjectAdder = ({
       setIsVisible={setIsShowAddSubModal}
       title={"Add subject"}
     >
-      <SafeAreaView className='flex-1'>
-        <View className='flex-row flex-1 items-center p-4 gap-4'>
+      <SafeAreaView className="flex-1">
+        <View className="flex-row flex-1 items-center p-4 gap-4">
           <ScrollView
             contentContainerClassName={"flex gap-4"}
             showsVerticalScrollIndicator={false}
           >
-            {subjects.map(s => (
+            {subjects.map((s) => (
               <TouchableOpacity
                 className={
                   "flex-row justify-between py-4 px-8 rounded-2xl " +
@@ -135,7 +139,7 @@ const SubjectAdder = ({
             contentContainerClassName={"flex gap-4"}
             showsVerticalScrollIndicator={false}
           >
-            {levels.map(level => (
+            {levels.map((level) => (
               <TouchableOpacity
                 className={
                   "flex-row justify-between py-4 px-8 rounded-2xl " +
@@ -159,7 +163,7 @@ const SubjectAdder = ({
             ))}
           </ScrollView>
         </View>
-        <View className='flex justify-center items-center border-neutral-300 border-t-hairline p-4 w-full'>
+        <View className="flex justify-center items-center border-neutral-300 border-t-hairline p-4 w-full">
           <LargeSolidButton buttonText={"Add"} onPress={onAddSubject} />
         </View>
       </SafeAreaView>

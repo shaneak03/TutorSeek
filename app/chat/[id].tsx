@@ -19,7 +19,6 @@ import React, {
   useState,
 } from "react";
 import {
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   ListRenderItem,
@@ -27,9 +26,10 @@ import {
   Pressable,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import PostReviewModal from "../components/PostReviewModal";
 import UserIcon from "../components/UserIcon";
 import themeColors from "../themeColors";
@@ -314,7 +314,7 @@ const ChatScreen = () => {
         setHasMoreMessages(fetchedMessages.length === PAGE_SIZE);
       } catch (error) {
         console.error("Error fetching messages:", error);
-        Alert.alert("Error", "Failed to load messages");
+        Toast.show({ type: "error", text1: "Error", text2: "Failed to load messages" });
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -491,7 +491,7 @@ const ChatScreen = () => {
       );
     } catch (error) {
       console.error("Error sending message:", error);
-      Alert.alert("Error", "Failed to send message");
+      Toast.show({ type: "error", text1: "Error", text2: "Failed to send message" });
 
       if (optimisticMessage) {
         setMessages(prev =>

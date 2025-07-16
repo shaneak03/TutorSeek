@@ -16,8 +16,9 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useContext, useEffect, useState, } from "react";
-import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import themeColors from "../themeColors";
 
 const ViewTutor = () => {
@@ -75,7 +76,11 @@ const ViewTutor = () => {
     const existingChat = await findChatBetweenUsers(tutorId, user.id);
 
     if (!user.first_name) {
-      Alert.alert("Error", "Please add your name under profile first!");
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Please add your name under profile first!"
+      });
       return;
     }
 
