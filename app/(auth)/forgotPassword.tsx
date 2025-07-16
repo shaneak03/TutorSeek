@@ -1,19 +1,27 @@
 import { supabase } from "@/utils/supabase";
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 import CustomText from "../components/CustomText";
 import LargeSolidButton from "../components/LargeSolidButton";
 import RoundTextInput from "../components/RoundedTextInput";
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
-  const [sentLink, setSentLink] = useState(false);
+  const router = useRouter();
+
   const sendLink = async () => {
     let { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) {
       console.log(error);
     } else {
-      setSentLink(true);
+      Toast.show({
+        type: "success",
+        text1: "Reset Link Sent",
+        text2: "Please check your email to reset your password.",
+      });
+      router.push("/login");
     }
   };
 
@@ -26,8 +34,9 @@ const ForgotPasswordScreen = () => {
         placeholder='Enter your email'
       ></RoundTextInput>
       <LargeSolidButton
-        buttonText={!sentLink ? "Send reset link" : "Link sent"}
+        buttonText="Send reset link"
         onPress={sendLink}
+        className="bg-primary-700 text-white"
       ></LargeSolidButton>
     </View>
   );
