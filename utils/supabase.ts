@@ -1,6 +1,6 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
 import Constants from "expo-constants";
+import { Platform } from "react-native";
 import "react-native-url-polyfill/auto";
 
 // First, check if extra exists
@@ -15,16 +15,21 @@ const supabaseUrl =
 const supabaseAnonKey =
   typeof extra.supabaseAnonKey === "string" ? extra.supabaseAnonKey : "";
 
+const storage =
+  Platform.OS === "web"
+    ? undefined
+    : require("@react-native-async-storage/async-storage").default;
+
 if (!supabaseUrl || !supabaseAnonKey) {
   console.warn("Supabase environment variables are missing");
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    storage: AsyncStorage,
+    storage: storage,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: Platform.OS === "web",
   },
   realtime: {
     params: {
