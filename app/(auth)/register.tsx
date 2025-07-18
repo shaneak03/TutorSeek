@@ -94,6 +94,7 @@ const Register = () => {
   const handleGoogleAuth = async () => {
     if (Platform.OS === 'web') {
       setErrorMessage("Google Sign-In is not supported on web. Please use email registration.");
+      return;
     }
 
     try {
