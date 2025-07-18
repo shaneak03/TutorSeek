@@ -4,7 +4,7 @@ import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
-import { Pressable, Text, TouchableHighlight, View } from "react-native";
+import { Platform, Pressable, Text, TouchableHighlight, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
 import CustomDropdown from "../components/CustomDropdown";
@@ -75,6 +75,9 @@ const Login = () => {
   })
 
   const handleGoogleAuth = async () => {
+    if (Platform.OS === 'web') {
+      setErrorMessage("Google Sign-In is not supported on web. Please use email registration.");
+    }
     try {
       await GoogleSignin.signOut();
       await GoogleSignin.hasPlayServices();
