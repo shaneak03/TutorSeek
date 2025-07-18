@@ -1,7 +1,5 @@
 # Welcome to your Expo app 👋
 
-Test Test Test
-
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
@@ -27,15 +25,18 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+### Docker for development
 
-When you're ready, run:
-
+1. Build docker image
 ```bash
-npm run reset-project
+docker build -t tutorseek .
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Start the docker container and start and interactive command line
+```bash
+docker run -it --rm -p 8081:8081 -p 19000:19000 -p 19001:19001 -p 19002:19002 -p 19006:19006 tutorseek
+```
+Do follow the command line instructions
 
 ## Learn more
 
