@@ -1,6 +1,6 @@
 import { getUserById } from "@/utils/getRoutes";
 import { supabase } from "@/utils/supabase";
-// import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
@@ -67,76 +67,76 @@ const Login = () => {
     router.push("/forgotPassword");
   };
 
-  const handleGoogleAuth = async () => {};
+  // const handleGoogleAuth = async () => {};
 
-  // // Google OAuth handler
-  // GoogleSignin.configure({
-  //   webClientId: '176743680156-f39d2bdbik845r85rdnoqpaurkri8r94.apps.googleusercontent.com'
-  // })
+  // Google OAuth handler
+  GoogleSignin.configure({
+    webClientId: '176743680156-f39d2bdbik845r85rdnoqpaurkri8r94.apps.googleusercontent.com'
+  })
 
-  // const handleGoogleAuth = async () => {
-  //   try {
-  //     await GoogleSignin.signOut();
-  //     await GoogleSignin.hasPlayServices();
-  //     const userInfo = await GoogleSignin.signIn();
-  //     if (!userInfo.data) {
-  //       throw new Error('Google Sign-In failed');
-  //     }
-  //     if (userInfo.data.idToken) {
-  //       const { data, error } = await supabase.auth.signInWithIdToken({
-  //         provider: 'google',
-  //         token: userInfo.data.idToken,
-  //       })
-  //       console.log(error, data)
-  //       if (error) {
-  //         console.error("Supabase sign-in error:", error);
-  //         setErrorMessage("Google Sign-In failed. Please try again.");
-  //         return;
-  //       }
-  //       // Check if the user already exists
-  //       const existingUser = await getUserById(data.session?.user.id);
-  //       if (!existingUser) {
-  //         // Update Supabase User and Tutor/Student Profile
-  //         const user = data.session?.user;
-  //         if (!user) {
-  //           throw new Error('No user data returned from Supabase');
-  //         }
-  //         const role = isTutor ? "tutor" : "student";
-  //         const { error: userError } = await supabase
-  //           .from("users")
-  //           .insert([{ id: user.id, role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
-  //         if (userError) {
-  //           console.error("Error inserting user profile:", userError);
-  //         }
-  //         if (isTutor) {
-  //           const { error: tutorError } = await supabase
-  //             .from("tutors")
-  //             .insert([{ id: user?.id }]);
-  //           if (tutorError) console.log(tutorError);
-  //         } else {
-  //           const { error: studentError } = await supabase
-  //             .from("students")
-  //             .insert([{ id: user?.id }]);
-  //             if (studentError) console.log(studentError);
-  //         }
-  //       }
+  const handleGoogleAuth = async () => {
+    try {
+      await GoogleSignin.signOut();
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      if (!userInfo.data) {
+        throw new Error('Google Sign-In failed');
+      }
+      if (userInfo.data.idToken) {
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'google',
+          token: userInfo.data.idToken,
+        })
+        console.log(error, data)
+        if (error) {
+          console.error("Supabase sign-in error:", error);
+          setErrorMessage("Google Sign-In failed. Please try again.");
+          return;
+        }
+        // Check if the user already exists
+        const existingUser = await getUserById(data.session?.user.id);
+        if (!existingUser) {
+          // Update Supabase User and Tutor/Student Profile
+          const user = data.session?.user;
+          if (!user) {
+            throw new Error('No user data returned from Supabase');
+          }
+          const role = isTutor ? "tutor" : "student";
+          const { error: userError } = await supabase
+            .from("users")
+            .insert([{ id: user.id, role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
+          if (userError) {
+            console.error("Error inserting user profile:", userError);
+          }
+          if (isTutor) {
+            const { error: tutorError } = await supabase
+              .from("tutors")
+              .insert([{ id: user?.id }]);
+            if (tutorError) console.log(tutorError);
+          } else {
+            const { error: studentError } = await supabase
+              .from("students")
+              .insert([{ id: user?.id }]);
+              if (studentError) console.log(studentError);
+          }
+        }
 
-  //       // Update Auth Context
-  //       if (data.session) {
-  //         const profile = await getUserById(data.session?.user.id);
-  //         setUser(profile);
-  //       }
-  //       // Navigate to the main app
-  //       router.push("/(tabs)/(home)");
-  //     } else {
-  //       throw new Error('no ID token present!')
-  //     }
+        // Update Auth Context
+        if (data.session) {
+          const profile = await getUserById(data.session?.user.id);
+          setUser(profile);
+        }
+        // Navigate to the main app
+        router.push("/(tabs)/(home)");
+      } else {
+        throw new Error('no ID token present!')
+      }
 
-  //   } catch (error) {
-  //     console.error("Google Sign-In error:", error);
-  //     setErrorMessage("Google Sign-In failed. Please try again.");
-  //   }
-  // }
+    } catch (error) {
+      console.error("Google Sign-In error:", error);
+      setErrorMessage("Google Sign-In failed. Please try again.");
+    }
+  }
 
   const navToRegister = () => {
     router.push("/register");
