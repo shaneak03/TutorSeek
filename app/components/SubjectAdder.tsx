@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
-import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { TutorProfileData } from "../(tabs)/profile";
 import { SubjectContext } from "../contexts/subjectContext";
 import CustomText from "./CustomText";
@@ -64,10 +65,13 @@ const SubjectAdder = ({
     let subjLevelIdCombiStr =
       subjNameToIdMap[selectedSub] + "-" + levelNameToId[selectedLevel];
     if (invalidCombiSet.has(subjLevelIdCombiStr)) {
-      return Alert.alert(
-        "Invalid pair",
-        "The chosen subject-level combination is invalid. Please select another pair."
-      );
+      Toast.show({
+        type: "error",
+        text1: "Invalid pair",
+        text2:
+          "The chosen subject-level combination is invalid. Please select another pair.",
+      });
+      return;
     }
 
     if (

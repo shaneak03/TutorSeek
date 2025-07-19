@@ -3,6 +3,7 @@ import {
   findChatBetweenUsers,
   getAvgRatingAndReviewCount,
   getChatMessagesByChatId,
+  getChatMessagesByChatIdAndPages,
   getChatsByUserId,
   getReviewsByStudentId,
   getReviewsByTutorId,
@@ -11,7 +12,7 @@ import {
   getTutor,
   getTutorById,
   getTutors,
-  getUserById,
+  getUserById
 } from "@/utils/getRoutes";
 import {
   ChatMessage,
@@ -24,7 +25,7 @@ import {
   UserProfile,
 } from "@/utils/models";
 import { supabase } from "@/utils/supabase";
-import { getChatMessagesByChatIdAndPages } from "./../getRoutes";
+
 
 /// Chat page ///
 
@@ -329,6 +330,7 @@ describe("Supabase API Get Functions", () => {
         level: 0,
         rating: 0,
         sortBy: "rating_desc",
+        location: "",
       };
 
       const result = await getTutors(filters as filterOptions);
@@ -397,6 +399,7 @@ describe("Supabase API Get Functions", () => {
         level: 0,
         rating: 0,
         sortBy: "rating_desc",
+        location: "",
       });
 
       expect(result).toEqual([]);

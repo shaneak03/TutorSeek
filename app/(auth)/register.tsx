@@ -34,6 +34,25 @@ const Register = () => {
     }
 
     try {
+      const { data: existingUser, error: checkError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", email)
+        .single();
+
+      if (checkError && checkError.code !== "PGRST116") {
+        // PGRST116 means no rows found, which is expected if the user doesn't exist
+        setErrorMessage(
+          "An error occurred while checking the email. Please try again."
+        );
+        return console.error("Error checking email existence:", checkError);
+      }
+
+      if (existingUser) {
+        setErrorMessage("This email is already registered. Please log in.");
+        return;
+      }
+
       setIsSigningUp(true);
       const { error } = await supabase.auth.signUp({
         email,
@@ -70,68 +89,72 @@ const Register = () => {
   // })
 
   // const handleGoogleAuth = async () => {
-  //     try {
-  //       await GoogleSignin.signOut();
-  //       await GoogleSignin.hasPlayServices();
-  //       const userInfo = await GoogleSignin.signIn();
-  //       if (!userInfo.data) {
-  //         throw new Error('Google Sign-In failed');
-  //       }
-  //       if (userInfo.data.idToken) {
-  //         const { data, error } = await supabase.auth.signInWithIdToken({
-  //           provider: 'google',
-  //           token: userInfo.data.idToken,
-  //         })
-  //         console.log(error, data)
-  //         if (error) {
-  //           console.error("Supabase sign-in error:", error);
-  //           setErrorMessage("Google Sign-In failed. Please try again.");
-  //           return;
-  //         }
-  //         // Check if user already exists
-  //         const existingUser = await getUserById(data.session?.user.id);
-  //         if (!existingUser) {
-  //           // Update Supabase User and Tutor/Student Profile
-  //           const user = data.session?.user;
-  //           if (!user) {
-  //             throw new Error('No user data returned from Supabase');
-  //           }
-  //           const role = isTutor ? "tutor" : "student";
-  //           const { error: userError } = await supabase
-  //             .from("users")
-  //             .insert([{ id: user.id, role: user.role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
-  //           if (userError) {
-  //             console.error("Error inserting user profile:", userError);
-  //           }
-  //           if (isTutor) {
-  //             const { error: tutorError } = await supabase
-  //               .from("tutors")
-  //               .insert([{ id: user?.id }]);
-  //             if (tutorError) console.log(tutorError);
-  //           } else {
-  //             const { error: studentError } = await supabase
-  //               .from("students")
-  //               .insert([{ id: user?.id }]);
-  //               if (studentError) console.log(studentError);
-  //           }
-  //         }
-
-  //         // Update Auth Context
-  //         if (data.session) {
-  //           const profile = await getUserById(data.session?.user.id);
-  //           setUser(profile);
-  //         }
-  //         // Navigate to the main app
-  //         router.push("/(tabs)/profile");
-  //       } else {
-  //         throw new Error('no ID token present!')
-  //       }
-
-  //     } catch (error) {
-  //       console.error("Google Sign-In error:", error);
-  //       setErrorMessage("Google Sign-In failed. Please try again.");
-  //     }
+  //   if (Platform.OS === 'web') {
+  //     setErrorMessage("Google Sign-In is not supported on web. Please use email registration.");
   //   }
+
+  //   try {
+  //     await GoogleSignin.signOut();
+  //     await GoogleSignin.hasPlayServices();
+  //     const userInfo = await GoogleSignin.signIn();
+  //     if (!userInfo.data) {
+  //       throw new Error('Google Sign-In failed');
+  //     }
+  //     if (userInfo.data.idToken) {
+  //       const { data, error } = await supabase.auth.signInWithIdToken({
+  //         provider: 'google',
+  //         token: userInfo.data.idToken,
+  //       })
+  //       console.log(error, data)
+  //       if (error) {
+  //         console.error("Supabase sign-in error:", error);
+  //         setErrorMessage("Google Sign-In failed. Please try again.");
+  //         return;
+  //       }
+  //       // Check if user already exists
+  //       const existingUser = await getUserById(data.session?.user.id);
+  //       if (!existingUser) {
+  //         // Update Supabase User and Tutor/Student Profile
+  //         const user = data.session?.user;
+  //         if (!user) {
+  //           throw new Error('No user data returned from Supabase');
+  //         }
+  //         const role = isTutor ? "tutor" : "student";
+  //         const { error: userError } = await supabase
+  //           .from("users")
+  //           .insert([{ id: user.id, role: user.role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
+  //         if (userError) {
+  //           console.error("Error inserting user profile:", userError);
+  //         }
+  //         if (isTutor) {
+  //           const { error: tutorError } = await supabase
+  //             .from("tutors")
+  //             .insert([{ id: user?.id }]);
+  //           if (tutorError) console.log(tutorError);
+  //         } else {
+  //           const { error: studentError } = await supabase
+  //             .from("students")
+  //             .insert([{ id: user?.id }]);
+  //             if (studentError) console.log(studentError);
+  //         }
+  //       }
+
+  //       // Update Auth Context
+  //       if (data.session) {
+  //         const profile = await getUserById(data.session?.user.id);
+  //         setUser(profile);
+  //       }
+  //       // Navigate to the main app
+  //       router.push("/(tabs)/(profile)");
+  //     } else {
+  //       throw new Error('no ID token present!')
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Google Sign-In error:", error);
+  //     setErrorMessage("Google Sign-In failed. Please try again.");
+  //   }
+  // }
 
   const handleTutorSelect = async (value: string) => {
     if (value === "tutor") {

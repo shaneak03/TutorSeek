@@ -74,6 +74,9 @@ const Login = () => {
   // })
 
   // const handleGoogleAuth = async () => {
+  //   if (Platform.OS === 'web') {
+  //     setErrorMessage("Google Sign-In is not supported on web. Please use email registration.");
+  //   }
   //   try {
   //     await GoogleSignin.signOut();
   //     await GoogleSignin.hasPlayServices();

@@ -5,6 +5,7 @@ import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
 import { Pressable, View } from "react-native";
+import Toast from "react-native-toast-message";
 import themeColors from "../themeColors";
 import UserIcon from "./UserIcon";
 
@@ -76,7 +77,7 @@ export const updateProfileIcon = async (user_id: string, uri: string) => {
     if (updateError) throw updateError;
   } catch (error) {
     console.error("Profile update failed:", error);
-    alert("Failed to update profile picture.");
+    Toast.show({ type: "error", text1: "Error", text2: "Failed to update profile picture." });
   }
 };
 
@@ -90,7 +91,7 @@ export default function ProfileIcon({
       const permissionResult =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (permissionResult.granted === false) {
-        alert("Permission to access camera roll is required!");
+        Toast.show({ type: "error", text1: "Permission required", text2: "Permission to access camera roll is required!" });
         return;
       }
 
@@ -106,7 +107,7 @@ export default function ProfileIcon({
       setAvatarUrl(uri);
     } catch (error) {
       console.error("Failed to pick image", error);
-      alert("Failed to pick image");
+      Toast.show({ type: "error", text1: "Error", text2: "Failed to pick image" });
     }
   };
 
@@ -118,7 +119,7 @@ export default function ProfileIcon({
         disabled={!isEditing}
         accessibilityRole='button'
       >
-        <UserIcon avatarUrl={avatarUrl} size={168} border={3} />
+        <UserIcon avatarUrl={avatarUrl} size={168} />
         {isEditing && (
           <View className='bg-primary-700 rounded-full p-[12] absolute bottom-1 right-1'>
             <Feather

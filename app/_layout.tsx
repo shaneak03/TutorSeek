@@ -240,56 +240,86 @@ export default function RootLayout() {
   useEffect(() => {
     const handleDeepLink = async ({ url }: { url: string }) => {
       try {
-        console.log("RECEIVED URL");
-        const hash = url.split("#")[1];
-        const params = new URLSearchParams(hash);
+        console.log("RECEIVED URL", url);
+        isVerifyingUserRef.current = true;
+        // Support both # and ? for params
+        let paramString = "";
+        if (url.includes("#")) {
+          paramString = url.split("#")[1];
+        } else if (url.includes("?")) {
+          paramString = url.split("?")[1];
+        }
+        const params = new URLSearchParams(paramString);
         const access_token = params.get("access_token") ?? "";
         const refresh_token = params.get("refresh_token") ?? "";
         const type = params.get("type") ?? "";
-
-        if (type !== "signup") return;
-
-        isVerifyingUserRef.current = true;
-        const { data, error } = await supabase.auth.setSession({
+        console.log("Parsed deep link params:", {
           access_token,
           refresh_token,
+          type,
         });
-        if (error) throw new Error(error.message);
-        const userData = data.user;
 
-        if (!userData) {
-          throw new Error("Failed to set session from url params");
+        if (type === "reset_password") {
+          console.log("Reset password link detected");
+          const { error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+          if (error) throw new Error(error.message);
+          router.push({
+            pathname: "/(auth)/changePassword",
+            params: { access_token },
+          });
+          isVerifyingUserRef.current = false;
+          return;
         }
 
-        const role = userData?.user_metadata?.role;
+        if (type === "signup") {
+          console.log("Signup verification link detected");
+          const { data, error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+          if (error) throw new Error(error.message);
+          const userData = data.user;
 
-        const { error: userError } = await supabase
-          .from("users")
-          .insert([{ id: userData?.id, role, email: userData?.email }]);
+          if (!userData) {
+            throw new Error("Failed to set session from url params");
+          }
 
-        if (userError) {
-          throw new Error("Error creating user profile:" + userError.message);
-        }
+          const role = userData.user_metadata?.role;
 
-        if (role === "tutor") {
-          const { error: tutorError } = await supabase
-            .from("tutors")
-            .insert([{ id: userData?.id }]);
-          if (tutorError)
-            throw new Error("Error creating tutor profile:" + tutorError);
-          await createTimeTable(userData?.id ?? "");
+          const { error: userError } = await supabase
+            .from("users")
+            .insert([{ id: userData.id, role, email: userData.email }]);
+
+          if (userError) {
+            throw new Error("Error creating user profile:" + userError.message);
+          }
+
+          if (role === "tutor") {
+            const { error: tutorError } = await supabase
+              .from("tutors")
+              .insert([{ id: userData.id }]);
+            if (tutorError)
+              throw new Error("Error creating tutor profile:" + tutorError);
+            await createTimeTable(userData.id);
+          } else {
+            const { error: studentError } = await supabase
+              .from("students")
+              .insert([{ id: userData.id }]);
+            if (studentError)
+              throw new Error("Error creating student profile:" + studentError);
+          }
+          const user = await getUserById(userData.id);
+          setUser(user);
+          setAuthUser(userData);
+          router.push("/(tabs)/profile");
+          isVerifyingUserRef.current = false;
         } else {
-          const { error: studentError } = await supabase
-            .from("students")
-            .insert([{ id: userData?.id }]);
-          if (studentError)
-            throw new Error("Error creating student profile:" + studentError);
+          console.log("Unhandled deep link type:", type);
+          isVerifyingUserRef.current = false;
         }
-        const user = await getUserById(userData.id);
-        setUser(user);
-        setAuthUser(userData);
-        router.push("/(tabs)/profile");
-        isVerifyingUserRef.current = false;
       } catch (error) {
         console.log(error);
         isVerifyingUserRef.current = false;
