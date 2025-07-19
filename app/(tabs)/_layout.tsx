@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Entypo, Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import React, { useContext } from "react";
 import { TouchableOpacity } from "react-native";
@@ -32,14 +32,14 @@ const Layout = () => {
           elevation: 0, // removes shadow on Android
           shadowOpacity: 0, // removes shadow on iOS
         },
+        headerShown: false,
         tabBarButton: props => <MyCustomTabButton {...props} />,
       }}
     >
       <Tabs.Screen
-        name='(home)'
+        name='index'
         options={{
           title: "Home",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name='home' size={size} color={color} />
           ),
@@ -49,17 +49,29 @@ const Layout = () => {
         name='chat'
         options={{
           title: "Chat",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name='chatbubble' size={size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name='(profile)'
+        name='schedule'
+        options={{
+          headerShown: true,
+          headerTitleStyle: {
+            fontFamily: "Poppins_700Bold",
+            fontSize: 24,
+          },
+          title: "Schedule",
+          tabBarIcon: ({ color, size }) => (
+            <Entypo name='book' size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name='profile'
         options={{
           title: "Profile",
-          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name='person' size={size} color={color} />
           ),

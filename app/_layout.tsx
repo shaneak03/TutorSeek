@@ -15,6 +15,9 @@ import {
   useFonts,
 } from "@expo-google-fonts/poppins";
 import { RealtimeChannel, User } from "@supabase/supabase-js";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import updateLocale from "dayjs/plugin/updateLocale";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Linking from "expo-linking";
@@ -33,6 +36,27 @@ import Toast from "react-native-toast-message";
 import SubjectContextProvider from "./contexts/subjectContext";
 import "./global.css";
 import themeColors from "./themeColors";
+
+dayjs.extend(relativeTime);
+dayjs.extend(updateLocale);
+
+dayjs.updateLocale("en", {
+  relativeTime: {
+    future: "in %s",
+    past: "%s ago",
+    s: "1 min",
+    m: "1 min",
+    mm: "%d mins",
+    h: "1 hour",
+    hh: "%d hours",
+    d: "1 day",
+    dd: "%d days",
+    M: "1 month",
+    MM: "%d months",
+    y: "1 year",
+    yy: "%d years",
+  },
+});
 
 export const AuthContext = createContext<{
   authUser: User | null;
@@ -146,6 +170,7 @@ export default function RootLayout() {
   useEffect(() => {
     const getSession = async () => {
       try {
+        console.log("fetching session");
         setLoadingUser(true);
         const {
           data: { session },
@@ -160,6 +185,7 @@ export default function RootLayout() {
           setOnlineUsers({});
         }
         setLoadingUser(false);
+        console.log("finish fetching session");
       } catch (error) {
         console.error("Error getting session:", error);
         if (isMountedRef.current) {
@@ -187,12 +213,10 @@ export default function RootLayout() {
         await cleanupPresence();
 
         if (session?.user) {
-          setLoadingUser(true);
           setAuthUser(session.user);
           const userProfileData = await getUserById(session.user.id);
           console.log("Fetched new user profile:", userProfileData?.id);
           setUser(userProfileData);
-          setLoadingUser(false);
         } else {
           console.log("No session, setting user to null");
           setAuthUser(null);
@@ -217,17 +241,15 @@ export default function RootLayout() {
     const handleDeepLink = async ({ url }: { url: string }) => {
       try {
         console.log("RECEIVED URL");
-        isVerifyingUserRef.current = true;
         const hash = url.split("#")[1];
         const params = new URLSearchParams(hash);
         const access_token = params.get("access_token") ?? "";
         const refresh_token = params.get("refresh_token") ?? "";
         const type = params.get("type") ?? "";
 
-        if (type !== "signup") {
-          return console.log("Not verfication url");
-        }
+        if (type !== "signup") return;
 
+        isVerifyingUserRef.current = true;
         const { data, error } = await supabase.auth.setSession({
           access_token,
           refresh_token,
@@ -266,7 +288,7 @@ export default function RootLayout() {
         const user = await getUserById(userData.id);
         setUser(user);
         setAuthUser(userData);
-        router.push("/(tabs)/(profile)");
+        router.push("/(tabs)/profile");
         isVerifyingUserRef.current = false;
       } catch (error) {
         console.log(error);
@@ -531,7 +553,7 @@ export default function RootLayout() {
             router.push("/(tabs)/chat");
           }
         } else if (notif.type === "review") {
-          router.push("/(tabs)/(profile)");
+          router.push("/(tabs)/profile");
         }
       }
     );

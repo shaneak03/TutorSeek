@@ -3,11 +3,11 @@ import { useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
 import { Pressable, RefreshControl, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthContext } from "../../_layout";
-import FilterOptions, { filterOptions } from "../../components/HomeTopNav";
-import TutorCard, { tutorCardData } from "../../components/TutorCard";
+import { AuthContext } from "../_layout";
+import FilterOptions, { filterOptions } from "../components/HomeTopNav";
+import TutorCard, { tutorCardData } from "../components/TutorCard";
 
-const Index = () => {
+const Home = () => {
   const { user } = useContext(AuthContext);
   const router = useRouter();
   const [tutors, setTutors] = useState<tutorCardData[]>([]);
@@ -79,4 +79,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Home;

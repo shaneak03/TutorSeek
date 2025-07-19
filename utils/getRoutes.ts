@@ -9,6 +9,130 @@ import {
 } from "./models";
 import { supabase } from "./supabase";
 
+// Classes ///
+export const getBookingRequests = async (tutor_id: string) => {
+  const { data, error } = await supabase
+    .from("booking_requests")
+    .select(
+      `*,
+      students (
+        users (
+          first_name,
+          last_name,
+          profile_icon_url
+        )
+      )
+      `
+    )
+    .eq("tutor_id", tutor_id);
+
+  const newData = data?.map(entry => {
+    const { students, ...rest } = entry;
+
+    return {
+      ...rest,
+      first_name: students?.users?.first_name ?? null,
+      last_name: students?.users?.last_name ?? null,
+      profile_icon_url: students?.users?.profile_icon_url ?? null,
+    };
+  });
+
+  if (error) throw new Error(error.message);
+  return newData ?? [];
+};
+
+export const getTimeSlotMap = async () => {
+  const { data, error } = await supabase.from("timeslots").select("*");
+  if (error) throw new Error(error.message);
+  const dict: Map<number, string> = new Map();
+  for (const row of data) {
+    dict.set(row?.id, row?.start_time);
+  }
+  return dict;
+};
+
+export const getClassesByTutorId = async (tutorId: string) => {
+  let query = supabase
+    .from("teaching_slots")
+    .select(
+      `*,
+        students (
+          users (
+            first_name,
+            last_name,
+            profile_icon_url
+          )
+        )
+      `
+    )
+    .eq("tutor_id", tutorId)
+    .order("day")
+    .order("timeslot_id");
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const days = [];
+  let day: any[] = [];
+  let dayIndex = 0;
+  for (let i = 0; i < data.length; i++) {
+    if (data[i]?.day !== dayIndex) {
+      days.push(day);
+      day = [];
+      dayIndex++;
+    }
+    const { students, ...flattened } = {
+      ...data[i],
+      first_name: data[i]?.students?.users?.first_name ?? "",
+      last_name: data[i]?.students?.users?.last_name ?? "",
+      profile_pic: data[i]?.students?.users?.profile_icon_url ?? "",
+      status: data[i]?.listed
+        ? data[i]?.booked
+          ? "booked"
+          : "not_booked"
+        : "not_listed",
+    };
+    day.push(flattened);
+  }
+  days.push(day);
+  return days;
+};
+
+export const getClassesByStudentId = async (studentId: string) => {
+  let query = supabase
+    .from("teaching_slots")
+    .select(
+      `*,
+        tutors (
+          users (
+            first_name,
+            last_name,
+            profile_icon_url
+          )
+        )
+      `
+    )
+    .eq("student_id", studentId)
+    .order("day")
+    .order("timeslot_id");
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const days: any[][] = Array.from({ length: 7 }, () => []);
+  for (let i = 0; i < data.length; i++) {
+    const { tutors, ...rest } = {
+      ...data[i],
+      first_name: data[i]?.tutors?.users?.first_name ?? "",
+      last_name: data[i]?.tutors?.users?.last_name ?? "",
+      profile_pic: data[i]?.tutors?.users?.profile_icon_url ?? "",
+      status: "booked",
+    };
+    days[rest.day].push(rest);
+  }
+  return days;
+};
+
 /// Tutors ///
 
 export const getTutors = async (filters: filterOptions) => {

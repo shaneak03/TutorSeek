@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { TutorProfileData } from "../(tabs)/(profile)";
+import { TutorProfileData } from "../(tabs)/profile";
 import { SubjectContext } from "../contexts/subjectContext";
 import CustomText from "./CustomText";
 import FullPageModal from "./FullPageModal";

@@ -87,7 +87,7 @@ const Chat = () => {
   return (
     <SafeAreaView className=' bg-neutral-100' edges={["top", "right", "left"]}>
       <View className='p-4 border-neutral-300 border-b-hairline'>
-        <CustomText className='font-poppins-bold text-3xl mt-1'>
+        <CustomText className='font-poppins-bold text-3xl'>
           <CustomText className='font-poppins-bold text-3xl text-primary-700'>
             {userData.role === "tutor" ? "Student" : "Tutor"}{" "}
           </CustomText>

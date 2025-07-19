@@ -30,10 +30,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthContext } from "../../_layout";
-import CoreProfileDetails from "../../components/CoreProfileDetails";
-import CustomText from "../../components/CustomText";
-import ProfileIcon, { updateProfileIcon } from "../../components/ProfileIcon";
+import { AuthContext } from "../_layout";
+import CoreProfileDetails from "../components/CoreProfileDetails";
+import CustomText from "../components/CustomText";
+import ProfileIcon, { updateProfileIcon } from "../components/ProfileIcon";
 
 export type Subject = { subject: string; level: string; id: number };
 

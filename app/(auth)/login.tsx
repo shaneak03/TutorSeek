@@ -1,4 +1,3 @@
-import { getUserById } from "@/utils/getRoutes";
 import { supabase } from "@/utils/supabase";
 // import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { Image } from "expo-image";
@@ -40,7 +39,7 @@ const Login = () => {
       setEmail("");
       setPassword("");
     } else {
-      router.push("/(tabs)/(home)");
+      router.push("/(tabs)");
     }
   };
 
@@ -127,7 +126,7 @@ const Login = () => {
   //         setUser(profile);
   //       }
   //       // Navigate to the main app
-  //       router.push("/(tabs)/(home)");
+  //       router.push("/(tabs)/index");
   //     } else {
   //       throw new Error('no ID token present!')
   //     }
