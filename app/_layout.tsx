@@ -206,12 +206,10 @@ export default function RootLayout() {
 
       console.log("Auth state change event:", event, session?.user?.id);
 
-      // Do not do async calls here! Only set state.
       cleanupPresence();
 
       if (session?.user) {
         setAuthUser(session.user);
-        // Profile fetch moved to useEffect below
       } else {
         console.log("No session, setting user to null");
         setAuthUser(null);
@@ -617,6 +615,8 @@ export default function RootLayout() {
           }
         } else if (notif.type === "review") {
           router.push("/(tabs)/profile");
+        } else if (notif.type === "booking") {
+          router.push("/(tabs)/schedule");
         }
       }
     );

@@ -1,5 +1,8 @@
+import { dayMap } from "@/utils/days";
 import { getClassesByTutorId } from "@/utils/getRoutes";
 import { createBookingRequest } from "@/utils/postRoutes";
+import { sendPushNotification } from "@/utils/pushNotification";
+import timeSlotMap from "@/utils/timeSlotMap";
 import { useContext, useEffect, useState } from "react";
 import Toast from "react-native-toast-message";
 import { AuthContext } from "../_layout";
@@ -39,6 +42,24 @@ export default function TutorScheduleModal({
         ts?.day,
         ts?.timeslot_id
       );
+      // Send push notification to tutor
+      try {
+        const dayLabel = dayMap[ts.day + 1] || `Day ${ts.day + 1}`;
+        const timeslotLabel = timeSlotMap.get(ts.timeslot_id) || `Slot ${ts.timeslot_id}`;
+        await sendPushNotification(
+          tutor.tutor_id,
+          "New Booking Request!",
+          `${user.first_name} ${user.last_name} has requested a booking for ${dayLabel}, ${timeslotLabel}.`,
+          "booking",
+          user.profile_icon_url,
+          {
+            senderId: user.id,
+            status: "pending",
+          }
+        );
+      } catch (error) {
+        console.warn("Error sending push notification", error);
+      }
       setActiveTimeSlot(null);
       Toast.show({
         type: "success",

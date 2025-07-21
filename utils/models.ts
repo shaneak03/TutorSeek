@@ -124,6 +124,11 @@ export interface ReviewNotificationData {
   rating: number;
 }
 
+export interface BookingNotificationData {
+  senderId: string;
+  status: "pending" | "accepted" | "declined";
+}
+
 export type Notification =
   | {
       type: "message";
@@ -132,4 +137,8 @@ export type Notification =
   | {
       type: "review";
       data: ReviewNotificationData;
+    }
+  | {
+      type: "booking";
+      data: BookingNotificationData;
     };

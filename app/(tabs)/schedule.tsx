@@ -1,9 +1,11 @@
+import { dayMap } from "@/utils/days";
 import {
   getBookingRequests,
   getClassesByStudentId,
   getClassesByTutorId,
 } from "@/utils/getRoutes";
 import { unBookSlot, updateSlots } from "@/utils/postRoutes";
+import { sendPushNotification } from "@/utils/pushNotification";
 import timeSlotMap from "@/utils/timeSlotMap";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
@@ -157,6 +159,25 @@ const Schedule = () => {
       console.log("TO DELETE:", ts.tutor_id);
       const data = await unBookSlot(ts.tutor_id, ts.day, ts.timeslot_id);
       console.log(data);
+      // Send notification to student
+      try {
+        const dayLabel = dayMap[ts.day + 1] || `Day ${ts.day + 1}`;
+        const timeslotLabel = timeSlotMap.get(ts.timeslot_id) || `Slot ${ts.timeslot_id}`;
+        const tutorName = ts.first_name && ts.last_name ? `${ts.first_name} ${ts.last_name}` : "your tutor";
+        await sendPushNotification(
+          ts.student_id,
+          "Booking Cancelled",
+          `Your booking for ${dayLabel} ${timeslotLabel} was cancelled by ${tutorName}.`,
+          "booking",
+          ts.profile_pic,
+          {
+            tutorId: ts.tutor_id,
+            status: "cancelled",
+          }
+        );
+      } catch (error) {
+        console.warn("Error sending push notification (cancel)", error);
+      }
       await fetchTimeSlots();
       setDisplayedTimeSlot(null);
       console.log("successfully cancelled booking");

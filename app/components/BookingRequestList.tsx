@@ -1,4 +1,7 @@
+import { dayMap } from "@/utils/days";
 import { bookSlot, deleteBookingRequest } from "@/utils/postRoutes";
+import { sendPushNotification } from "@/utils/pushNotification";
+import timeSlotMap from "@/utils/timeSlotMap";
 import { View } from "react-native";
 import BookingRequestCard from "./BookingRequestCard";
 import CustomText from "./CustomText";
@@ -32,6 +35,22 @@ export default function BookingRequestList({
       await deleteBookingRequest(request);
       await refetchRequests();
       await refetchTimeSlots();
+      // Send notification to student
+      try {
+        await sendPushNotification(
+          request.student_id,
+          "Booking Accepted!",
+          `Your booking request for ${dayMap[request.day + 1]} ${timeSlotMap.get(request.timeslot_id)?.slice(0, -3)} with ${request.first_name} ${request.last_name} was accepted!`,
+          "booking",
+          request.profile_icon_url,
+          {
+            tutorId: request.tutor_id,
+            status: "accepted",
+          }
+        );
+      } catch (error) {
+        console.warn("Error sending push notification (accept)", error);
+      }
       console.log("accepted request");
     } catch (error) {
       console.log(error);
@@ -42,6 +61,22 @@ export default function BookingRequestList({
     try {
       await deleteBookingRequest(request);
       await refetchRequests();
+      // Send notification to student
+      try {
+        await sendPushNotification(
+          request.student_id,
+          "Booking Declined",
+          `Your booking request for ${dayMap[request.day + 1]} ${timeSlotMap.get(request.timeslot_id)?.slice(0, -3)} with ${request.first_name} ${request.last_name} was declined.`,
+          "booking",
+          request.profile_icon_url,
+          {
+            tutorId: request.tutor_id,
+            status: "declined",
+          }
+        );
+      } catch (error) {
+        console.warn("Error sending push notification (decline)", error);
+      }
       console.log("deleted request");
     } catch (error) {
       console.log(error);
