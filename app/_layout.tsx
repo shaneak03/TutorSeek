@@ -31,6 +31,7 @@ import React, {
   useState,
 } from "react";
 import { ActivityIndicator, AppState, StatusBar, View } from "react-native";
+
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import SubjectContextProvider from "./contexts/subjectContext";
@@ -177,8 +178,6 @@ export default function RootLayout() {
         } = await supabase.auth.getSession();
         if (session?.user && isMountedRef.current) {
           setAuthUser(session.user);
-          const userProfile = await getUserById(session.user.id);
-          setUser(userProfile);
         } else {
           setAuthUser(null);
           setUser(null);
@@ -200,35 +199,24 @@ export default function RootLayout() {
     getSession();
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMountedRef.current) return;
       console.log("verifying user:" + isVerifyingUserRef.current);
       if (isVerifyingUserRef.current) return;
 
       console.log("Auth state change event:", event, session?.user?.id);
 
-      try {
-        await cleanupPresence();
+      // Do not do async calls here! Only set state.
+      cleanupPresence();
 
-        if (session?.user) {
-          setAuthUser(session.user);
-          const userProfileData = await getUserById(session.user.id);
-          console.log("Fetched new user profile:", userProfileData?.id);
-          setUser(userProfileData);
-        } else {
-          console.log("No session, setting user to null");
-          setAuthUser(null);
-          setUser(null);
-          setOnlineUsers({});
-        }
-      } catch (error) {
-        console.error("Error handling auth state change:", error);
+      if (session?.user) {
+        setAuthUser(session.user);
+        // Profile fetch moved to useEffect below
+      } else {
+        console.log("No session, setting user to null");
         setAuthUser(null);
         setUser(null);
         setOnlineUsers({});
-        setLoadingUser(false);
       }
     });
 
@@ -237,10 +225,30 @@ export default function RootLayout() {
     };
   }, []);
 
+  // Fetch user profile when authUser changes
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (authUser && authUser.id) {
+        try {
+          const userProfileData = await getUserById(authUser.id);
+          console.log("Fetched new user profile (effect):", userProfileData?.id);
+          setUser(userProfileData);
+        } catch (error) {
+          console.error("Error fetching user profile (effect):", error);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    };
+    fetchProfile();
+  }, [authUser]);
+
   useEffect(() => {
     const handleDeepLink = async ({ url }: { url: string }) => {
       try {
-        console.log("RECEIVED URL", url);
+        console.log("[DeepLink] RECEIVED URL:", url);
+        // Alert.alert("Deep Link URL", url); // Debugging URL
         isVerifyingUserRef.current = true;
         // Support both # and ? for params
         let paramString = "";
@@ -253,19 +261,42 @@ export default function RootLayout() {
         const access_token = params.get("access_token") ?? "";
         const refresh_token = params.get("refresh_token") ?? "";
         const type = params.get("type") ?? "";
-        console.log("Parsed deep link params:", {
+        const errorParam = params.get("error") ?? "";
+        const errorCode = params.get("error_code") ?? "";
+        const errorDescription = params.get("error_description") ?? "";
+        console.log("[DeepLink] Parsed params:", {
           access_token,
           refresh_token,
           type,
+          errorParam,
+          errorCode,
+          errorDescription,
         });
 
-        if (type === "reset_password") {
-          console.log("Reset password link detected");
-          const { error } = await supabase.auth.setSession({
+        // Handle expired/invalid link errors
+        if (errorParam || errorCode) {
+          let message = errorDescription || "Invalid or expired link.";
+          if (errorCode === "otp_expired") {
+            message = "This link has expired. Please request a new password reset email.";
+          }
+          Toast.show({
+            type: "error",
+            text1: "Link Error",
+            text2: message,
+          });
+          isVerifyingUserRef.current = false;
+          return;
+        }
+
+        if (type === "recovery") {
+          console.log("[DeepLink] Reset password link detected");
+          const { data, error } = await supabase.auth.setSession({
             access_token,
             refresh_token,
           });
+          console.log("[DeepLink] setSession result:", { data, error });
           if (error) throw new Error(error.message);
+          console.log("[DeepLink] Navigating to /changePassword with access_token");
           router.push({
             pathname: "/(auth)/changePassword",
             params: { access_token },
@@ -275,11 +306,12 @@ export default function RootLayout() {
         }
 
         if (type === "signup") {
-          console.log("Signup verification link detected");
+          console.log("[DeepLink] Signup verification link detected");
           const { data, error } = await supabase.auth.setSession({
             access_token,
             refresh_token,
           });
+          console.log("[DeepLink] setSession result:", { data, error });
           if (error) throw new Error(error.message);
           const userData = data.user;
 
@@ -314,14 +346,15 @@ export default function RootLayout() {
           const user = await getUserById(userData.id);
           setUser(user);
           setAuthUser(userData);
+          console.log("[DeepLink] Navigating to /profile after signup");
           router.push("/(tabs)/profile");
           isVerifyingUserRef.current = false;
         } else {
-          console.log("Unhandled deep link type:", type);
+          console.log("[DeepLink] Unhandled deep link type:", type);
           isVerifyingUserRef.current = false;
         }
       } catch (error) {
-        console.log(error);
+        console.log("[DeepLink] Error:", error);
         isVerifyingUserRef.current = false;
       }
     };
@@ -629,6 +662,7 @@ export default function RootLayout() {
                 }}
               >
                 <Stack.Screen name='(tabs)' />
+                <Stack.Screen name='(auth)/changePassword' />
               </Stack>
             </SafeAreaProvider>
           </RealtimeContext.Provider>
