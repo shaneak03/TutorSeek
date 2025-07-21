@@ -1,17 +1,19 @@
 import { getTutors } from "@/utils/getRoutes";
 import { useRouter } from "expo-router";
 import { useContext, useEffect, useState } from "react";
-import { Pressable, RefreshControl, ScrollView } from "react-native";
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
 import FilterOptions, { filterOptions } from "../components/HomeTopNav";
 import TutorCard, { tutorCardData } from "../components/TutorCard";
+import themeColors from "../themeColors";
 
 const Home = () => {
   const { user } = useContext(AuthContext);
   const router = useRouter();
   const [tutors, setTutors] = useState<tutorCardData[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<filterOptions>({
     subject: 0,
     level: 0,
@@ -30,8 +32,10 @@ const Home = () => {
 
   useEffect(() => {
     const fetchTutorData = async () => {
+      setLoading(true);
       const result = await getTutors(filters);
       if (result) setTutors(result);
+      setLoading(false);
     };
 
     fetchTutorData();
@@ -52,29 +56,35 @@ const Home = () => {
   return (
     <SafeAreaView
       className='flex-1 bg-neutral-100'
-      edges={["top", "right", "left"]}
+      edges={['top', 'right', 'left']}
     >
       <FilterOptions
         filters={filters}
         setFilters={setFilters}
         tutors={tutors}
       />
-      <ScrollView
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {tutors.map(tutor =>
-          tutor.is_published ? (
-            <Pressable
-              key={tutor.tutor_id}
-              onPress={() => onClickTutor(tutor.tutor_id)}
-            >
-              <TutorCard tutor={tutor} />
-            </Pressable>
-          ) : null
-        )}
-      </ScrollView>
+      {loading && !refreshing ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+        </View>
+      ) : (
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {tutors.map(tutor =>
+            tutor.is_published ? (
+              <Pressable
+                key={tutor.tutor_id}
+                onPress={() => onClickTutor(tutor.tutor_id)}
+              >
+                <TutorCard tutor={tutor} />
+              </Pressable>
+            ) : null
+          )}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 };

@@ -22,6 +22,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -46,6 +47,7 @@ const Profile = () => {
   const isFocused = useIsFocused();
   const { authUser, setAuthUser, user, setUser } = useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
     first_name: "",
@@ -70,6 +72,7 @@ const Profile = () => {
 
   const fetchProfileData = useCallback(async (currentUser: any) => {
     if (!currentUser) return;
+    setLoading(true);
     try {
       // Fetch user data
       console.log("fetching profile");
@@ -95,6 +98,7 @@ const Profile = () => {
     } catch (error) {
       console.error("Error fetching profile:", error);
     }
+    setLoading(false);
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -181,6 +185,14 @@ const Profile = () => {
   };
 
   const bottomPadding = isEditing ? "pb-28" : "pb-9";
+
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView className='flex-1 bg-neutral-100 justify-center items-center' edges={["top", "right", "left"]}>
+        <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView

@@ -16,7 +16,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import TutorScheduleModal from "../components/TutorScheduleModal";
@@ -28,6 +28,7 @@ const ViewTutor = () => {
   const params = useLocalSearchParams();
   const tutorId = params?.id as string;
   const [tutor, setTutor] = useState<tutorCardData>();
+  const [loading, setLoading] = useState(true);
   const [isShowAllReviews, setIsShowAllReviews] = useState(false);
   const [isShowSchedule, setIsShowSchedule] = useState(false);
   const [bioLineCount, setBioLineCount] = useState<number | undefined>(3);
@@ -43,6 +44,7 @@ const ViewTutor = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
+        setLoading(true);
         const tutorRes: tutorCardData = await getTutor(tutorId);
         const subjectsRes = await getSubjectsByTutorId(tutorRes.tutor_id);
         const reviewsRes = await getReviewsByTutorId(tutorRes.tutor_id);
@@ -51,6 +53,8 @@ const ViewTutor = () => {
         setSubjects(subjectsRes);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -121,6 +125,13 @@ const ViewTutor = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <View className='flex-1 justify-center items-center bg-neutral-100'>
+        <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+      </View>
+    );
+  }
   if (!tutor) return;
   return (
     <>
