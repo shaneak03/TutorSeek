@@ -242,6 +242,40 @@ export const postReview = async (
   }
 };
 
+export const editReview = async (
+  reviewId: number,
+  newRating: number,
+  newDescription: string
+) => {
+  try {
+    console.log("editReview called with:", { reviewId, newRating, newDescription });
+    const { data, error } = await supabase
+      .from("reviews")
+      .update({ rating: newRating, description: newDescription })
+      .eq("id", reviewId)
+      .select();
+    console.log("editReview result:", { data, error });
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error("Error editing review:", error);
+    throw error;
+  }
+};
+
+export const deleteReview = async (reviewId: number) => {
+  try {
+    const { error } = await supabase
+      .from("reviews")
+      .delete()
+      .eq("id", reviewId);
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error deleting review:", error);
+    throw error;
+  }
+};
+
 /// Chat page ///
 
 export const updateLastSeen = async (userId: string) => {
