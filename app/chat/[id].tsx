@@ -19,6 +19,7 @@ import React, {
   useState,
 } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   KeyboardAvoidingView,
   ListRenderItem,
@@ -118,6 +119,14 @@ const ChatScreen = () => {
     if (!previousMessage) return true;
 
     const currentDate = new Date(currentMessage.created_at).toDateString();
+  // Show loading indicator while loading is true (after all hooks)
+  if (loading) {
+    return (
+      <View className='flex-1 justify-center items-center bg-neutral-100'>
+        <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+      </View>
+    );
+  }
     const previousDate = new Date(previousMessage.created_at).toDateString();
 
     return currentDate !== previousDate;

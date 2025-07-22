@@ -3,7 +3,7 @@ import MultiSlider, {
   MarkerProps,
 } from "@ptomasroos/react-native-multi-slider";
 import { Dimensions, View } from "react-native";
-import { TutorProfileData } from "../(tabs)/(profile)";
+import { TutorProfileData } from "../(tabs)/profile";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 

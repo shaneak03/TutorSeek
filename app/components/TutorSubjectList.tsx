@@ -1,7 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { TouchableHighlight, View } from "react-native";
-import { TutorProfileData } from "../(tabs)/(profile)";
+import { TutorProfileData } from "../(tabs)/profile";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 

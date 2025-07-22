@@ -15,10 +15,11 @@ import {
 import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useContext, useEffect, useState, } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { useCallback, useContext, useEffect, useState } from "react";
+import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import TutorScheduleModal from "../components/TutorScheduleModal";
 import themeColors from "../themeColors";
 
 const ViewTutor = () => {
@@ -27,7 +28,9 @@ const ViewTutor = () => {
   const params = useLocalSearchParams();
   const tutorId = params?.id as string;
   const [tutor, setTutor] = useState<tutorCardData>();
+  const [loading, setLoading] = useState(true);
   const [isShowAllReviews, setIsShowAllReviews] = useState(false);
+  const [isShowSchedule, setIsShowSchedule] = useState(false);
   const [bioLineCount, setBioLineCount] = useState<number | undefined>(3);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [subjects, setSubjects] = useState<
@@ -41,6 +44,7 @@ const ViewTutor = () => {
   useEffect(() => {
     const fetchDetails = async () => {
       try {
+        setLoading(true);
         const tutorRes: tutorCardData = await getTutor(tutorId);
         const subjectsRes = await getSubjectsByTutorId(tutorRes.tutor_id);
         const reviewsRes = await getReviewsByTutorId(tutorRes.tutor_id);
@@ -49,6 +53,8 @@ const ViewTutor = () => {
         setSubjects(subjectsRes);
       } catch (error) {
         console.log(error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -59,8 +65,8 @@ const ViewTutor = () => {
     useCallback(() => {
       const fetchReviews = async () => {
         try {
-          const reviewsRes = await getReviewsByTutorId(tutorId); 
-          setReviews(reviewsRes); 
+          const reviewsRes = await getReviewsByTutorId(tutorId);
+          setReviews(reviewsRes);
           console.log("Fetched updated reviews:", reviewsRes);
         } catch (error) {
           console.error("Failed to fetch reviews:", error);
@@ -68,7 +74,7 @@ const ViewTutor = () => {
       };
 
       fetchReviews();
-    }, [tutorId]) 
+    }, [tutorId])
   );
 
   const onContactTutor = async () => {
@@ -79,7 +85,7 @@ const ViewTutor = () => {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Please add your name under profile first!"
+        text2: "Please add your name under profile first!",
       });
       return;
     }
@@ -119,20 +125,16 @@ const ViewTutor = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <View className='flex-1 justify-center items-center bg-neutral-100'>
+        <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+      </View>
+    );
+  }
   if (!tutor) return;
   return (
     <>
-      <FullPageModal
-        title='Reviews'
-        isVisible={isShowAllReviews}
-        setIsVisible={setIsShowAllReviews}
-      >
-        <RatingReviewCount
-          ratingCount={tutor.rating_count}
-          reviewCount={tutor.review_count}
-        />
-        <ReviewList reviews={reviews} />
-      </FullPageModal>
       <SafeAreaView
         className='flex-1 bg-neutral-100'
         edges={["bottom", "left", "right"]}
@@ -154,6 +156,15 @@ const ViewTutor = () => {
                 {bioLineCount === 3 ? "Show more" : "Show less"}
               </CustomText>
             </TouchableOpacity>
+          </View>
+
+          <View className='flex p-4 gap-4 border-b-hairline border-neutral-300'>
+            <LargeSolidButton
+              className='bg-neutral-100 border-2 border-primary-700'
+              textClassName='text-primary-700'
+              buttonText='View my schedule'
+              onPress={() => setIsShowSchedule(true)}
+            ></LargeSolidButton>
           </View>
 
           {reviews.length > 0 && (
@@ -208,6 +219,22 @@ const ViewTutor = () => {
             />
           </View>
         ) : null}
+        <TutorScheduleModal
+          tutor={tutor}
+          isVisible={isShowSchedule}
+          setIsVisible={setIsShowSchedule}
+        />
+        <FullPageModal
+          title='Reviews'
+          isVisible={isShowAllReviews}
+          setIsVisible={setIsShowAllReviews}
+        >
+          <RatingReviewCount
+            ratingCount={tutor.rating_count}
+            reviewCount={tutor.review_count}
+          />
+          <ReviewList reviews={reviews} />
+        </FullPageModal>
       </SafeAreaView>
     </>
   );

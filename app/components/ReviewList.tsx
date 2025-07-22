@@ -8,11 +8,16 @@ type props = {
   setIsShowAllReviews?: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+type ReviewListProps = props & {
+  renderItem?: (review: ReviewData) => React.ReactNode;
+};
+
 const ReviewList = ({
   reviews,
   horizontal = false,
   setIsShowAllReviews,
-}: props) => {
+  renderItem,
+}: ReviewListProps) => {
   const seeAllReviews = () => {
     setIsShowAllReviews && setIsShowAllReviews(true);
   };
@@ -23,9 +28,9 @@ const ReviewList = ({
       showsVerticalScrollIndicator={false}
       contentContainerClassName={horizontal ? "flex-row gap-4" : ""}
     >
-      {reviews.map(r => (
-        <ReviewCard key={r.id} review={r} rounded={horizontal} />
-      ))}
+      {reviews.map(r =>
+        renderItem ? renderItem(r) : <ReviewCard key={r.id} review={r} rounded={horizontal} />
+      )}
       {horizontal && <LastCard onPress={seeAllReviews} />}
     </ScrollView>
   );

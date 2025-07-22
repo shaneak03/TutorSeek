@@ -5,18 +5,25 @@ const LargeSolidButton = ({
   buttonText,
   onPress,
   className,
+  textClassName,
 }: {
   buttonText: string;
   onPress: any;
   className?: string;
+  textClassName?: string;
 }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
-      className={twMerge("bg-primary-700 rounded-[48] p-4 w-full ", className)}
+      className={twMerge("bg-primary-700 rounded-[48] p-4 w-full", className)}
       onPress={onPress}
     >
-      <Text className='text-center font-poppins-semibold color-neutral-100'>
+      <Text
+        className={twMerge(
+          "text-center font-poppins-semibold text-neutral-100",
+          textClassName
+        )}
+      >
         {buttonText}
       </Text>
     </TouchableOpacity>

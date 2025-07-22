@@ -4,7 +4,7 @@ export async function sendPushNotification(
     userId: string, 
     title: string, 
     body: string, 
-    notifType: "message" | "review",
+    notifType: "message" | "review" | "booking",
     sender_profile_icon_url?: string,
     data?: any, 
 

@@ -1,4 +1,4 @@
-const days = {
+export const dayMap: Record<number, string> = {
   1: "Monday",
   2: "Tuesday",
   3: "Wednesday",
@@ -8,4 +8,12 @@ const days = {
   7: "Sunday",
 };
 
-export default days;
+export const dayTruncMap = new Map([
+  [0, "Mon"],
+  [1, "Tue"],
+  [2, "Wed"],
+  [3, "Thu"],
+  [4, "Fri"],
+  [5, "Sat"],
+  [6, "Sun"],
+]);

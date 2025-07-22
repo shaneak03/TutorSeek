@@ -40,7 +40,7 @@ const Login = () => {
       setEmail("");
       setPassword("");
     } else {
-      router.push("/(tabs)/(home)");
+      router.push("/(tabs)");
     }
   };
 

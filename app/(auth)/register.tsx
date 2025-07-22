@@ -44,7 +44,8 @@ const Register = () => {
         .eq("email", email)
         .single();
 
-      if (checkError && checkError.code !== "PGRST116") { // PGRST116 means no rows found, which is expected if the user doesn't exist
+      if (checkError && checkError.code !== "PGRST116") {
+        // PGRST116 means no rows found, which is expected if the user doesn't exist
         setErrorMessage(
           "An error occurred while checking the email. Please try again."
         );

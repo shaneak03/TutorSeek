@@ -22,6 +22,7 @@ import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -30,10 +31,10 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthContext } from "../../_layout";
-import CoreProfileDetails from "../../components/CoreProfileDetails";
-import CustomText from "../../components/CustomText";
-import ProfileIcon, { updateProfileIcon } from "../../components/ProfileIcon";
+import { AuthContext } from "../_layout";
+import CoreProfileDetails from "../components/CoreProfileDetails";
+import CustomText from "../components/CustomText";
+import ProfileIcon, { updateProfileIcon } from "../components/ProfileIcon";
 
 export type Subject = { subject: string; level: string; id: number };
 
@@ -46,6 +47,7 @@ const Profile = () => {
   const isFocused = useIsFocused();
   const { authUser, setAuthUser, user, setUser } = useContext(AuthContext);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<UserProfile>({
     id: "",
     first_name: "",
@@ -70,6 +72,7 @@ const Profile = () => {
 
   const fetchProfileData = useCallback(async (currentUser: any) => {
     if (!currentUser) return;
+    setLoading(true);
     try {
       // Fetch user data
       console.log("fetching profile");
@@ -95,6 +98,7 @@ const Profile = () => {
     } catch (error) {
       console.error("Error fetching profile:", error);
     }
+    setLoading(false);
   }, []);
 
   const onRefresh = useCallback(async () => {
@@ -182,6 +186,14 @@ const Profile = () => {
 
   const bottomPadding = isEditing ? "pb-28" : "pb-9";
 
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView className='flex-1 bg-neutral-100 justify-center items-center' edges={["top", "right", "left"]}>
+        <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView
       className='flex-1 bg-neutral-100 relative'
@@ -249,6 +261,7 @@ const Profile = () => {
               setProfileData={setUserData}
               isEditing={isEditing}
             />
+
             {userData.role === "tutor" && (
               <TutorProfileDetails
                 tutorData={tutorData}
@@ -256,6 +269,25 @@ const Profile = () => {
                 isEditing={isEditing}
               />
             )}
+
+            <CustomText
+              onPress={async () => {
+                const session = await supabase.auth.getSession();
+                const accessToken = session.data.session?.access_token;
+                if (accessToken) {
+                  router.push({
+                    pathname: "../(auth)/changePassword",
+                    params: { access_token: accessToken },
+                  });
+                } else {
+                  router.push("../(auth)/changePassword");
+                }
+              }}
+              className="underline text-primary-700"
+            >
+              Change Password
+            </CustomText>
+
             <CustomText
               onPress={handleLogout}
               className='underline text-center text-neutral-300'

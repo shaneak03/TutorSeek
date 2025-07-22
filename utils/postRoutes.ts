@@ -1,6 +1,7 @@
-import { TutorProfileData } from "@/app/(tabs)/(profile)";
-import { findChatBetweenUsers } from "./getRoutes";
+import { TutorProfileData } from "@/app/(tabs)/profile";
+import { findChatBetweenUsers, getAvgRatingAndReviewCount } from "./getRoutes";
 
+import { bookingRequest } from "@/app/components/BookingRequestList";
 import {
   ChatData,
   ChatMessage,
@@ -10,6 +11,76 @@ import {
 import { supabase } from "./supabase";
 
 /// Timetable ///
+
+export const createBookingRequest = async (
+  tutor_id: string,
+  student_id: string,
+  day: number,
+  timeslot_id: number
+) => {
+  const { error } = await supabase
+    .from("booking_requests")
+    .insert({ tutor_id, student_id, day, timeslot_id });
+  if (error) throw new Error(error.message);
+};
+
+export const deleteBookingRequest = async (request: bookingRequest) => {
+  const { tutor_id, student_id, day, timeslot_id } = request;
+  const { error } = await supabase
+    .from("booking_requests")
+    .delete()
+    .eq("tutor_id", tutor_id)
+    .eq("student_id", student_id)
+    .eq("day", day)
+    .eq("timeslot_id", timeslot_id);
+  if (error) throw new Error(error.message);
+};
+
+export const unBookSlot = async (
+  tutor_id: string,
+  day: number,
+  timeslot_id: number
+) => {
+  const { data, error } = await supabase
+    .from("teaching_slots")
+    .update({ booked: false, student_id: null })
+    .eq("tutor_id", tutor_id)
+    .eq("day", day)
+    .eq("timeslot_id", timeslot_id)
+    .select("*");
+
+  if (error) throw new Error(error.message);
+  return data;
+};
+
+export const bookSlot = async (request: bookingRequest) => {
+  const { tutor_id, student_id, day, timeslot_id } = request;
+  const { error } = await supabase
+    .from("teaching_slots")
+    .update({ booked: true, student_id })
+    .eq("tutor_id", tutor_id)
+    .eq("day", day)
+    .eq("timeslot_id", timeslot_id);
+  if (error) throw new Error(error.message);
+};
+
+export const updateSlots = async (
+  arr: {
+    tutor_id: string;
+    day: number;
+    timeslot_id: number;
+  }[],
+  action: "list" | "unlist"
+) => {
+  const { error } = await supabase.from("teaching_slots").upsert(
+    arr.map(el => ({ ...el, listed: action === "list" })),
+    {
+      ignoreDuplicates: false,
+      onConflict: "tutor_id, day, timeslot_id",
+    }
+  );
+  if (error) throw new Error(error.message);
+};
 
 export const createTimeTable = async (tutorId: string) => {
   try {
@@ -167,6 +238,75 @@ export const postReview = async (
     }
   } catch (error) {
     console.error("Error posting review:", error);
+    throw error;
+  }
+};
+
+export const editReview = async (
+  reviewId: number,
+  newRating: number,
+  newDescription: string
+) => {
+  try {
+    // Fetch tutor_id for this review
+    const { data: reviewData, error: reviewError } = await supabase
+      .from("reviews")
+      .select("tutor_id")
+      .eq("id", reviewId)
+      .single();
+    if (reviewError) throw reviewError;
+    const tutorId = reviewData.tutor_id;
+
+    // Update the review
+    const { data, error } = await supabase
+      .from("reviews")
+      .update({ rating: newRating, description: newDescription })
+      .eq("id", reviewId)
+      .select();
+    if (error) throw error;
+
+    // Recalculate and update tutor's rating and review count
+    const stats = await getAvgRatingAndReviewCount(tutorId);
+    console.log('getAvgRatingAndReviewCount result:', stats);
+    if (stats) {
+      const updateResult = await updateRatingReview(stats.average_rating, stats.review_count, tutorId);
+      console.log('updateRatingReview result:', updateResult);
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error editing review:", error);
+    throw error;
+  }
+};
+
+export const deleteReview = async (reviewId: number) => {
+  try {
+    // Fetch tutor_id for this review
+    const { data: reviewData, error: reviewError } = await supabase
+      .from("reviews")
+      .select("tutor_id")
+      .eq("id", reviewId)
+      .single();
+    if (reviewError) throw reviewError;
+    const tutorId = reviewData.tutor_id;
+
+    // Delete the review
+    const { error } = await supabase
+      .from("reviews")
+      .delete()
+      .eq("id", reviewId);
+    if (error) throw error;
+
+    // Recalculate and update tutor's rating and review count
+    const stats = await getAvgRatingAndReviewCount(tutorId);
+    console.log('getAvgRatingAndReviewCount result:', stats);
+    if (stats) {
+      const updateResult = await updateRatingReview(stats.avg_rating, stats.review_count, tutorId);
+      console.log('updateRatingReview result:', updateResult);
+    }
+  } catch (error) {
+    console.error("Error deleting review:", error);
     throw error;
   }
 };
