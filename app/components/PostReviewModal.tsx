@@ -3,6 +3,7 @@ import { postReview, updateRatingReview } from "@/utils/postRoutes";
 import { sendPushNotification } from "@/utils/pushNotification";
 import { useContext, useState } from "react";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 import { AuthContext } from "../_layout";
 import CustomText from "./CustomText";
 import FullPageModal from "./FullPageModal";
@@ -46,8 +47,20 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
           tutorId
         );
       setIsVisible(false);
-    } catch (error) {
-      console.log(error);
+    } catch (error: any) {
+      if (error?.code === "23505") {
+        Toast.show({
+          type: "error",
+          text1: "Duplicate Review",
+          text2: "You have already posted a review for this tutor.",
+        });
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Failed to post review. Please try again.",
+        });
+      }
     }
   };
 
