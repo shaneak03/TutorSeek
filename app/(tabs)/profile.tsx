@@ -261,6 +261,15 @@ const Profile = () => {
               setProfileData={setUserData}
               isEditing={isEditing}
             />
+
+            {userData.role === "tutor" && (
+              <TutorProfileDetails
+                tutorData={tutorData}
+                setTutorData={setTutorData}
+                isEditing={isEditing}
+              />
+            )}
+
             <CustomText
               onPress={async () => {
                 const session = await supabase.auth.getSession();
@@ -278,13 +287,7 @@ const Profile = () => {
             >
               Change Password
             </CustomText>
-            {userData.role === "tutor" && (
-              <TutorProfileDetails
-                tutorData={tutorData}
-                setTutorData={setTutorData}
-                isEditing={isEditing}
-              />
-            )}
+
             <CustomText
               onPress={handleLogout}
               className='underline text-center text-neutral-300'
