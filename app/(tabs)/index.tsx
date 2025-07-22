@@ -1,6 +1,7 @@
 import { getTutors } from "@/utils/getRoutes";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
@@ -28,8 +29,9 @@ const Home = () => {
   useEffect(() => {
     if (!user || filters.location === "") return;
     setFilters(filters => ({ ...filters, location: user.location }));
-  }, [user]);
+  }, [user, filters.location]);
 
+  // Fetch tutors when filters change
   useEffect(() => {
     const fetchTutorData = async () => {
       setLoading(true);
@@ -37,9 +39,20 @@ const Home = () => {
       if (result) setTutors(result);
       setLoading(false);
     };
-
     fetchTutorData();
   }, [filters]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchTutorData = async () => {
+        setLoading(true);
+        const result = await getTutors(filters);
+        if (result) setTutors(result);
+        setLoading(false);
+      };
+      fetchTutorData();
+    }, [filters])
+  );
 
   const onRefresh = async () => {
     setRefreshing(true);

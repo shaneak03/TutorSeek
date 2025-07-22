@@ -1,5 +1,5 @@
 import { TutorProfileData } from "@/app/(tabs)/profile";
-import { findChatBetweenUsers } from "./getRoutes";
+import { findChatBetweenUsers, getAvgRatingAndReviewCount } from "./getRoutes";
 
 import { bookingRequest } from "@/app/components/BookingRequestList";
 import {
@@ -248,14 +248,31 @@ export const editReview = async (
   newDescription: string
 ) => {
   try {
-    console.log("editReview called with:", { reviewId, newRating, newDescription });
+    // Fetch tutor_id for this review
+    const { data: reviewData, error: reviewError } = await supabase
+      .from("reviews")
+      .select("tutor_id")
+      .eq("id", reviewId)
+      .single();
+    if (reviewError) throw reviewError;
+    const tutorId = reviewData.tutor_id;
+
+    // Update the review
     const { data, error } = await supabase
       .from("reviews")
       .update({ rating: newRating, description: newDescription })
       .eq("id", reviewId)
       .select();
-    console.log("editReview result:", { data, error });
     if (error) throw error;
+
+    // Recalculate and update tutor's rating and review count
+    const stats = await getAvgRatingAndReviewCount(tutorId);
+    console.log('getAvgRatingAndReviewCount result:', stats);
+    if (stats) {
+      const updateResult = await updateRatingReview(stats.average_rating, stats.review_count, tutorId);
+      console.log('updateRatingReview result:', updateResult);
+    }
+
     return data;
   } catch (error) {
     console.error("Error editing review:", error);
@@ -265,11 +282,29 @@ export const editReview = async (
 
 export const deleteReview = async (reviewId: number) => {
   try {
+    // Fetch tutor_id for this review
+    const { data: reviewData, error: reviewError } = await supabase
+      .from("reviews")
+      .select("tutor_id")
+      .eq("id", reviewId)
+      .single();
+    if (reviewError) throw reviewError;
+    const tutorId = reviewData.tutor_id;
+
+    // Delete the review
     const { error } = await supabase
       .from("reviews")
       .delete()
       .eq("id", reviewId);
     if (error) throw error;
+
+    // Recalculate and update tutor's rating and review count
+    const stats = await getAvgRatingAndReviewCount(tutorId);
+    console.log('getAvgRatingAndReviewCount result:', stats);
+    if (stats) {
+      const updateResult = await updateRatingReview(stats.avg_rating, stats.review_count, tutorId);
+      console.log('updateRatingReview result:', updateResult);
+    }
   } catch (error) {
     console.error("Error deleting review:", error);
     throw error;

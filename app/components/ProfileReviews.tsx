@@ -3,6 +3,7 @@ import { getReviewsByStudentId, getReviewsByTutorId } from "@/utils/getRoutes";
 import { deleteReview, editReview } from "@/utils/postRoutes";
 import { useContext, useEffect, useState } from "react";
 import { Alert, Modal, View } from "react-native";
+import Toast from "react-native-toast-message";
 import CustomText from "./CustomText";
 import LargeSolidButton from "./LargeSolidButton";
 import RatingReviewCount from "./RatingReviewCount";
@@ -65,7 +66,7 @@ const ProfileReviews = ({ role, id }: props) => {
               await deleteReview(review.id);
               setReviews(reviews.filter(r => r.id !== review.id));
             } catch {
-              Alert.alert("Error", "Failed to delete review.");
+              Toast.show({ type: "error", text1: "Failed to delete review." });
             } finally {
               setLoading(false);
             }
@@ -84,8 +85,7 @@ const ProfileReviews = ({ role, id }: props) => {
         editRating,
         editDescription,
       });
-      const result = await editReview(editReviewData.id, editRating, editDescription);
-      console.log("editReview returned:", result);
+      await editReview(editReviewData.id, editRating, editDescription);
       setReviews(reviews.map(r =>
         r.id === editReviewData.id
           ? { ...r, rating: editRating, description: editDescription }
@@ -94,7 +94,7 @@ const ProfileReviews = ({ role, id }: props) => {
       setEditModalVisible(false);
     } catch (e) {
       console.error("Edit review error:", e);
-      Alert.alert("Error", "Failed to edit review.");
+      Toast.show({ type: "error", text1: "Failed to edit review." });
     } finally {
       setLoading(false);
     }
@@ -121,7 +121,6 @@ const ProfileReviews = ({ role, id }: props) => {
         )}
       />
 
-      {/* Edit Review Modal with Modal and translucent background */}
       <Modal
         visible={editModalVisible}
         animationType="fade"
@@ -137,7 +136,7 @@ const ProfileReviews = ({ role, id }: props) => {
               onChangeText={setEditDescription}
               placeholder="Edit your review..."
               multiline
-              className="mb-4 bg-gray-200 rounded-2xl mt-4"
+              className="mb-4 bg-gray-200 rounded-2xl mt-4 px-4 py-3"
               style={{ minHeight: 150, textAlignVertical: "top" }}
             />
             <LargeSolidButton
