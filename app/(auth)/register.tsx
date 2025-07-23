@@ -127,7 +127,7 @@ const Register = () => {
           const role = isTutor ? "tutor" : "student";
           const { error: userError } = await supabase
             .from("users")
-            .insert([{ id: user.id, role: user.role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
+            .insert([{ id: user.id, role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
           if (userError) {
             console.error("Error inserting user profile:", userError);
           }
@@ -150,7 +150,7 @@ const Register = () => {
           setUser(profile);
         }
         // Navigate to the main app
-        router.push("/(tabs)/(profile)");
+        router.push("/(tabs)");
       } else {
         throw new Error('no ID token present!')
       }

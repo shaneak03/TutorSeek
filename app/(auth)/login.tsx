@@ -132,7 +132,7 @@ const Login = () => {
           setUser(profile);
         }
         // Navigate to the main app
-        router.push("/(tabs)/(home)");
+        router.push("/(tabs)");
       } else {
         throw new Error('no ID token present!')
       }

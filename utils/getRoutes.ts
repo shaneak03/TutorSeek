@@ -240,7 +240,6 @@ export const getUserById = async (userId: string) => {
 
   if (error) {
     console.log("Error getting user");
-    throw new Error("Error getting user by ID:" + error.message);
   }
 
   return data as UserProfile;
