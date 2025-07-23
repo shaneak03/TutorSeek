@@ -565,14 +565,14 @@ export default function RootLayout() {
   // For Push Notifications
   useEffect(() => {
     async function setupNotifications() {
-      if (!authUser?.id) return;
+      if (!user?.id) return;
 
       const token = await registerForPushNotificationsAsync();
       if (!token) return;
 
       const { error } = await supabase.from("push_tokens").upsert(
         {
-          user_id: authUser.id,
+          user_id: user.id,
           token,
           device_name: Device.modelName || "Unknown Device",
           is_active: true,
@@ -590,7 +590,7 @@ export default function RootLayout() {
     }
 
     setupNotifications();
-  }, [authUser?.id]);
+  }, [user?.id]);
 
   // Handle notifications listener
   useEffect(() => {
