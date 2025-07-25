@@ -1,8 +1,10 @@
 import { dayMap } from "@/utils/days";
+import { checkIsBooked } from "@/utils/getRoutes";
 import { bookSlot, deleteBookingRequest } from "@/utils/postRoutes";
 import { sendPushNotification } from "@/utils/pushNotification";
 import timeSlotMap from "@/utils/timeSlotMap";
 import { View } from "react-native";
+import Toast from "react-native-toast-message";
 import BookingRequestCard from "./BookingRequestCard";
 import CustomText from "./CustomText";
 
@@ -31,6 +33,17 @@ export default function BookingRequestList({
 }: props) {
   const acceptBookingReq = async (request: bookingRequest) => {
     try {
+      const isBooked = await checkIsBooked(request);
+      console.log("Is booked:" + isBooked);
+      if (isBooked) {
+        Toast.show({
+          type: "error",
+          text1: "You already have a booking",
+          text2: "Cancel it to continue",
+        });
+        return;
+      }
+
       await bookSlot(request);
       await deleteBookingRequest(request);
       await refetchRequests();
@@ -40,7 +53,11 @@ export default function BookingRequestList({
         await sendPushNotification(
           request.student_id,
           "Booking Accepted!",
-          `Your booking request for ${dayMap[request.day + 1]} ${timeSlotMap.get(request.timeslot_id)?.slice(0, -3)} with ${request.first_name} ${request.last_name} was accepted!`,
+          `Your booking request for ${dayMap[request.day + 1]} ${timeSlotMap
+            .get(request.timeslot_id)
+            ?.slice(0, -3)} with ${request.first_name} ${
+            request.last_name
+          } was accepted!`,
           "booking",
           request.profile_icon_url,
           {
@@ -51,7 +68,6 @@ export default function BookingRequestList({
       } catch (error) {
         console.warn("Error sending push notification (accept)", error);
       }
-      console.log("accepted request");
     } catch (error) {
       console.log(error);
     }
@@ -66,7 +82,11 @@ export default function BookingRequestList({
         await sendPushNotification(
           request.student_id,
           "Booking Declined",
-          `Your booking request for ${dayMap[request.day + 1]} ${timeSlotMap.get(request.timeslot_id)?.slice(0, -3)} with ${request.first_name} ${request.last_name} was declined.`,
+          `Your booking request for ${dayMap[request.day + 1]} ${timeSlotMap
+            .get(request.timeslot_id)
+            ?.slice(0, -3)} with ${request.first_name} ${
+            request.last_name
+          } was declined.`,
           "booking",
           request.profile_icon_url,
           {

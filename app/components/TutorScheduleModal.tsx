@@ -36,12 +36,17 @@ export default function TutorScheduleModal({
   const onBookSlot = async (ts: timeSlot) => {
     if (!user || !activeTimeSlot) return;
     try {
+      setActiveTimeSlot(null);
       await createBookingRequest(
         tutor.tutor_id,
         user.id,
         ts?.day,
         ts?.timeslot_id
       );
+      Toast.show({
+        type: "success",
+        text1: "A booking request has been sent!",
+      });
       // Send push notification to tutor
       try {
         const dayLabel = dayMap[ts.day + 1] || `Day ${ts.day + 1}`;
@@ -61,11 +66,6 @@ export default function TutorScheduleModal({
       } catch (error) {
         console.warn("Error sending push notification", error);
       }
-      setActiveTimeSlot(null);
-      Toast.show({
-        type: "success",
-        text1: "A booking request has been sent!",
-      });
     } catch (error: any) {
       if (
         String(error?.message).startsWith(

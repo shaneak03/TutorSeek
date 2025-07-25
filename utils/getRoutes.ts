@@ -1,3 +1,4 @@
+import { bookingRequest } from "@/app/components/BookingRequestList";
 import { tutorCardData } from "@/app/components/TutorCard";
 import { filterOptions } from "../app/components/HomeTopNav";
 import {
@@ -8,6 +9,23 @@ import {
   UserProfile,
 } from "./models";
 import { supabase } from "./supabase";
+
+export const checkIsBooked = async (request: bookingRequest) => {
+  const { tutor_id, day, timeslot_id } = request;
+  const { data, error } = await supabase
+    .from("teaching_slots")
+    .select("*")
+    .eq("tutor_id", tutor_id)
+    .eq("day", day)
+    .eq("timeslot_id", timeslot_id)
+    .eq("booked", true)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  return data !== null;
+};
 
 // Classes ///
 export const getBookingRequests = async (tutor_id: string) => {

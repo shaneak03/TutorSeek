@@ -7,11 +7,13 @@ import {
 import { unBookSlot, updateSlots } from "@/utils/postRoutes";
 import { sendPushNotification } from "@/utils/pushNotification";
 import timeSlotMap from "@/utils/timeSlotMap";
+import toastConfig from "@/utils/toastConfig";
 import { Ionicons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
 import { useContext, useEffect, useState } from "react";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { AuthContext } from "../_layout";
 import BookingRequestList, {
   bookingRequest,
@@ -259,6 +261,7 @@ const Schedule = () => {
           refetchRequests={fetchBookingRequests}
           refetchTimeSlots={fetchTimeSlots}
         />
+        <Toast config={toastConfig} />
       </FullPageModal>
     </>
   );
