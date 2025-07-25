@@ -1,14 +1,19 @@
 import { Review } from "@/utils/models";
 import dayjs from "dayjs";
-import { TouchableOpacity, View } from "react-native";
+import { Pressable, TouchableOpacity, View } from "react-native";
 import CustomText from "./CustomText";
 
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import themeColors from "../themeColors";
 import StarRow from "./StarRow";
 import UserIcon from "./UserIcon";
 
 export type ReviewData = Review & {
-  first_name: string;
-  last_name: string;
+  stu_first_name: string;
+  stu_last_name: string;
+  tut_first_name: string;
+  tut_last_name: string;
   profile_icon_url: string;
 };
 
@@ -18,6 +23,7 @@ type props = {
   isEditing?: boolean;
   onEdit?: (review: ReviewData) => void;
   onDelete?: (review: ReviewData) => void;
+  showReviweeName?: boolean;
 };
 
 const roundContainer =
@@ -30,11 +36,31 @@ const ReviewCard = ({
   isEditing = false,
   onEdit,
   onDelete,
+  showReviweeName = false,
 }: props) => {
   const createdAt = dayjs(review.created_at).format("D MMMM YYYY");
+  const router = useRouter();
+  const goToTutor = () => {
+    router.navigate(`/viewTutor/${review.tutor_id}`);
+  };
 
   return (
     <View className={rounded ? roundContainer : boxContainer}>
+      {showReviweeName && (
+        <Pressable
+          className='flex-row gap-2 items-center mb-4'
+          onPress={goToTutor}
+        >
+          <MaterialCommunityIcons
+            name='arrow-right-bottom'
+            size={12}
+            color={themeColors["primary-700"]}
+          />
+          <CustomText className='text-primary-700 font-poppins-semibold text-sm'>
+            For {review.tut_first_name} {review.tut_last_name}
+          </CustomText>
+        </Pressable>
+      )}
       <View className='flex-row gap-2'>
         <UserIcon
           avatarUrl={review.profile_icon_url ? review.profile_icon_url : ""}
@@ -43,7 +69,7 @@ const ReviewCard = ({
         <View>
           <View className='flex-row gap-2 items-center'>
             <CustomText className='font-poppins-bold'>
-              {review.first_name} {review.last_name[0]}.
+              {review.stu_first_name} {review.stu_last_name[0]}.
             </CustomText>
 
             <CustomText className='text-sm'>{createdAt}</CustomText>
@@ -63,9 +89,9 @@ const ReviewCard = ({
           {onEdit && (
             <TouchableOpacity
               onPress={() => onEdit(review)}
-              className='px-3 py-1 bg-blue-100 rounded-lg'
+              className='px-3 py-1 bg-primary-700 rounded-lg'
             >
-              <CustomText className='text-blue-700 font-poppins-semibold'>
+              <CustomText className='text-neutral-100 font-poppins-semibold'>
                 Edit
               </CustomText>
             </TouchableOpacity>
@@ -73,9 +99,9 @@ const ReviewCard = ({
           {onDelete && (
             <TouchableOpacity
               onPress={() => onDelete(review)}
-              className='px-3 py-1 bg-red-100 rounded-lg'
+              className='px-3 py-1 bg-neutral-300 rounded-lg'
             >
-              <CustomText className='text-red-700 font-poppins-semibold'>
+              <CustomText className='text-neutral-100 font-poppins-semibold'>
                 Delete
               </CustomText>
             </TouchableOpacity>

@@ -69,15 +69,13 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
   };
 
   const onChangeText = (val: string) => {
-    if (val.length <= 200) {
-      setDesc(val);
-    }
+    setDesc(val);
   };
 
   return (
     <FullPageModal title='' isVisible={isVisible} setIsVisible={setIsVisible}>
-      <View className='flex-1 justify-center items-center p-8 gap-8'>
-        <View>
+      <View className='flex-1 justify-center items-center p-8'>
+        <View className='mb-8'>
           <CustomText className='font-poppins-semibold text-xl mb-4 text-center'>
             Leave a review
           </CustomText>
@@ -85,12 +83,22 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
         </View>
         <RoundTextInput
           value={desc}
+          maxLength={200}
           onChangeText={onChangeText}
           borderRadius={32}
           multiline={true}
           placeholder='Your review'
           style={{ minHeight: 150, textAlignVertical: "top" }}
+          className='mb-2'
         />
+        <CustomText
+          className={
+            "mb-8 self-end text-sm " +
+            (desc.length === 200 ? "text-primary-700" : "")
+          }
+        >
+          {desc.length}/200
+        </CustomText>
         <LargeSolidButton buttonText='Publish review' onPress={publishReview} />
       </View>
     </FullPageModal>

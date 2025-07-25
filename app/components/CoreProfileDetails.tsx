@@ -40,7 +40,7 @@ export default function CoreProfileDetails({
         <RoundTextInput
           value={profileData?.first_name}
           onChangeText={text =>
-            setProfileData(data => ({ ...data, first_name: text }))
+            setProfileData(data => ({ ...data, first_name: text.trim() }))
           }
           placeholder='Enter your first name'
           isEditing={isEditing}
@@ -53,7 +53,7 @@ export default function CoreProfileDetails({
         <RoundTextInput
           value={profileData.last_name}
           onChangeText={text =>
-            setProfileData(data => ({ ...data, last_name: text }))
+            setProfileData(data => ({ ...data, last_name: text.trim() }))
           }
           placeholder='Enter your last name'
           isEditing={isEditing}

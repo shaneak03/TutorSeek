@@ -2,14 +2,15 @@ import { AuthContext } from "@/app/_layout";
 import { getReviewsByStudentId, getReviewsByTutorId } from "@/utils/getRoutes";
 import { deleteReview, editReview } from "@/utils/postRoutes";
 import { useContext, useEffect, useState } from "react";
-import { Alert, Modal, View } from "react-native";
+import { ActivityIndicator, Alert, Modal, View } from "react-native";
 import Toast from "react-native-toast-message";
+import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 import LargeSolidButton from "./LargeSolidButton";
 import RatingReviewCount from "./RatingReviewCount";
 import ReviewCard, { ReviewData } from "./ReviewCard";
 import ReviewList from "./ReviewList";
-import RoundedTextInput from "./RoundedTextInput";
+import RoundTextInput from "./RoundedTextInput";
 import StarRow from "./StarRow";
 
 type props = {
@@ -86,11 +87,13 @@ const ProfileReviews = ({ role, id }: props) => {
         editDescription,
       });
       await editReview(editReviewData.id, editRating, editDescription);
-      setReviews(reviews.map(r =>
-        r.id === editReviewData.id
-          ? { ...r, rating: editRating, description: editDescription }
-          : r
-      ));
+      setReviews(
+        reviews.map(r =>
+          r.id === editReviewData.id
+            ? { ...r, rating: editRating, description: editDescription }
+            : r
+        )
+      );
       setEditModalVisible(false);
     } catch (e) {
       console.error("Edit review error:", e);
@@ -101,7 +104,7 @@ const ProfileReviews = ({ role, id }: props) => {
   };
 
   return (
-    <View>
+    <View className='flex-1'>
       {role === "tutor" && (
         <RatingReviewCount
           ratingCount={avgRating}
@@ -114,41 +117,64 @@ const ProfileReviews = ({ role, id }: props) => {
           <ReviewCard
             key={review.id}
             review={review}
+            showReviweeName={true}
             isEditing={role === "student" && user?.id === review.student_id}
-            onEdit={role === "student" && user?.id === review.student_id ? handleEdit : undefined}
-            onDelete={role === "student" && user?.id === review.student_id ? handleDelete : undefined}
+            onEdit={
+              role === "student" && user?.id === review.student_id
+                ? handleEdit
+                : undefined
+            }
+            onDelete={
+              role === "student" && user?.id === review.student_id
+                ? handleDelete
+                : undefined
+            }
           />
         )}
       />
 
       <Modal
         visible={editModalVisible}
-        animationType="fade"
+        animationType='fade'
         transparent
         onRequestClose={() => setEditModalVisible(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black/40">
-          <View className="bg-white p-6 rounded-2xl w-11/12 max-w-md">
-            <CustomText className="text-lg font-poppins-semibold mb-2">Edit Review</CustomText>
-            <StarRow rating={editRating} size={36} onClickStar={setEditRating} />
-            <RoundedTextInput
+        <View className='flex-1 justify-center items-center bg-black/40 relative'>
+          {loading && (
+            <ActivityIndicator
+              size='large'
+              color={themeColors["primary-700"]}
+              className='absolute z-10'
+            />
+          )}
+          <View className='bg-neutral-100 p-6 rounded-2xl w-11/12 max-w-md'>
+            <CustomText className='text-xl font-poppins-semibold mb-2'>
+              Edit Review
+            </CustomText>
+            <StarRow
+              rating={editRating}
+              size={32}
+              onClickStar={setEditRating}
+            />
+            <RoundTextInput
               value={editDescription}
               onChangeText={setEditDescription}
-              placeholder="Edit your review..."
+              placeholder='Edit your review...'
               multiline
-              className="mb-4 bg-gray-200 rounded-2xl mt-4 px-4 py-3"
+              maxLength={200}
+              className='mb-4 rounded-2xl mt-4 p-4'
               style={{ minHeight: 150, textAlignVertical: "top" }}
             />
             <LargeSolidButton
-              buttonText="Save Changes"
+              buttonText='Save Changes'
               onPress={handleEditSubmit}
-              className="mb-2"
+              className='mb-4'
             />
             <LargeSolidButton
-              buttonText="Cancel"
+              buttonText='Cancel'
               onPress={() => setEditModalVisible(false)}
-              className="bg-gray-200"
-              textClassName="text-gray-700"
+              className='bg-gray-200'
+              textClassName='text-gray-700'
             />
           </View>
         </View>

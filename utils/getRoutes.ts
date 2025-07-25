@@ -338,9 +338,17 @@ export const getReviewsByTutorId = async (tutorId: string) => {
             last_name,
             profile_icon_url
           )
-        )`
+        ),
+        tutors (
+          users (
+            first_name,
+            last_name
+          )
+        )
+        `
       )
-      .eq("tutor_id", tutorId);
+      .eq("tutor_id", tutorId)
+      .order("created_at");
 
     if (error) {
       throw error;
@@ -349,8 +357,10 @@ export const getReviewsByTutorId = async (tutorId: string) => {
     return data.map(r => ({
       ...r,
       profile_icon_url: r.students.users.profile_icon_url,
-      first_name: r.students.users.first_name,
-      last_name: r.students.users.last_name,
+      stu_first_name: r.students.users.first_name,
+      stu_last_name: r.students.users.last_name,
+      tut_first_name: r.tutors.users.first_name,
+      tut_last_name: r.tutors.users.last_name,
     }));
   } catch (error) {
     console.error("Error getting tutor reviews", error);
@@ -370,9 +380,16 @@ export const getReviewsByStudentId = async (studentId: string) => {
             last_name,
             profile_icon_url
           )
+        ),
+        tutors (
+          users (
+            first_name,
+            last_name
+          )
         )`
       )
-      .eq("student_id", studentId);
+      .eq("student_id", studentId)
+      .order("created_at");
 
     if (error) {
       throw error;
@@ -381,8 +398,10 @@ export const getReviewsByStudentId = async (studentId: string) => {
     return data.map(r => ({
       ...r,
       profile_icon_url: r.students.users.profile_icon_url,
-      first_name: r.students.users.first_name,
-      last_name: r.students.users.last_name,
+      stu_first_name: r.students.users.first_name,
+      stu_last_name: r.students.users.last_name,
+      tut_first_name: r.tutors.users.first_name,
+      tut_last_name: r.tutors.users.last_name,
     }));
   } catch (error) {
     console.error("Error getting tutor reviews", error);

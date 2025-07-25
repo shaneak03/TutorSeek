@@ -1,4 +1,5 @@
 import { TextInput, TextInputProps, View } from "react-native";
+import { twMerge } from "tailwind-merge";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
 
@@ -9,6 +10,7 @@ type props = {
   isEditing?: boolean;
   mutliline?: boolean;
   borderRadius?: number;
+  className?: string;
 };
 
 const RoundTextInput = ({
@@ -18,6 +20,7 @@ const RoundTextInput = ({
   isEditing = true,
   multiline = false,
   borderRadius = 48,
+  className = "",
   ...props
 }: props & TextInputProps) => {
   return isEditing ? (
@@ -26,7 +29,10 @@ const RoundTextInput = ({
       multiline={multiline}
       onChangeText={onChangeText}
       placeholder={placeholder}
-      className={`bg-neutral-200 rounded-[${borderRadius}] font-poppins p-4 w-full leading-normal`}
+      className={twMerge(
+        `bg-neutral-200 rounded-[${borderRadius}] font-poppins p-4 w-full leading-normal`,
+        className
+      )}
       placeholderTextColor={themeColors["neutral-300"]}
       {...props}
     />
