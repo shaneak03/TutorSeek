@@ -24,7 +24,13 @@ const roundContainer =
   "w-[260px] h-[140px] p-4 rounded-3xl shadow-xs bg-indigo-50";
 const boxContainer = "w-full px-4 py-6 border-b-hairline border-neutral-300";
 
-const ReviewCard = ({ review, rounded = false, isEditing = false, onEdit, onDelete }: props) => {
+const ReviewCard = ({
+  review,
+  rounded = false,
+  isEditing = false,
+  onEdit,
+  onDelete,
+}: props) => {
   const createdAt = dayjs(review.created_at).format("D MMMM YYYY");
 
   return (
@@ -45,25 +51,33 @@ const ReviewCard = ({ review, rounded = false, isEditing = false, onEdit, onDele
           <StarRow rating={review.rating} size={14} />
         </View>
       </View>
-      <CustomText className='mt-2' numberOfLines={3} ellipsizeMode='tail'>
+      <CustomText
+        className='mt-2'
+        numberOfLines={rounded ? 3 : undefined}
+        ellipsizeMode='tail'
+      >
         {review.description}
       </CustomText>
       {isEditing && (
-        <View className="flex-row mt-2 gap-x-4">
+        <View className='flex-row mt-2 gap-x-4'>
           {onEdit && (
             <TouchableOpacity
               onPress={() => onEdit(review)}
-              className="px-3 py-1 bg-blue-100 rounded-lg"
+              className='px-3 py-1 bg-blue-100 rounded-lg'
             >
-              <CustomText className="text-blue-700 font-poppins-semibold">Edit</CustomText>
+              <CustomText className='text-blue-700 font-poppins-semibold'>
+                Edit
+              </CustomText>
             </TouchableOpacity>
           )}
           {onDelete && (
             <TouchableOpacity
               onPress={() => onDelete(review)}
-              className="px-3 py-1 bg-red-100 rounded-lg"
+              className='px-3 py-1 bg-red-100 rounded-lg'
             >
-              <CustomText className="text-red-700 font-poppins-semibold">Delete</CustomText>
+              <CustomText className='text-red-700 font-poppins-semibold'>
+                Delete
+              </CustomText>
             </TouchableOpacity>
           )}
         </View>
