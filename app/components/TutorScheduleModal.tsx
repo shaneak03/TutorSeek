@@ -45,7 +45,8 @@ export default function TutorScheduleModal({
       // Send push notification to tutor
       try {
         const dayLabel = dayMap[ts.day + 1] || `Day ${ts.day + 1}`;
-        const timeslotLabel = timeSlotMap.get(ts.timeslot_id) || `Slot ${ts.timeslot_id}`;
+        const timeslotLabel =
+          timeSlotMap.get(ts.timeslot_id) || `Slot ${ts.timeslot_id}`;
         await sendPushNotification(
           tutor.tutor_id,
           "New Booking Request!",
@@ -118,7 +119,7 @@ export default function TutorScheduleModal({
             profile_pic: tutor.profile_icon_url,
           })
         }
-        disabledCondi={ts => user?.role === "tutor"}
+        disabledCondi={ts => user?.role === "tutor" || ts.booked}
       />
       <TimeSlotInfoModal
         data={activeTimeSlot}

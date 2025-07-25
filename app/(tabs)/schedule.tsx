@@ -162,12 +162,16 @@ const Schedule = () => {
       // Send notification to student
       try {
         const dayLabel = dayMap[ts.day + 1] || `Day ${ts.day + 1}`;
-        const timeslotLabel = timeSlotMap.get(ts.timeslot_id) || `Slot ${ts.timeslot_id}`;
-        const tutorName = ts.first_name && ts.last_name ? `${ts.first_name} ${ts.last_name}` : "your tutor";
+        const timeslotLabel =
+          timeSlotMap.get(ts.timeslot_id) || `Slot ${ts.timeslot_id}`;
+        const tutorName =
+          ts.first_name && ts.last_name
+            ? `${ts.first_name} ${ts.last_name}`
+            : "your tutor";
         await sendPushNotification(
           ts.student_id,
           "Booking Cancelled",
-          `Your booking for ${dayLabel} ${timeslotLabel} was cancelled by ${tutorName}.`,
+          `Your booking for ${dayLabel} ${timeslotLabel} with ${tutorName} was cancelled.`,
           "booking",
           ts.profile_pic,
           {

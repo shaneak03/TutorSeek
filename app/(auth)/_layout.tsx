@@ -8,6 +8,7 @@ const Layout = () => {
         headerStyle: {
           backgroundColor: themeColors["neutral-100"],
         },
+        headerTitleStyle: { fontFamily: "Poppins_600SemiBold" },
         headerTintColor: themeColors["neutral-900"], //text/icons
         headerShadowVisible: false, // removes the bottom border
       }}
@@ -15,7 +16,10 @@ const Layout = () => {
       <Stack.Screen name='login' options={{ headerShown: false }} />
       <Stack.Screen name='register' options={{ headerShown: false }} />
       <Stack.Screen name='forgotPassword' options={{ title: "" }} />
-      <Stack.Screen name='changePassword' options={{ title: "Change Password" }} />
+      <Stack.Screen
+        name='changePassword'
+        options={{ title: "Change Password" }}
+      />
     </Stack>
   );
 };
