@@ -16,8 +16,10 @@ const mockReview: ReviewData = {
   rating: 4.5,
   description: "Great tutor, helped me a lot!",
   created_at: "2023-05-20T12:00:00Z",
-  first_name: "Alice",
-  last_name: "Smith",
+  stu_first_name: "Alice",
+  stu_last_name: "Smith",
+  tut_first_name: "Alice",
+  tut_last_name: "Smith",
   profile_icon_url: "https://example.com/avatar.jpg",
 };
 
