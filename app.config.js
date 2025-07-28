@@ -6,7 +6,6 @@ export default {
     name: "TutorSeek",
     slug: "TutorSeek",
     version: "1.0.0",
-    platforms: ["ios", "android", "web"],
     orientation: "portrait",
     icon: "./assets/images/TutorSeek-logo.png",
     scheme: "tutorseek",
