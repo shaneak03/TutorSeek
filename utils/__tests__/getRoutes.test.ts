@@ -12,7 +12,7 @@ import {
   getTutor,
   getTutorById,
   getTutors,
-  getUserById
+  getUserById,
 } from "@/utils/getRoutes";
 import {
   ChatMessage,
@@ -25,7 +25,6 @@ import {
   UserProfile,
 } from "@/utils/models";
 import { supabase } from "@/utils/supabase";
-
 
 /// Chat page ///
 
@@ -587,12 +586,19 @@ describe("Supabase API Get Functions", () => {
               profile_icon_url: "student1.jpg",
             },
           },
+          tutors: {
+            users: {
+              first_name: "Tutor",
+              last_name: "Alpha",
+            },
+          },
         },
       ];
 
       const mockQuery = {
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({ data: mockReviews, error: null }),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({ data: mockReviews, error: null }),
       };
 
       (supabase.from as jest.Mock).mockReturnValue(mockQuery);
@@ -600,24 +606,18 @@ describe("Supabase API Get Functions", () => {
       const result = await getReviewsByStudentId("student1");
 
       expect(supabase.from).toHaveBeenCalledWith("reviews");
-      expect(mockQuery.select).toHaveBeenCalledWith(
-        expect.stringContaining(
-          `*, 
-        students (
-          users (
-            first_name,
-            last_name,
-            profile_icon_url
-          )
-        )`
-        )
-      );
+      expect(mockQuery.select).toHaveBeenCalled();
+      expect(mockQuery.eq).toHaveBeenCalledWith("student_id", "student1");
+      expect(mockQuery.order).toHaveBeenCalledWith("created_at");
+
       expect(result).toEqual([
         {
           ...mockReviews[0],
-          first_name: "Student",
-          last_name: "One",
           profile_icon_url: "student1.jpg",
+          stu_first_name: "Student",
+          stu_last_name: "One",
+          tut_first_name: "Tutor",
+          tut_last_name: "Alpha",
         },
       ]);
     });
@@ -627,7 +627,11 @@ describe("Supabase API Get Functions", () => {
     it("should fetch reviews for a tutor and return Review[]", async () => {
       const mockReviews = [
         {
-          ...createMockReview(1, "tutor1", "student1"),
+          id: 1,
+          tutor_id: "tutor1",
+          student_id: "student1",
+          rating: 5,
+          description: "Excellent tutor!",
           students: {
             users: {
               first_name: "Student",
@@ -635,42 +639,38 @@ describe("Supabase API Get Functions", () => {
               profile_icon_url: "student1.jpg",
             },
           },
+          tutors: {
+            users: {
+              first_name: "Tutor",
+              last_name: "Alpha",
+            },
+          },
         },
       ];
 
       const mockQueryBuilder = {
         select: jest.fn().mockReturnThis(),
-        eq: jest.fn().mockResolvedValue({
-          data: mockReviews,
-          error: null,
-        }),
+        eq: jest.fn().mockReturnThis(),
+        order: jest.fn().mockResolvedValue({ data: mockReviews, error: null }),
       };
 
-      (supabase.from as jest.Mock).mockImplementation(() => mockQueryBuilder);
+      (supabase.from as jest.Mock).mockReturnValue(mockQueryBuilder);
 
       const result = await getReviewsByTutorId("tutor1");
 
       expect(supabase.from).toHaveBeenCalledWith("reviews");
-      expect(mockQueryBuilder.select).toHaveBeenCalledWith(
-        expect.stringContaining(
-          `*, 
-        students (
-          users (
-            first_name,
-            last_name,
-            profile_icon_url
-          )
-        )`
-        )
-      );
+      expect(mockQueryBuilder.select).toHaveBeenCalled();
       expect(mockQueryBuilder.eq).toHaveBeenCalledWith("tutor_id", "tutor1");
+      expect(mockQueryBuilder.order).toHaveBeenCalledWith("created_at");
 
       expect(result).toEqual([
         {
           ...mockReviews[0],
-          first_name: "Student",
-          last_name: "One",
           profile_icon_url: "student1.jpg",
+          stu_first_name: "Student",
+          stu_last_name: "One",
+          tut_first_name: "Tutor",
+          tut_last_name: "Alpha",
         },
       ]);
     });

@@ -199,7 +199,9 @@ export default function RootLayout() {
     getSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       if (!isMountedRef.current) return;
       console.log("verifying user:" + isVerifyingUserRef.current);
       if (isVerifyingUserRef.current) return;
@@ -229,7 +231,10 @@ export default function RootLayout() {
       if (authUser && authUser.id) {
         try {
           const userProfileData = await getUserById(authUser.id);
-          console.log("Fetched new user profile (effect):", userProfileData?.id);
+          console.log(
+            "Fetched new user profile (effect):",
+            userProfileData?.id
+          );
           setUser(userProfileData);
         } catch (error) {
           console.error("Error fetching user profile (effect):", error);
@@ -246,9 +251,7 @@ export default function RootLayout() {
     const handleDeepLink = async ({ url }: { url: string }) => {
       try {
         console.log("[DeepLink] RECEIVED URL:", url);
-        // Alert.alert("Deep Link URL", url); // Debugging URL
         isVerifyingUserRef.current = true;
-        // Support both # and ? for params
         let paramString = "";
         if (url.includes("#")) {
           paramString = url.split("#")[1];
@@ -262,95 +265,41 @@ export default function RootLayout() {
         const errorParam = params.get("error") ?? "";
         const errorCode = params.get("error_code") ?? "";
         const errorDescription = params.get("error_description") ?? "";
-        console.log("[DeepLink] Parsed params:", {
-          access_token,
-          refresh_token,
-          type,
-          errorParam,
-          errorCode,
-          errorDescription,
-        });
 
         // Handle expired/invalid link errors
         if (errorParam || errorCode) {
           let message = errorDescription || "Invalid or expired link.";
-          if (errorCode === "otp_expired") {
-            message = "This link has expired. Please request a new password reset email.";
-          }
           Toast.show({
             type: "error",
-            text1: "Link Error",
+            text1: "Error",
             text2: message,
           });
           isVerifyingUserRef.current = false;
           return;
         }
 
-        if (type === "recovery") {
-          console.log("[DeepLink] Reset password link detected");
-          const { data, error } = await supabase.auth.setSession({
+        if (type === "recovery" || type === "signup") {
+          const { error } = await supabase.auth.setSession({
             access_token,
             refresh_token,
           });
-          console.log("[DeepLink] setSession result:", { data, error });
           if (error) throw new Error(error.message);
-          console.log("[DeepLink] Navigating to /changePassword with access_token");
+        }
+
+        if (type === "recovery") {
+          console.log("[DeepLink] Reset password link detected");
           router.push({
             pathname: "/(auth)/changePassword",
             params: { access_token },
           });
-          isVerifyingUserRef.current = false;
-          return;
-        }
-
-        if (type === "signup") {
+        } else if (type === "signup") {
           console.log("[DeepLink] Signup verification link detected");
-          const { data, error } = await supabase.auth.setSession({
-            access_token,
-            refresh_token,
+          router.push({
+            pathname: "/(tabs)/profile",
           });
-          console.log("[DeepLink] setSession result:", { data, error });
-          if (error) throw new Error(error.message);
-          const userData = data.user;
-
-          if (!userData) {
-            throw new Error("Failed to set session from url params");
-          }
-
-          const role = userData.user_metadata?.role;
-
-          const { error: userError } = await supabase
-            .from("users")
-            .insert([{ id: userData.id, role, email: userData.email }]);
-
-          if (userError) {
-            throw new Error("Error creating user profile:" + userError.message);
-          }
-
-          if (role === "tutor") {
-            const { error: tutorError } = await supabase
-              .from("tutors")
-              .insert([{ id: userData.id }]);
-            if (tutorError)
-              throw new Error("Error creating tutor profile:" + tutorError);
-            await createTimeTable(userData.id);
-          } else {
-            const { error: studentError } = await supabase
-              .from("students")
-              .insert([{ id: userData.id }]);
-            if (studentError)
-              throw new Error("Error creating student profile:" + studentError);
-          }
-          const user = await getUserById(userData.id);
-          setUser(user);
-          setAuthUser(userData);
-          console.log("[DeepLink] Navigating to /profile after signup");
-          router.push("/(tabs)/profile");
-          isVerifyingUserRef.current = false;
-        } else {
-          console.log("[DeepLink] Unhandled deep link type:", type);
-          isVerifyingUserRef.current = false;
         }
+
+        isVerifyingUserRef.current = false;
       } catch (error) {
         console.log("[DeepLink] Error:", error);
         isVerifyingUserRef.current = false;
@@ -366,6 +315,7 @@ export default function RootLayout() {
         await handleDeepLink({ url: initialUrl });
       }
     };
+
     handleFromAppOpen();
 
     return () => {
@@ -662,7 +612,6 @@ export default function RootLayout() {
                 }}
               >
                 <Stack.Screen name='(tabs)' />
-                <Stack.Screen name='(auth)/changePassword' />
               </Stack>
             </SafeAreaProvider>
           </RealtimeContext.Provider>

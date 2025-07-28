@@ -1,6 +1,6 @@
+import { dayTruncMap } from "@/utils/days";
 import { ScrollView, TouchableOpacity } from "react-native";
 import CustomText from "./CustomText";
-import { dayTruncMap } from "@/utils/days";
 
 type props = {
   activeDay: number;
@@ -18,6 +18,7 @@ const ScheduleDaySelector = ({ activeDay, setActiveDay }: props) => {
       {Array.from({ length: 7 }, (_, i) => i).map(i => (
         <TouchableOpacity
           key={i}
+          testID={`day-button-${i}`}
           activeOpacity={0.4}
           onPress={() => setActiveDay(i)}
           className={

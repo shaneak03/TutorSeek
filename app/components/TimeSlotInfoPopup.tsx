@@ -19,6 +19,7 @@ const TimeSlotInfoModal = ({ data, setData, buttonText, onClick }: props) => {
   return (
     <Modal isVisible={data !== null}>
       <Pressable
+        testID='outside-modal'
         className='flex-1 justify-center items-center'
         onPress={() => setData(null)}
       >

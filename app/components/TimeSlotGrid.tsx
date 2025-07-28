@@ -46,6 +46,7 @@ export default function TimeSlotGrid({
           } else {
             return (
               <TouchableOpacity
+                testID={`timeslot-${item.timeslot_id}`}
                 key={item.tutor_id + item.day + item.timeslot_id}
                 onPress={() => onClickSlot(item)}
                 className={

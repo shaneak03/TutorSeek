@@ -1,10 +1,16 @@
 import { getUserById } from "@/utils/getRoutes";
 import { supabase } from "@/utils/supabase";
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
-import { Platform, Pressable, Text, TouchableHighlight, View } from "react-native";
+import {
+  Platform,
+  Pressable,
+  Text,
+  TouchableHighlight,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
 import CustomDropdown from "../components/CustomDropdown";
@@ -67,32 +73,33 @@ const Login = () => {
     router.push("/forgotPassword");
   };
 
-  // const handleGoogleAuth = async () => {};
-
   // Google OAuth handler
   GoogleSignin.configure({
-    webClientId: '176743680156-f39d2bdbik845r85rdnoqpaurkri8r94.apps.googleusercontent.com'
-  })
+    webClientId:
+      "176743680156-f39d2bdbik845r85rdnoqpaurkri8r94.apps.googleusercontent.com",
+  });
 
   const handleGoogleAuth = async () => {
-    if (Platform.OS === 'web') {
-      setErrorMessage("Google Sign-In is not supported on web. Please use email registration.");
+    if (Platform.OS === "web") {
+      setErrorMessage(
+        "Google Sign-In is not supported on web. Please use email registration."
+      );
       return;
     }
-    
+
     try {
       await GoogleSignin.signOut();
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
       if (!userInfo.data) {
-        throw new Error('Google Sign-In failed');
+        throw new Error("Google Sign-In failed");
       }
       if (userInfo.data.idToken) {
         const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: 'google',
+          provider: "google",
           token: userInfo.data.idToken,
-        })
-        console.log(error, data)
+        });
+        console.log(error, data);
         if (error) {
           console.error("Supabase sign-in error:", error);
           setErrorMessage("Google Sign-In failed. Please try again.");
@@ -104,12 +111,20 @@ const Login = () => {
           // Update Supabase User and Tutor/Student Profile
           const user = data.session?.user;
           if (!user) {
-            throw new Error('No user data returned from Supabase');
+            throw new Error("No user data returned from Supabase");
           }
           const role = isTutor ? "tutor" : "student";
           const { error: userError } = await supabase
             .from("users")
-            .insert([{ id: user.id, role, email: user.email, first_name: user.user_metadata?.full_name || '', profile_icon_url: user.user_metadata?.picture || '' }])
+            .insert([
+              {
+                id: user.id,
+                role,
+                email: user.email,
+                first_name: user.user_metadata?.full_name || "",
+                profile_icon_url: user.user_metadata?.picture || "",
+              },
+            ]);
           if (userError) {
             console.error("Error inserting user profile:", userError);
           }
@@ -122,7 +137,7 @@ const Login = () => {
             const { error: studentError } = await supabase
               .from("students")
               .insert([{ id: user?.id }]);
-              if (studentError) console.log(studentError);
+            if (studentError) console.log(studentError);
           }
         }
 
@@ -134,14 +149,13 @@ const Login = () => {
         // Navigate to the main app
         router.push("/(tabs)");
       } else {
-        throw new Error('no ID token present!')
+        throw new Error("no ID token present!");
       }
-
     } catch (error) {
       console.error("Google Sign-In error:", error);
       setErrorMessage("Google Sign-In failed. Please try again.");
     }
-  }
+  };
 
   const navToRegister = () => {
     router.push("/register");

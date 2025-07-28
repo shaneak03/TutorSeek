@@ -1,35 +1,30 @@
 import { supabase } from "@/utils/supabase";
-import { useRouter } from "expo-router";
 import { useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import Toast from "react-native-toast-message";
 import CustomText from "../components/CustomText";
 import LargeSolidButton from "../components/LargeSolidButton";
 import RoundTextInput from "../components/RoundedTextInput";
-import themeColors from "../themeColors";
 
 const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const sendLink = async () => {
-    if (loading) return;
-    setLoading(true);
-    let { error } = await supabase.auth.resetPasswordForEmail(email, {redirectTo: "tutorseek://"});
+    let { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "tutorseek://",
+    });
     if (error) {
-      console.log(error);
-      setLoading(false);
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Please wait a while before sending another link",
+      });
     } else {
       Toast.show({
         type: "success",
         text1: "Reset Link Sent",
         text2: "Please check your email to reset your password.",
       });
-      setTimeout(() => {
-        setLoading(false);
-        router.push("/login");
-      }, 2000);
     }
   };
 
@@ -40,16 +35,20 @@ const ForgotPasswordScreen = () => {
         value={email}
         onChangeText={value => setEmail(value)}
         placeholder='Enter your email'
+        textAlign='center'
       />
-      {loading ? (
-        <ActivityIndicator size="large" color={themeColors["primary-700"]}  />
-      ) : (
-        <LargeSolidButton
-          buttonText="Send reset link"
-          onPress={sendLink}
-          className="bg-primary-700 text-white"
-        />
-      )}
+
+      <LargeSolidButton
+        buttonText='Send reset link'
+        onPress={sendLink}
+        className='bg-primary-700 text-white'
+      />
+      <CustomText className='text-center text-sm px-4'>
+        <CustomText className='text-sm text-primary-700 font-poppins-semibold'>
+          Important:{" "}
+        </CustomText>
+        Kindly access your email using the same device this app is installed on
+      </CustomText>
     </View>
   );
 };
