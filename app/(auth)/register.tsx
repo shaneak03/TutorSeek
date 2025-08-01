@@ -16,7 +16,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
 import CustomText from "../components/CustomText";
 import DropDownMenu, { option } from "../components/DropDownMenu";
-import EmailVerificationModal from "../components/EmailVerificationModal";
 import LargeSolidButton from "../components/LargeSolidButton";
 import RoundTextInput from "../components/RoundedTextInput";
 import themeColors from "../themeColors";
@@ -29,7 +28,7 @@ const Register = () => {
   const [isTutor, setIsTutor] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [savedEmail, setSavedEmail] = useState("");
-  const [verificationPending, setVerificationPending] = useState(false);
+  const [showOtpmodal, setShowOtpModal] = useState(false);
   const [isSiginingUp, setIsSigningUp] = useState(false);
   const { setUser, setAuthUser } = useContext(AuthContext);
   const router = useRouter();
@@ -108,7 +107,7 @@ const Register = () => {
       setAuthUser(userData);
       clearPwInputs();
       setSavedEmail(email);
-      setVerificationPending(true);
+      setShowOtpModal(true);
       setIsSigningUp(false);
     } catch (error) {
       console.error("Error during registration:", error);
@@ -222,14 +221,6 @@ const Register = () => {
 
   return (
     <>
-      <EmailVerificationModal
-        visible={verificationPending}
-        onClose={() => {
-          setVerificationPending(false);
-          router.push("/login");
-        }}
-        email={savedEmail}
-      />
       <Container className='flex-1 items-center gap-4 p-8 bg-neutral-100'>
         <View className='w-full flex-row items-center gap-2'>
           <CustomText className='font-poppins-bold text-2xl'>

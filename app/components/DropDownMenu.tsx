@@ -26,7 +26,7 @@ export default function DropDownMenu({
     positionRef.current?.measureInWindow((x, y, w, h) => {
       setCoords({ x: x, y: y + h + 8 });
     });
-  }, [positionRef.current]);
+  }, [isOpened]);
 
   const onlayout = (event: LayoutChangeEvent) => {
     setmenuWidth(event.nativeEvent.layout.width + 20 + 8);
