@@ -4,7 +4,12 @@ import { getChatsByUserId, getUserById } from "@/utils/getRoutes";
 import { ChatWithParticipants, UserProfile } from "@/utils/models";
 import { useFocusEffect } from "@react-navigation/native";
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { ActivityIndicator, RefreshControl, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  ScrollView,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext, RealtimeContext } from "../_layout";
 import themeColors from "../themeColors";
@@ -103,7 +108,10 @@ const Chat = () => {
       >
         {loading && userChat.length === 0 ? (
           <View className='p-4 justify-center items-center'>
-            <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+            <ActivityIndicator
+              size='large'
+              color={themeColors["primary-700"]}
+            />
           </View>
         ) : userChat.length === 0 ? (
           <View className='p-4'>

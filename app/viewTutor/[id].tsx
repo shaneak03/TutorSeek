@@ -16,7 +16,12 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useFocusEffect } from "@react-navigation/native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useContext, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import TutorScheduleModal from "../components/TutorScheduleModal";
@@ -128,7 +133,7 @@ const ViewTutor = () => {
   if (loading) {
     return (
       <View className='flex-1 justify-center items-center bg-neutral-100'>
-        <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+        <ActivityIndicator size='large' color={themeColors["primary-700"]} />
       </View>
     );
   }

@@ -121,9 +121,10 @@ const LocationPicker = ({ profileData, setProfileData, isEditing }: props) => {
               key={op.id}
               onPress={() => onSelectOption(op)}
               className={twMerge(
-                "w-full items-center p-4 border border-neutral-300 rounded-2xl",
+                "w-full items-center p-4 border-neutral-300  rounded-2xl",
                 selectedOption.id === op.id ? "bg-primary-700" : ""
               )}
+              style={{ borderWidth: 0.5 }}
             >
               <CustomText
                 className={

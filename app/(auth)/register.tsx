@@ -1,7 +1,7 @@
 import { getUserById } from "@/utils/getRoutes";
 import { createTimeTable } from "@/utils/postRoutes";
 import { supabase } from "@/utils/supabase";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
+// import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import React, { useContext, useState } from "react";
@@ -14,12 +14,13 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthContext } from "../_layout";
-import CustomDropdown from "../components/CustomDropdown";
 import CustomText from "../components/CustomText";
+import DropDownMenu, { option } from "../components/DropDownMenu";
 import EmailVerificationModal from "../components/EmailVerificationModal";
 import LargeSolidButton from "../components/LargeSolidButton";
 import RoundTextInput from "../components/RoundedTextInput";
 import themeColors from "../themeColors";
+import { userTypeOptions } from "./login";
 
 const Register = () => {
   const [email, setEmail] = useState("");
@@ -32,6 +33,9 @@ const Register = () => {
   const [isSiginingUp, setIsSigningUp] = useState(false);
   const { setUser, setAuthUser } = useContext(AuthContext);
   const router = useRouter();
+  const [selectedUserType, setSelectedUserType] = useState<option>(
+    userTypeOptions[0]
+  );
 
   const handleRegister = async () => {
     if (password !== confirmPassword) {
@@ -116,94 +120,93 @@ const Register = () => {
   };
 
   // Google OAuth Handler
-  GoogleSignin.configure({
-    webClientId:
-      "176743680156-f39d2bdbik845r85rdnoqpaurkri8r94.apps.googleusercontent.com",
-  });
+  // GoogleSignin.configure({
+  //   webClientId:
+  //     "176743680156-f39d2bdbik845r85rdnoqpaurkri8r94.apps.googleusercontent.com",
+  // });
 
-  const handleGoogleAuth = async () => {
-    if (Platform.OS === "web") {
-      setErrorMessage(
-        "Google Sign-In is not supported on web. Please use email registration."
-      );
-      return;
-    }
+  // const handleGoogleAuth = async () => {
+  //   if (Platform.OS === "web") {
+  //     setErrorMessage(
+  //       "Google Sign-In is not supported on web. Please use email registration."
+  //     );
+  //     return;
+  //   }
 
-    try {
-      await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices();
-      const userInfo = await GoogleSignin.signIn();
-      if (!userInfo.data) {
-        throw new Error("Google Sign-In failed");
-      }
-      if (userInfo.data.idToken) {
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: "google",
-          token: userInfo.data.idToken,
-        });
-        console.log(error, data);
-        if (error) {
-          console.error("Supabase sign-in error:", error);
-          setErrorMessage("Google Sign-In failed. Please try again.");
-          return;
-        }
-        // Check if user already exists
-        const existingUser = await getUserById(data.session?.user.id);
-        if (!existingUser) {
-          // Update Supabase User and Tutor/Student Profile
-          const user = data.session?.user;
-          if (!user) {
-            throw new Error("No user data returned from Supabase");
-          }
-          const role = isTutor ? "tutor" : "student";
-          const { error: userError } = await supabase.from("users").insert([
-            {
-              id: user.id,
-              role,
-              email: user.email,
-              first_name: user.user_metadata?.full_name || "",
-              profile_icon_url: user.user_metadata?.picture || "",
-            },
-          ]);
-          if (userError) {
-            console.error("Error inserting user profile:", userError);
-          }
-          if (isTutor) {
-            const { error: tutorError } = await supabase
-              .from("tutors")
-              .insert([{ id: user?.id }]);
-            if (tutorError) console.log(tutorError);
-            await createTimeTable(user?.id);
-          } else {
-            const { error: studentError } = await supabase
-              .from("students")
-              .insert([{ id: user?.id }]);
-            if (studentError) console.log(studentError);
-          }
-        }
+  //   try {
+  //     await GoogleSignin.signOut();
+  //     await GoogleSignin.hasPlayServices();
+  //     const userInfo = await GoogleSignin.signIn();
+  //     if (!userInfo.data) {
+  //       throw new Error("Google Sign-In failed");
+  //     }
+  //     if (userInfo.data.idToken) {
+  //       const { data, error } = await supabase.auth.signInWithIdToken({
+  //         provider: "google",
+  //         token: userInfo.data.idToken,
+  //       });
+  //       console.log(error, data);
+  //       if (error) {
+  //         console.error("Supabase sign-in error:", error);
+  //         setErrorMessage("Google Sign-In failed. Please try again.");
+  //         return;
+  //       }
+  //       // Check if user already exists
+  //       const existingUser = await getUserById(data.session?.user.id);
+  //       if (!existingUser) {
+  //         // Update Supabase User and Tutor/Student Profile
+  //         const user = data.session?.user;
+  //         if (!user) {
+  //           throw new Error("No user data returned from Supabase");
+  //         }
+  //         const role = isTutor ? "tutor" : "student";
+  //         const { error: userError } = await supabase.from("users").insert([
+  //           {
+  //             id: user.id,
+  //             role,
+  //             email: user.email,
+  //             first_name: user.user_metadata?.full_name || "",
+  //             profile_icon_url: user.user_metadata?.picture || "",
+  //           },
+  //         ]);
+  //         if (userError) {
+  //           console.error("Error inserting user profile:", userError);
+  //         }
+  //         if (isTutor) {
+  //           const { error: tutorError } = await supabase
+  //             .from("tutors")
+  //             .insert([{ id: user?.id }]);
+  //           if (tutorError) console.log(tutorError);
+  //           await createTimeTable(user?.id);
+  //         } else {
+  //           const { error: studentError } = await supabase
+  //             .from("students")
+  //             .insert([{ id: user?.id }]);
+  //           if (studentError) console.log(studentError);
+  //         }
+  //       }
 
-        // Update Auth Context
-        if (data.session) {
-          const profile = await getUserById(data.session?.user.id);
-          setUser(profile);
-        }
-        // Navigate to the main app
-        router.push("/(tabs)");
-      } else {
-        throw new Error("no ID token present!");
-      }
-    } catch (error) {
-      console.error("Google Sign-In error:", error);
-      setErrorMessage("Google Sign-In failed. Please try again.");
-    }
-  };
+  //       // Update Auth Context
+  //       if (data.session) {
+  //         const profile = await getUserById(data.session?.user.id);
+  //         setUser(profile);
+  //       }
+  //       // Navigate to the main app
+  //       router.push("/(tabs)");
+  //     } else {
+  //       throw new Error("no ID token present!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Google Sign-In error:", error);
+  //     setErrorMessage("Google Sign-In failed. Please try again.");
+  //   }
+  // };
 
-  const handleTutorSelect = async (value: string) => {
-    if (value === "tutor") {
-      setIsTutor(true);
-    } else if (value === "student") {
-      setIsTutor(false);
-    }
+  const handleGoogleAuth = () => {};
+
+  const onSelectUserType = async (op: option) => {
+    setIsTutor(op.val === "tutor");
+    setSelectedUserType(op);
   };
 
   const clearPwInputs = () => {
@@ -215,6 +218,8 @@ const Register = () => {
     router.push("/login");
   };
 
+  const Container = Platform.OS === "web" ? View : SafeAreaView;
+
   return (
     <>
       <EmailVerificationModal
@@ -225,16 +230,15 @@ const Register = () => {
         }}
         email={savedEmail}
       />
-      <SafeAreaView className='flex-1 items-center gap-4 pt-12 p-8 bg-neutral-100'>
+      <Container className='flex-1 items-center gap-4 p-8 bg-neutral-100'>
         <View className='w-full flex-row items-center gap-2'>
           <CustomText className='font-poppins-bold text-2xl'>
-            <Text>Register as </Text>
+            Register as
           </CustomText>
-          <CustomDropdown
-            options={["student", "tutor"]}
-            selected={isTutor ? "tutor" : "student"}
-            onSelect={handleTutorSelect}
-            textClassName='text-primary-700 font-poppins-bold text-2xl'
+          <DropDownMenu
+            options={userTypeOptions}
+            onSelect={onSelectUserType}
+            selectedOption={selectedUserType}
           />
         </View>
         <View className='w-full'>
@@ -320,7 +324,7 @@ const Register = () => {
             Sign in
           </Text>
         </CustomText>
-      </SafeAreaView>
+      </Container>
     </>
   );
 };

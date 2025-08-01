@@ -39,7 +39,7 @@ const SubjectFilterModal = ({
             className={
               "flex-row justify-between py-4 px-8 rounded-2xl " +
               (s.id === activeSubj
-                ? "border-primary-700 border-2"
+                ? "border-primary-700 border-hairline"
                 : "border-neutral-300 border-hairline")
             }
             key={s.id}

@@ -11,7 +11,11 @@ interface ChatCardProps {
   isOnline: boolean;
 }
 
-export default function ChatCard({ chat, currentUserId, isOnline }: ChatCardProps) {
+export default function ChatCard({
+  chat,
+  currentUserId,
+  isOnline,
+}: ChatCardProps) {
   const router = useRouter();
 
   const handlePress = () => {

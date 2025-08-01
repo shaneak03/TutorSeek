@@ -27,7 +27,7 @@ import {
   Pressable,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -119,14 +119,14 @@ const ChatScreen = () => {
     if (!previousMessage) return true;
 
     const currentDate = new Date(currentMessage.created_at).toDateString();
-  // Show loading indicator while loading is true (after all hooks)
-  if (loading) {
-    return (
-      <View className='flex-1 justify-center items-center bg-neutral-100'>
-        <ActivityIndicator size="large" color={themeColors["primary-700"]} />
-      </View>
-    );
-  }
+    // Show loading indicator while loading is true (after all hooks)
+    if (loading) {
+      return (
+        <View className='flex-1 justify-center items-center bg-neutral-100'>
+          <ActivityIndicator size='large' color={themeColors["primary-700"]} />
+        </View>
+      );
+    }
     const previousDate = new Date(previousMessage.created_at).toDateString();
 
     return currentDate !== previousDate;
@@ -323,7 +323,11 @@ const ChatScreen = () => {
         setHasMoreMessages(fetchedMessages.length === PAGE_SIZE);
       } catch (error) {
         console.error("Error fetching messages:", error);
-        Toast.show({ type: "error", text1: "Error", text2: "Failed to load messages" });
+        Toast.show({
+          type: "error",
+          text1: "Error",
+          text2: "Failed to load messages",
+        });
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -500,7 +504,11 @@ const ChatScreen = () => {
       );
     } catch (error) {
       console.error("Error sending message:", error);
-      Toast.show({ type: "error", text1: "Error", text2: "Failed to send message" });
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Failed to send message",
+      });
 
       if (optimisticMessage) {
         setMessages(prev =>
@@ -638,7 +646,7 @@ const ChatScreen = () => {
         tutorId={otherUser?.id}
       />
       <SafeAreaView className='flex-1 bg-neutral-100'>
-        <View className='bg-neutral-100 border-b border-gray-200 px-4 py-3'>
+        <View className='bg-neutral-100 border-b-hairline border-gray-200 px-4 py-3'>
           <View className='flex-row items-center gap-3'>
             <TouchableOpacity
               onPress={() => router.back()}

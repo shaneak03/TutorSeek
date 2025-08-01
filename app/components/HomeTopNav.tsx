@@ -55,7 +55,7 @@ export default function HomeTopNav({ filters, setFilters, tutors }: props) {
         filters={filters}
         setFilters={setFilters}
       />
-      <View className='p-4 border-neutral-300 border-b-hairline'>
+      <View className='p-4 border-neutral-300 border-b-hairline border-solid'>
         <View>
           <Pressable
             onPress={showSubjectPicker}

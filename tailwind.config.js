@@ -12,6 +12,9 @@ module.exports = {
         "poppins-semibold": ["Poppins_600SemiBold"],
         "poppins-bold": ["Poppins_700Bold"],
       },
+      borderWidth: {
+        hairline: "0.5px",
+      },
       colors,
     },
   },

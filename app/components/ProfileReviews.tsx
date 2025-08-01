@@ -2,7 +2,7 @@ import { AuthContext } from "@/app/_layout";
 import { getReviewsByStudentId, getReviewsByTutorId } from "@/utils/getRoutes";
 import { deleteReview, editReview } from "@/utils/postRoutes";
 import { useContext, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Modal, View } from "react-native";
+import { ActivityIndicator, Modal, View } from "react-native";
 import Toast from "react-native-toast-message";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
@@ -52,29 +52,16 @@ const ProfileReviews = ({ role, id }: props) => {
     setEditModalVisible(true);
   };
 
-  const handleDelete = (review: ReviewData) => {
-    Alert.alert(
-      "Delete Review",
-      "Are you sure you want to delete this review?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            setLoading(true);
-            try {
-              await deleteReview(review.id);
-              setReviews(reviews.filter(r => r.id !== review.id));
-            } catch {
-              Toast.show({ type: "error", text1: "Failed to delete review." });
-            } finally {
-              setLoading(false);
-            }
-          },
-        },
-      ]
-    );
+  const handleDelete = async (review: ReviewData) => {
+    setLoading(true);
+    try {
+      await deleteReview(review.id);
+      setReviews(reviews.filter(r => r.id !== review.id));
+    } catch {
+      Toast.show({ type: "error", text1: "Failed to delete review" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEditSubmit = async () => {
@@ -117,7 +104,7 @@ const ProfileReviews = ({ role, id }: props) => {
           <ReviewCard
             key={review.id}
             review={review}
-            showReviweeName={true}
+            showReviweeName={role === "student"}
             isEditing={role === "student" && user?.id === review.student_id}
             onEdit={
               role === "student" && user?.id === review.student_id
