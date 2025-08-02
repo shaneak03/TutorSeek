@@ -25,12 +25,14 @@ export default function OtpModal({ isVisible, setIsVisible, email }: props) {
       token: otp,
       type: "signup",
     });
+    console.log("verifying OTP");
     if (error) {
       console.log(error);
       Toast.show({ type: "error", text1: error.message });
       setOtp("");
       return;
     }
+    setIsVisible(false);
     router.push("/(tabs)/profile");
   };
 
