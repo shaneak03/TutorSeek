@@ -29,29 +29,29 @@ export default function DropDownMenu({
   }, [isOpened]);
 
   const onlayout = (event: LayoutChangeEvent) => {
-    setmenuWidth(event.nativeEvent.layout.width + 20 + 8);
+    setmenuWidth(event.nativeEvent.layout.width + 24 + 16);
   };
 
   return (
     <>
       <View
-        className='items-start border-hairline border-neutral-300 rounded-2xl w-min bg-neutral-100 absolute'
+        className='items-start border-hairline border-neutral-300 rounded-xl w-min bg-neutral-100 absolute'
         onLayout={onlayout}
         style={{ opacity: 0 }}
       >
         {options.map(op => (
-          <Pressable key={op.val} className={"p-3 w-full"}>
+          <Pressable key={op.val} className={"p-4 w-full"}>
             <CustomText className={"font-poppins-bold "}>{op.label}</CustomText>
           </Pressable>
         ))}
       </View>
       <Pressable
         ref={positionRef}
-        className='flex-row border-hairline border-neutral-300 rounded-2xl p-3 items-center justify-between'
+        className='flex-row border-hairline border-neutral-300 rounded-xl p-4 items-center justify-between'
         onPress={() => setIsOpened(true)}
         style={{ width: menuWidth }}
       >
-        <CustomText className='font-poppins-bold text-primary-700'>
+        <CustomText className='font-poppins-bold text-primary-700 text-xl'>
           {selectedOption.label}
         </CustomText>
         <Entypo
@@ -67,7 +67,7 @@ export default function DropDownMenu({
             onPress={() => setIsOpened(false)}
           ></Pressable>
           <View
-            className='flex items-start border-hairline border-neutral-300 rounded-2xl w-min bg-neutral-100'
+            className='flex items-start border-hairline border-neutral-300 rounded-xl w-min bg-neutral-100'
             style={{
               position: "absolute",
               top: coords.y,
@@ -80,7 +80,7 @@ export default function DropDownMenu({
               <Pressable
                 key={op.val}
                 className={
-                  "p-3 w-full " +
+                  "p-4 w-full " +
                   (i !== options.length - 1
                     ? "border-b-hairline border-neutral-300"
                     : "")
@@ -92,7 +92,7 @@ export default function DropDownMenu({
               >
                 <CustomText
                   className={
-                    "font-poppins-bold " +
+                    "font-poppins-bold text-xl " +
                     (selectedOption == op ? "text-primary-700" : "")
                   }
                 >

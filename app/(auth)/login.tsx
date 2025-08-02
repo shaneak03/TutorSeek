@@ -11,9 +11,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import CustomText from "../components/CustomText";
 import DropDownMenu, { option } from "../components/DropDownMenu";
 import LargeSolidButton from "../components/LargeSolidButton";
+import OtpModal from "../components/OtpModal";
 import RoundTextInput from "../components/RoundedTextInput";
 import themeColors from "../themeColors";
 
@@ -30,6 +32,7 @@ export default function Login() {
     userTypeOptions[0]
   );
   const [errorMessage, setErrorMessage] = useState("");
+  const [showOtpModal, setShowOtpModal] = useState(false);
   const router = useRouter();
 
   const handleLogin = async () => {
@@ -47,9 +50,21 @@ export default function Login() {
 
     if (error) {
       console.log(error);
-      setErrorMessage(error.message);
-      setEmail("");
-      setPassword("");
+      if (error.message === "Email not confirmed") {
+        setShowOtpModal(true);
+        const { error } = await supabase.auth.resend({
+          type: "signup",
+          email,
+        });
+        if (error) {
+          console.log(error);
+          Toast.show({ type: "error", text1: error.message });
+        }
+      } else {
+        setErrorMessage(error.message);
+        setEmail("");
+        setPassword("");
+      }
     } else {
       router.push("/(tabs)");
     }
@@ -166,74 +181,87 @@ export default function Login() {
   const Container = Platform.OS === "web" ? View : SafeAreaView;
 
   return (
-    <Container className='flex-1 bg-neutral-100 items-center gap-4 p-8'>
-      <View className='w-full flex-row items-center gap-2'>
-        <CustomText className='font-poppins-bold text-2xl'>Login as</CustomText>
-        <DropDownMenu
-          options={userTypeOptions}
-          onSelect={onSelectUserType}
-          selectedOption={selectedUserType}
-        />
-      </View>
-      <View className='w-full'>
-        <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
-        <RoundTextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder='Enter your email'
-          inputMode='email'
-        />
-      </View>
-      <View className='w-full'>
-        <CustomText className='font-poppins-semibold mb-2'>Password</CustomText>
-        <RoundTextInput
-          secureTextEntry={true}
-          value={password}
-          onChangeText={setPassword}
-          placeholder='Enter your password'
-        />
-      </View>
-      {Platform.OS !== "web" && (
-        <Text
-          onPress={handleForgetPw}
-          className='w-full text-right font-poppins-semibold text-sm color-neutral-900'
-        >
-          Forgot password?
-        </Text>
-      )}
-
-      {errorMessage ? (
-        <CustomText className='text-red-500 text-sm'>{errorMessage}</CustomText>
-      ) : null}
-      <LargeSolidButton
-        buttonText='Login'
-        onPress={handleLogin}
-        className='mt-2'
+    <>
+      <OtpModal
+        isVisible={showOtpModal}
+        setIsVisible={setShowOtpModal}
+        email={email}
       />
-      <View className='w-full relative flex justify-center items-center px-4'>
-        <View className='h-[1] w-full bg-neutral-900 absolute'></View>
-        <CustomText className='text-sm bg-neutral-100 px-4'>
-          Or login with
-        </CustomText>
-      </View>
-      <TouchableHighlight
-        onPress={handleGoogleAuth}
-        className='w-full flex-row justify-center rounded-[48] border-2 border-neutral-300 p-4'
-        underlayColor={themeColors["neutral-200"]}
-      >
-        <Image
-          source={require("../../assets/images/google.svg")}
-          style={{ width: 24, height: 24 }}
-          contentFit='cover'
-        />
-      </TouchableHighlight>
+      <Container className='flex-1 bg-neutral-100 items-center gap-4 p-8'>
+        <View className='w-full flex-row items-center gap-2'>
+          <CustomText className='font-poppins-bold text-2xl'>
+            Login as
+          </CustomText>
+          <DropDownMenu
+            options={userTypeOptions}
+            onSelect={onSelectUserType}
+            selectedOption={selectedUserType}
+          />
+        </View>
+        <View className='w-full'>
+          <CustomText className='font-poppins-semibold mb-2'>Email</CustomText>
+          <RoundTextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder='Enter your email'
+            inputMode='email'
+          />
+        </View>
+        <View className='w-full'>
+          <CustomText className='font-poppins-semibold mb-2'>
+            Password
+          </CustomText>
+          <RoundTextInput
+            secureTextEntry={true}
+            value={password}
+            onChangeText={setPassword}
+            placeholder='Enter your password'
+          />
+        </View>
+        {Platform.OS !== "web" && (
+          <Text
+            onPress={handleForgetPw}
+            className='w-full text-right font-poppins-semibold text-sm color-neutral-900'
+          >
+            Forgot password?
+          </Text>
+        )}
 
-      <Pressable onPress={navToRegister} className='mt-auto'>
-        <CustomText className='text-sm'>
-          <Text>Don&apos;t have an account? </Text>
-          <Text className='text-primary-700'>Register</Text>
-        </CustomText>
-      </Pressable>
-    </Container>
+        {errorMessage ? (
+          <CustomText className='text-red-500 text-sm'>
+            {errorMessage}
+          </CustomText>
+        ) : null}
+        <LargeSolidButton
+          buttonText='Login'
+          onPress={handleLogin}
+          className='mt-2'
+        />
+        <View className='w-full relative flex justify-center items-center px-4'>
+          <View className='h-[1] w-full bg-neutral-900 absolute'></View>
+          <CustomText className='text-sm bg-neutral-100 px-4'>
+            Or login with
+          </CustomText>
+        </View>
+        <TouchableHighlight
+          onPress={handleGoogleAuth}
+          className='w-full flex-row justify-center rounded-[48] border-hairline border-neutral-300 p-4'
+          underlayColor={themeColors["neutral-200"]}
+        >
+          <Image
+            source={require("../../assets/images/google.svg")}
+            style={{ width: 24, height: 24 }}
+            contentFit='cover'
+          />
+        </TouchableHighlight>
+
+        <Pressable onPress={navToRegister} className='mt-auto'>
+          <CustomText className='text-sm'>
+            <Text>Don&apos;t have an account? </Text>
+            <Text className='text-primary-700'>Register</Text>
+          </CustomText>
+        </Pressable>
+      </Container>
+    </>
   );
 }

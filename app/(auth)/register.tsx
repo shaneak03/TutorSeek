@@ -17,6 +17,7 @@ import { AuthContext } from "../_layout";
 import CustomText from "../components/CustomText";
 import DropDownMenu, { option } from "../components/DropDownMenu";
 import LargeSolidButton from "../components/LargeSolidButton";
+import OtpModal from "../components/OtpModal";
 import RoundTextInput from "../components/RoundedTextInput";
 import themeColors from "../themeColors";
 import { userTypeOptions } from "./login";
@@ -28,7 +29,7 @@ const Register = () => {
   const [isTutor, setIsTutor] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [savedEmail, setSavedEmail] = useState("");
-  const [showOtpmodal, setShowOtpModal] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
   const [isSiginingUp, setIsSigningUp] = useState(false);
   const { setUser, setAuthUser } = useContext(AuthContext);
   const router = useRouter();
@@ -65,9 +66,6 @@ const Register = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: "tutorseek://verify",
-        },
       });
 
       if (error) throw new Error(error.message);
@@ -221,6 +219,19 @@ const Register = () => {
 
   return (
     <>
+      {isSiginingUp && (
+        <SafeAreaView className='absolute inset-0 bg-[rgba(0,0,0,0.4)] z-20 items-center justify-center'>
+          <ActivityIndicator
+            size={"large"}
+            color={themeColors["primary-700"]}
+          />
+        </SafeAreaView>
+      )}
+      <OtpModal
+        isVisible={showOtpModal}
+        setIsVisible={setShowOtpModal}
+        email={email}
+      />
       <Container className='flex-1 items-center gap-4 p-8 bg-neutral-100'>
         <View className='w-full flex-row items-center gap-2'>
           <CustomText className='font-poppins-bold text-2xl'>
@@ -265,21 +276,13 @@ const Register = () => {
         {errorMessage && (
           <CustomText className='text-red-500'>{errorMessage}</CustomText>
         )}
-        {isSiginingUp ? (
-          <View className='bg-primary-700 rounded-[48] p-4 w-full justify-center items-center'>
-            <ActivityIndicator
-              size={"small"}
-              color={themeColors["neutral-100"]}
-            />
-          </View>
-        ) : (
-          <LargeSolidButton
-            buttonText={"Register"}
-            onPress={handleRegister}
-            className='mt-2'
-            disabled={isSiginingUp}
-          />
-        )}
+
+        <LargeSolidButton
+          buttonText={"Register"}
+          onPress={handleRegister}
+          className='mt-2'
+          disabled={isSiginingUp}
+        />
 
         <View className='w-full relative flex justify-center items-center px-4'>
           <View className='h-[1] w-full bg-neutral-900 absolute'></View>
@@ -287,27 +290,19 @@ const Register = () => {
             Or Register with
           </CustomText>
         </View>
-        {isSiginingUp ? (
-          <View className='rounded-[48] p-4 w-full justify-center items-center border-neutral-300 border-2'>
-            <ActivityIndicator
-              size={"small"}
-              color={themeColors["neutral-300"]}
-            />
-          </View>
-        ) : (
-          <TouchableHighlight
-            onPress={handleGoogleAuth}
-            className='w-full flex-row justify-center rounded-[48] border-2 border-neutral-300 p-4'
-            underlayColor={themeColors["neutral-200"]}
-            disabled={isSiginingUp}
-          >
-            <Image
-              source={require("../../assets/images/google.svg")}
-              style={{ width: 24, height: 24 }}
-              contentFit='cover'
-            />
-          </TouchableHighlight>
-        )}
+
+        <TouchableHighlight
+          onPress={handleGoogleAuth}
+          className='w-full flex-row justify-center rounded-[48] border-hairline border-neutral-300 p-4'
+          underlayColor={themeColors["neutral-200"]}
+          disabled={isSiginingUp}
+        >
+          <Image
+            source={require("../../assets/images/google.svg")}
+            style={{ width: 24, height: 24 }}
+            contentFit='cover'
+          />
+        </TouchableHighlight>
 
         <CustomText className='text-sm mt-auto'>
           <Text>Already have an account? </Text>

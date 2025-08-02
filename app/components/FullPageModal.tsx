@@ -11,13 +11,25 @@ type props = {
   setIsVisible: React.Dispatch<React.SetStateAction<boolean>>;
   title: string;
   children?: React.ReactNode;
+  showBorder?: boolean;
 };
 
-const FullPageModal = ({ isVisible, setIsVisible, title, children }: props) => {
+const FullPageModal = ({
+  isVisible,
+  setIsVisible,
+  title,
+  children,
+  showBorder = true,
+}: props) => {
   return (
     <Modal visible={isVisible} animationType='slide' statusBarTranslucent>
       <SafeAreaView className='flex-1 bg-neutral-100'>
-        <View className='flex items-center justify-center relative py-4 border-b-hairline border-neutral-300'>
+        <View
+          className={
+            "flex items-center justify-center relative py-4 " +
+            (showBorder ? "border-b-hairline border-neutral-300" : "")
+          }
+        >
           <CustomText className='font-poppins-bold text-2xl'>
             {title}
           </CustomText>
