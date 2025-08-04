@@ -1,53 +1,12 @@
-# Welcome to your Expo app 👋
+# TutorSeek
+## A mobile application designed to bridge the gap between freelance tutors and students. The primary objective is to provide an accessible platform where tutors can showcase their qualifications, availability, and teaching subjects, while students can easily browse, filter, and connect with suitable tutors based on their preferences. 
+### Our tech stack includes: React Native, Expo, PostgreSQL, Jest, Docker and Supabase
+### Features:
+#### 1. User Authentication and Validation (with the choice of signing in with Google)
+#### 2. Tutor Profile Listing
+#### 3. Tutor Filtering System
+#### 4. Real-Time Chat
+#### 5. Tutor Reviews and Ratings
+#### 6. Tutor Availability Calendar
+#### 7. User notifications
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-### Docker for development
-
-1. Build docker image
-```bash
-docker build -t tutorseek .
-```
-
-2. Start the docker container and start and interactive command line
-```bash
-docker run -it --rm -p 8081:8081 -p 19000:19000 -p 19001:19001 -p 19002:19002 -p 19006:19006 tutorseek
-```
-Do follow the command line instructions
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
