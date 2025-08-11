@@ -188,8 +188,11 @@ const Profile = () => {
 
   if (loading && !refreshing) {
     return (
-      <SafeAreaView className='flex-1 bg-neutral-100 justify-center items-center' edges={["top", "right", "left"]}>
-        <ActivityIndicator size="large" color={themeColors["primary-700"]} />
+      <SafeAreaView
+        className='flex-1 bg-neutral-100 justify-center items-center'
+        edges={["top", "right", "left"]}
+      >
+        <ActivityIndicator size='large' color={themeColors["primary-700"]} />
       </SafeAreaView>
     );
   }
@@ -283,7 +286,7 @@ const Profile = () => {
                   router.push("../(auth)/changePassword");
                 }
               }}
-              className="underline text-primary-700"
+              className='underline text-primary-700'
             >
               Change Password
             </CustomText>

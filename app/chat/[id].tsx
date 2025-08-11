@@ -731,8 +731,12 @@ const ChatScreen = () => {
                   placeholderTextColor={themeColors["neutral-300"]}
                   multiline
                   maxLength={1000}
-                  className='font-poppins-regular text-base text-gray-900 max-h-24'
-                  style={{ textAlignVertical: "center" }}
+                  className='font-poppins-regular text-base text-gray-900'
+                  style={{
+                    height: 40,
+                    paddingVertical: 8,
+                    textAlignVertical: "center",
+                  }}
                   returnKeyType='send'
                   onSubmitEditing={handleSend}
                   submitBehavior='blurAndSubmit'

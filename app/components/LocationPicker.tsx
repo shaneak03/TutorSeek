@@ -3,7 +3,12 @@ import { withTimeout } from "@/utils/timeoutHelpers";
 import { Entypo, FontAwesome6 } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Platform,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Toast from "react-native-toast-message";
 import { getNearest } from "sg-areas";
 import { twMerge } from "tailwind-merge";
@@ -139,7 +144,13 @@ const LocationPicker = ({ profileData, setProfileData, isEditing }: props) => {
       </FullPageModal>
       {!isEditing ? (
         <View className={`bg-neutral-200 rounded-[48] p-4 w-full`}>
-          <CustomText>{locationMap[profileData.location]}</CustomText>
+          <CustomText
+            className={profileData.location === "" ? "opacity-0" : ""}
+          >
+            {profileData.location === ""
+              ? "placeholder"
+              : locationMap[profileData.location]}
+          </CustomText>
         </View>
       ) : (
         <>
@@ -170,22 +181,23 @@ const LocationPicker = ({ profileData, setProfileData, isEditing }: props) => {
                   />
                 </View>
               </TouchableOpacity>
-              <CustomText className='font-semibold'>Or</CustomText>
-              <TouchableOpacity
-                activeOpacity={0.6}
-                onPress={getLocation}
-                className='border-hairline border-neutral-300 rounded-2xl'
-              >
-                <View className='flex-row gap-2 items-center p-4'>
-                  <CustomText className='text-sm'>Get location</CustomText>
+              {Platform.OS !== "web" && (
+                <TouchableOpacity
+                  activeOpacity={0.6}
+                  onPress={getLocation}
+                  className='border-hairline border-neutral-300 rounded-2xl'
+                >
+                  <View className='flex-row gap-2 items-center p-4'>
+                    <CustomText className='text-sm'>Get</CustomText>
 
-                  <FontAwesome6
-                    name='location-dot'
-                    size={24}
-                    color={themeColors["primary-700"]}
-                  />
-                </View>
-              </TouchableOpacity>
+                    <FontAwesome6
+                      name='location-dot'
+                      size={24}
+                      color={themeColors["primary-700"]}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </>
