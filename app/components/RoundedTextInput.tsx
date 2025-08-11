@@ -1,4 +1,4 @@
-import { TextInput, TextInputProps, View } from "react-native";
+import { Platform, TextInput, TextInputProps, View } from "react-native";
 import { twMerge } from "tailwind-merge";
 import themeColors from "../themeColors";
 import CustomText from "./CustomText";
@@ -30,15 +30,21 @@ const RoundTextInput = ({
       onChangeText={onChangeText}
       placeholder={placeholder}
       className={twMerge(
-        `bg-neutral-200 rounded-[${borderRadius}] font-poppins p-4 w-full leading-normal`,
+        `bg-neutral-200 rounded-[${borderRadius}] p-4 w-full leading-normal`,
         className
       )}
       placeholderTextColor={themeColors["neutral-300"]}
       {...props}
+      style={{
+        fontFamily: "Poppins_400Regular",
+        fontSize: Platform.OS === "web" ? 16 : 14,
+      }}
     />
   ) : (
     <View className={`bg-neutral-200 rounded-[${borderRadius}] p-4 w-full`}>
-      <CustomText>{value}</CustomText>
+      <CustomText className={value === "" ? "opacity-0" : ""}>
+        {value === "" ? "placeholder" : value}
+      </CustomText>
     </View>
   );
 };

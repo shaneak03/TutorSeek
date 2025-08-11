@@ -73,7 +73,7 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
   };
 
   return (
-    <FullPageModal title='' isVisible={isVisible} setIsVisible={setIsVisible}>
+    <FullPageModal title=' ' isVisible={isVisible} setIsVisible={setIsVisible}>
       <View className='flex-1 justify-center items-center p-8'>
         <View className='mb-8'>
           <CustomText className='font-poppins-semibold text-xl mb-4 text-center'>
@@ -85,7 +85,7 @@ const PostReviewModal = ({ isVisible, setIsVisible, tutorId }: props) => {
           value={desc}
           maxLength={200}
           onChangeText={onChangeText}
-          borderRadius={32}
+          borderRadius={24}
           multiline={true}
           placeholder='Your review'
           style={{ minHeight: 150, textAlignVertical: "top" }}
