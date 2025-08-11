@@ -590,6 +590,8 @@ const ChatScreen = () => {
 
   // List empty component
   const ListEmptyComponent = useCallback(() => {
+    if (Platform.OS === "web") return null;
+
     if (loading && staticChatId) {
       return (
         <View
